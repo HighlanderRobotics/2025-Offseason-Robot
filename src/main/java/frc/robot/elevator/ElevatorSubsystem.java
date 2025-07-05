@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class ElevatorSubsystem extends SubsystemBase {
-
+  // put constants here
   public enum ElevatorState {
     IDLE(0.0); //this will not be the real number!! this is just a placeholder
 
@@ -22,7 +22,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     public double getExtensionMeters() {
-      return extensionMeters;
+      return inputs.positionMeters;
     }
   }
 
