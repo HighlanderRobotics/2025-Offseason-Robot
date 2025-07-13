@@ -30,7 +30,50 @@ import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 
 public class ElevatorSubsystem extends SubsystemBase {
   // put constants here
-  
+  // TODO CHANGE THESE VALUES TO THE REAL ONES
+  public static final double GEAR_RATIO = 12.5 / 1.0;
+  public static final double DRUM_RADIUS_METERS = Units.inchesToMeters(1.751 / 2.0);
+  public static final Rotation2d ELEVATOR_ANGLE = Rotation2d.fromDegrees(65.0);
+
+  public static final double MAX_EXTENSION_METERS = Units.inchesToMeters(30);
+
+  public static final double AMP_EXTENSION_METERS = 0.6;
+
+  private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
+  private final ElevatorIO io;
+
+  private final LinearFilter currentFilter = LinearFilter.movingAverage(5);
+  public double currentFilterValue = 0.0;
+
+  public boolean hasZeroed = false;
+
+  private double setpoint = 0.0;
+
+  private final SysIdRoutine voltageSysid;
+  private final SysIdRoutine currentSysid;
+
+  /** Creates a new ElevatorSubsystem. */
+  public ElevatorSubsystem(ElevatorIO io) {
+    this.io = io;
+    voltageSysid =
+        new SysIdRoutine(
+            new Config(
+                null,
+                null,
+                null,
+                (state) -> Logger.recordOutput("Elevator/SysIdTestStateVolts", state.toString())),
+            new Mechanism((volts) -> io.setVoltage(volts.in(Volts)), null, this));
+
+    currentSysid =
+        new SysIdRoutine(
+            new Config(
+                Volts.of(30.0).per(Second),
+                Volts.of(120.0),
+                null,
+                (state) -> Logger.recordOutput("Elevator/SysIdTestStateCurrent", state.toString())),
+            new Mechanism((volts) -> io.setCurrent(volts.in(Volts)), null, this));
+  }
+
   public enum ElevatorState {
     IDLE(0.0); //this will not be the real number!! this is just a placeholder
 
@@ -47,15 +90,21 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   private ElevatorState state = ElevatorState.IDLE;
 
-  //TODO: add IO layers
-  /** Creates a new ElevatorSubsystem. */
-  public ElevatorSubsystem() {}
-
   @Override
   public void periodic() {
-    // Sets the elevator to the height corresponding to the current state of the robot
-    // Shoulder, intake, and any future subsystems should more or less follow this same pattern (additional logic might be needed though)
-    setExtension(() -> state.extensionMeters);
+    io.updateInputs(inputs);
+    Logger.processInputs("Elevator", inputs);
+    currentFilterValue = currentFilter.calculate(inputs.statorCurrentAmps);
+
+    carriage.setLength(inputs.positionMeters);
+    if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("Elevator/Mechanism2d", mech2d);
+
+    if (Robot.ROBOT_TYPE != RobotType.REAL)
+      Logger.recordOutput("Elevator/Carriage Pose", getCarriagePose());
+
+    if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("Elevator/Has Zeroed", hasZeroed);
+    if (Robot.ROBOT_TYPE != RobotType.REAL)
+      Logger.recordOutput("Elevator/Filtered Current", currentFilterValue);
   }
 
   public void setState(ElevatorState state) {
@@ -63,6 +112,84 @@ public class ElevatorSubsystem extends SubsystemBase {
   }
 
   public Command setExtension(DoubleSupplier meters) {
-    return Commands.none(); //TODO implement
+    return this.run(
+      () -> {
+        io.setTarget(meters.getAsDouble());
+        setpoint = meters.getAsDouble();
+        if (Robot.ROBOT_TYPE != RobotType.REAL)
+          Logger.recordOutput("Elevator/Setpoint", setpoint);
+      });
   }
+
+  public Command setExtension(double meters) {
+    return this.setExtension(() -> meters);
+  }
+
+  public Command setVoltage(double voltage) {
+    return this.run(
+        () -> {
+          io.setVoltage(voltage);
+        });
+  }
+
+  public Command setVoltage(DoubleSupplier voltage) {
+    return this.setVoltage(voltage.getAsDouble());
+  }
+
+  public Command setCurrent(double amps) {
+    return this.run(
+        () -> {
+          io.setCurrent(amps);
+        });
+  }
+
+  public Command runCurrentZeroing() {
+    return this.run(
+            () -> {
+              io.setVoltage(-2.0);
+              setpoint = 0.0;
+              if (Robot.ROBOT_TYPE != RobotType.REAL)
+                Logger.recordOutput("Elevator/Setpoint", Double.NaN);
+            })
+        .until(() -> Math.abs(currentFilterValue) > 50.0)
+        .finallyDo(
+            (interrupted) -> {
+              if (!interrupted) {
+                io.resetEncoder(0.0);
+                hasZeroed = true;
+              }
+            });
+  }
+
+  public boolean isNearExtension(double expected) {
+    return MathUtil.isNear(expected, inputs.positionMeters, 0.05);
+  }
+
+  public boolean isNearExtension(double expected, double toleranceMeters) {
+    return MathUtil.isNear(expected, inputs.positionMeters, toleranceMeters);
+  }
+
+  public Command runSysid() {
+    final Function<SysIdRoutine, Command> runSysid =
+        (routine) ->
+            Commands.sequence(
+                routine
+                    .quasistatic(SysIdRoutine.Direction.kForward)
+                    .until(() -> inputs.positionMeters > Units.inchesToMeters(50.0)),
+                Commands.waitUntil(() -> inputs.velocityMetersPerSec < 0.1),
+                routine
+                    .quasistatic(SysIdRoutine.Direction.kReverse)
+                    .until(() -> inputs.positionMeters < Units.inchesToMeters(10.0)),
+                Commands.waitUntil(() -> Math.abs(inputs.velocityMetersPerSec) < 0.1),
+                routine
+                    .dynamic(SysIdRoutine.Direction.kForward)
+                    .until(() -> inputs.positionMeters > Units.inchesToMeters(50.0)),
+                Commands.waitUntil(() -> inputs.velocityMetersPerSec < 0.1),
+                routine
+                    .dynamic(SysIdRoutine.Direction.kReverse)
+                    .until(() -> inputs.positionMeters < Units.inchesToMeters(10.0)));
+    return Commands.sequence(
+        runCurrentZeroing(), runSysid.apply(voltageSysid), runSysid.apply(currentSysid));
+  }
+
 }
