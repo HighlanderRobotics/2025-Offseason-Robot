@@ -4,14 +4,17 @@
 
 package frc.robot.routing;
 
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.roller.RollerIO;
+import frc.robot.roller.RollerSubsystem;
 
-public class RoutingSubsystem extends SubsystemBase {
+public class RoutingSubsystem extends RollerSubsystem {
   /** Creates a new RoutingSubsystem. */
-  public RoutingSubsystem() {}
+  public RoutingSubsystem(RollerIO rollerIO) {
+    super(rollerIO, "Routing");
+  }
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    super.periodic();
   }
 }

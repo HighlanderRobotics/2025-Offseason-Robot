@@ -19,7 +19,7 @@ import edu.wpi.first.units.measure.Voltage;
 
 /** Add your docs here. */
 public class ArmIOReal implements ArmIO {
-  private final TalonFX motor;
+  private final TalonFX pivot;
   private final CANcoder cancoder;
 
   private final StatusSignal<Angle> motorPositionRotations;
@@ -32,13 +32,13 @@ public class ArmIOReal implements ArmIO {
       new MotionMagicTorqueCurrentFOC(0.0); // TODO torque current or duty cycle
 
   public ArmIOReal() {
-    motor = new TalonFX(0, "*");
+    pivot = new TalonFX(0, "*");
     cancoder = new CANcoder(0, "*");
 
-    motorPositionRotations = motor.getPosition();
+    motorPositionRotations = pivot.getPosition();
     cancoderPositionRotations = cancoder.getAbsolutePosition();
-    appliedVoltage = motor.getMotorVoltage();
-    angularVelocityRPS = motor.getVelocity();
+    appliedVoltage = pivot.getMotorVoltage();
+    angularVelocityRPS = pivot.getVelocity();
 
     final TalonFXConfiguration motorConfig = new TalonFXConfiguration();
     // TODO PID things should go here
@@ -47,7 +47,7 @@ public class ArmIOReal implements ArmIO {
     final CANcoderConfiguration cancoderConfig = new CANcoderConfiguration();
 
     cancoder.getConfigurator().apply(cancoderConfig);
-    motor.getConfigurator().apply(motorConfig);
+    pivot.getConfigurator().apply(motorConfig);
 
     BaseStatusSignal.setUpdateFrequencyForAll(
         50.0,
@@ -71,12 +71,12 @@ public class ArmIOReal implements ArmIO {
 
   @Override
   public void setVoltage(double voltage) {
-    motor.setControl(voltageOut.withOutput(voltage));
+    pivot.setControl(voltageOut.withOutput(voltage));
   }
 
   @Override
   public void setMotorPosition(Rotation2d position) {
-    motor.setControl(positionTorque.withPosition(position.getRotations()));
+    pivot.setControl(positionTorque.withPosition(position.getRotations()));
   }
 
   @Override

@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import java.util.ArrayList;
-
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -17,6 +15,7 @@ import frc.robot.elevator.ElevatorSubsystem;
 import frc.robot.elevator.ElevatorSubsystem.ElevatorState;
 import frc.robot.intake.IntakeSubsystem;
 import frc.robot.intake.IntakeSubsystem.IntakeState;
+import java.util.ArrayList;
 
 public class Superstructure {
 
@@ -94,14 +93,14 @@ public class Superstructure {
   public void periodic() {
     for (Transition t : transitions) {
       if (state == t.start && t.trigger.getAsBoolean()) {
-        forceState(t.end);
+        changeStateTo(t.end);
         return;
       }
     }
   }
 
   public void addTransitions() {
-    
+
     transitions.add(
         new Transition(SuperState.IDLE, SuperState.PRE_INTAKE_CORAL_GROUND, Robot.intakeCoralReq));
 
@@ -116,81 +115,99 @@ public class Superstructure {
             SuperState.INTAKE_CORAL_GROUND,
             SuperState.POST_INTAKE_CORAL_GROUND,
             new Trigger(() -> arm.hasCoral())));
-    
+
     transitions.add(
         new Transition(
             SuperState.POST_INTAKE_CORAL_GROUND,
             SuperState.IDLE,
             new Trigger(() -> this.atExtension())));
 
-    
-    //----L1----
+    // ----L1----
     transitions.add(
         new Transition(
             SuperState.IDLE,
             SuperState.L1,
             new Trigger(() -> Robot.getCurrentCoralTarget() == ReefTarget.L1).and(Robot.scoreReq)));
-    
+
     transitions.add(
         new Transition(
             SuperState.L1,
             SuperState.IDLE,
-            new Trigger(() -> !arm.hasCoral() && !Robot.scoreReq.getAsBoolean()))); //also might need to check that it's backed away from the reef?
+            new Trigger(
+                () ->
+                    !arm.hasCoral()
+                        && !Robot.scoreReq
+                            .getAsBoolean()))); // also might need to check that it's backed away
+    // from the reef?
 
-    //----L2----
+    // ----L2----
     transitions.add(
         new Transition(
             SuperState.IDLE,
             SuperState.PRE_L2,
-            new Trigger(() -> Robot.getCurrentCoralTarget() == ReefTarget.L2).and(Robot.preScoreReq)));
+            new Trigger(() -> Robot.getCurrentCoralTarget() == ReefTarget.L2)
+                .and(Robot.preScoreReq)));
 
     transitions.add(
         new Transition(
             SuperState.PRE_L2,
             SuperState.L2,
             new Trigger(() -> this.atExtension()).and(Robot.scoreReq)));
-    
+
     transitions.add(
         new Transition(
             SuperState.L2,
             SuperState.POST_L2,
-            new Trigger(() -> !Robot.scoreReq.getAsBoolean()))); //also might need to check that it HASN'T backed away from the reef?
-            //also my gutfeel is that it should check the beambreak here but if it's on the pole it'll still pick up on the coral?
+            new Trigger(
+                () ->
+                    !Robot.scoreReq
+                        .getAsBoolean()))); // also might need to check that it HASN'T backed away
+    // from the reef?
+    // also my gutfeel is that it should check the beambreak here but if it's on the pole it'll
+    // still pick up on the coral?
 
     transitions.add(
         new Transition(
             SuperState.POST_L2,
             SuperState.IDLE,
-            new Trigger(() -> !arm.hasCoral() && this.atExtension() && !Robot.scoreReq.getAsBoolean())));
-    
-    //----L3----
+            new Trigger(
+                () -> !arm.hasCoral() && this.atExtension() && !Robot.scoreReq.getAsBoolean())));
+
+    // ----L3----
     transitions.add(
         new Transition(
             SuperState.IDLE,
             SuperState.PRE_L3,
-            new Trigger(() -> Robot.getCurrentCoralTarget() == ReefTarget.L3).and(Robot.preScoreReq)));
+            new Trigger(() -> Robot.getCurrentCoralTarget() == ReefTarget.L3)
+                .and(Robot.preScoreReq)));
 
     transitions.add(
         new Transition(
             SuperState.PRE_L3,
             SuperState.L3,
             new Trigger(() -> this.atExtension()).and(Robot.scoreReq)));
-    
+
     transitions.add(
         new Transition(
             SuperState.L3,
-            SuperState.POST_L3, 
-            new Trigger(() -> !Robot.scoreReq.getAsBoolean()))); //also might need to check that it HASN'T backed away from the reef?
-            //also my gutfeel is that it should check the beambreak here but if it's on the pole it'll still pick up on the coral?
+            SuperState.POST_L3,
+            new Trigger(
+                () ->
+                    !Robot.scoreReq
+                        .getAsBoolean()))); // also might need to check that it HASN'T backed away
+    // from the reef?
+    // also my gutfeel is that it should check the beambreak here but if it's on the pole it'll
+    // still pick up on the coral?
 
     transitions.add(
         new Transition(
             SuperState.POST_L3,
             SuperState.IDLE,
-            new Trigger(() -> !arm.hasCoral() && this.atExtension() && !Robot.scoreReq.getAsBoolean())));
+            new Trigger(
+                () -> !arm.hasCoral() && this.atExtension() && !Robot.scoreReq.getAsBoolean())));
   }
 
-  private Command forceState(SuperState nextState) {
+  private Command changeStateTo(SuperState nextState) {
     return Commands.runOnce(
             () -> {
               System.out.println("Changing state to " + nextState);
@@ -210,7 +227,7 @@ public class Superstructure {
 
   private boolean atExtension(SuperState state) {
     return elevator.atExtension(state.elevatorState.getExtensionMeters())
-        && arm.atAngle(state.armState.getAngle())
+        && arm.atAngle(state.armState.getPivotAngle())
         && intake.atAngle(state.intakeState.getAngle());
   }
 

@@ -7,36 +7,43 @@ package frc.robot.arm;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.roller.RollerIO;
+import frc.robot.roller.RollerSubsystem;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
-public class ArmSubsystem extends SubsystemBase {
+public class ArmSubsystem extends RollerSubsystem {
 
   public enum ArmState {
-    IDLE(Rotation2d.fromDegrees(0)),
-    INTAKE_CORAL_GROUND(Rotation2d.fromDegrees(180)),
-    L1(new Rotation2d()),
-    PRE_L2(new Rotation2d()),
-    L2(new Rotation2d()),
-    PRE_L3(new Rotation2d()),
-    L3(new Rotation2d()),
-    PRE_L4(new Rotation2d()),
-    L4(new Rotation2d()),
-    INTAKE_ALGAE_REEF(Rotation2d.fromDegrees(90)),
-    INTAKE_ALGAE_GROUND(new Rotation2d()),
-    BARGE(new Rotation2d()),
-    PROCESSOR(Rotation2d.fromDegrees(90)),
-    CLIMB(new Rotation2d());
+    IDLE(Rotation2d.fromDegrees(0), 0.0),
+    INTAKE_CORAL_GROUND(Rotation2d.fromDegrees(180), 0.0),
+    L1(new Rotation2d(), 0.0),
+    PRE_L2(new Rotation2d(), 0.0),
+    L2(new Rotation2d(), 0.0),
+    PRE_L3(new Rotation2d(), 0.0),
+    L3(new Rotation2d(), 0.0),
+    PRE_L4(new Rotation2d(), 0.0),
+    L4(new Rotation2d(), 0.0),
+    INTAKE_ALGAE_REEF(Rotation2d.fromDegrees(90), 0.0),
+    INTAKE_ALGAE_GROUND(new Rotation2d(), 0.0),
+    BARGE(new Rotation2d(), 0.0),
+    PROCESSOR(Rotation2d.fromDegrees(90), 0.0),
+    CLIMB(new Rotation2d(), 0.0);
 
-    private final Rotation2d angle;
+    private final Rotation2d pivotAngle;
+    private final double rollerVoltage; //TODO big todo
 
-    private ArmState(Rotation2d angle) {
-      this.angle = angle;
+    private ArmState(Rotation2d angle, double voltage) {
+      this.pivotAngle = angle;
+      this.rollerVoltage = voltage;
     }
 
-    public Rotation2d getAngle() {
-      return angle;
+    public Rotation2d getPivotAngle() {
+      return pivotAngle;
+    }
+
+    public double getRollerVoltage() {
+      return rollerVoltage;
     }
   }
 
@@ -44,19 +51,21 @@ public class ArmSubsystem extends SubsystemBase {
 
   private ArmState state = ArmState.IDLE;
 
-  private final ArmIO io;
+  private final ArmIO armIO;
   private final ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
 
   /** Creates a new ArmSubsystem. */
-  public ArmSubsystem(ArmIO io) {
-    this.io = io;
+  public ArmSubsystem(ArmIO armIO, RollerIO rollerIO) {
+    super(rollerIO, "Arm");
+    this.armIO = armIO;
   }
 
   @Override
   public void periodic() {
-    io.updateInputs(inputs);
+    super.periodic();
+    armIO.updateInputs(inputs);
     Logger.processInputs("Arm", inputs);
-    setAngle(() -> state.angle);
+    setAngle(() -> state.pivotAngle);
   }
 
   public void setState(ArmState state) {
@@ -66,7 +75,7 @@ public class ArmSubsystem extends SubsystemBase {
   public Command setAngle(Supplier<Rotation2d> target) {
     return this.run(
         () -> {
-          io.setMotorPosition(target.get());
+          armIO.setMotorPosition(target.get());
           setpoint = target.get();
         });
   }

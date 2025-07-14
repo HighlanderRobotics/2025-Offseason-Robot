@@ -13,6 +13,8 @@ import frc.robot.elevator.ElevatorIOReal;
 import frc.robot.elevator.ElevatorSubsystem;
 import frc.robot.intake.IntakeIOReal;
 import frc.robot.intake.IntakeSubsystem;
+import frc.robot.roller.RollerIOReal;
+
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -20,6 +22,8 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 
 public class Robot extends LoggedRobot {
 
@@ -61,7 +65,7 @@ public class Robot extends LoggedRobot {
   public static Trigger intakeCoralReq = new Trigger(() -> true);
 
   private final ElevatorSubsystem elevator = new ElevatorSubsystem(new ElevatorIOReal());
-  private final ArmSubsystem arm = new ArmSubsystem(new ArmIOReal());
+  private final ArmSubsystem arm = new ArmSubsystem(new ArmIOReal(), new RollerIOReal(new int[] {1}, new TalonFXConfiguration(), false)); //TODO so this is just embarrassing
   private final IntakeSubsystem intake = new IntakeSubsystem(new IntakeIOReal());
 
   private final Superstructure superstructure = new Superstructure(elevator, arm, intake);
