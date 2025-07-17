@@ -28,6 +28,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 public class Robot extends LoggedRobot {
 
+  //Various field locations
   public static enum ReefTarget {
     L1(0.0, SuperState.L1),
     L2(0.0, SuperState.L2),
@@ -55,6 +56,7 @@ public class Robot extends LoggedRobot {
     PROCESSOR
   }
 
+  //Current score/intake targets
   @AutoLogOutput private static ReefTarget currentCoralTarget = ReefTarget.L4;
   @AutoLogOutput private static AlgaeIntakeTarget algaeIntakeTarget = AlgaeIntakeTarget.STACK;
   @AutoLogOutput private static AlgaeScoreTarget algaeScoreTarget = AlgaeScoreTarget.NET;
@@ -80,8 +82,8 @@ public class Robot extends LoggedRobot {
   private final Superstructure superstructure = new Superstructure(elevator, arm, intake);
 
   public Robot() {
+    //Set up logging as per AdvantageKit docs
     Logger.recordMetadata("ProjectName", "MyProject"); // Set a metadata value
-
     if (isReal()) {
       Logger.addDataReceiver(new WPILOGWriter()); // Log to a USB stick ("/U/logs")
       Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
@@ -95,10 +97,10 @@ public class Robot extends LoggedRobot {
           new WPILOGWriter(
               LogFileUtil.addPathSuffix(logPath, "_sim"))); // Save outputs to a new log
     }
-
     Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may
     // be added.
 
+    //Set default commands for each subsystem
     elevator.setDefaultCommand(elevator.setStateExtension()); //TODO not sure if this stuff needs to be hold?
     arm.setDefaultCommand(arm.setStateAngleVoltage());
   }

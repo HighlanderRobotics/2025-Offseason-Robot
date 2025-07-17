@@ -90,7 +90,7 @@ public class ArmSubsystem extends RollerSubsystem {
   }
 
   public Command setVoltage(DoubleSupplier voltage) {
-    return this.run(() -> super.setVoltage(voltage.getAsDouble()));
+    return this.run(() -> super.setRollerVoltage(voltage.getAsDouble()));
   }
 
   public Command setStateAngleVoltage() { //i'll take awful method names for 500, alex

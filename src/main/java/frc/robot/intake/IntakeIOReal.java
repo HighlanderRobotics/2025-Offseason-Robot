@@ -4,10 +4,13 @@
 
 package frc.robot.intake;
 
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.CANrangeConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.CANrange;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -24,18 +27,23 @@ public class IntakeIOReal implements IntakeIO {
   private final CANrange canrange;
   private final CANcoder cancoder;
 
-  private final StatusSignal<Boolean> hasCoral;
+  private final StatusSignal<Boolean> canrangeTriggered;
   private final StatusSignal<Angle> motorPositionRotations;
   private final StatusSignal<Angle> cancoderPositionRotations;
   private final StatusSignal<Voltage> appliedVoltage;
   private final StatusSignal<AngularVelocity> angularVelocityRPS;
 
+  private final VoltageOut voltageOut = new VoltageOut(0.0).withEnableFOC(true);
+  private final MotionMagicTorqueCurrentFOC positionTorque =
+      new MotionMagicTorqueCurrentFOC(0.0); // TODO torque current or duty cycle
+
+  //TODO i'm not sure if L1 got cut or not
   public IntakeIOReal() {
     pivot = new TalonFX(0, "*");
     canrange = new CANrange(0, "*");
     cancoder = new CANcoder(0, "*");
 
-    hasCoral = canrange.getIsDetected();
+    canrangeTriggered = canrange.getIsDetected();
     motorPositionRotations = pivot.getPosition();
     cancoderPositionRotations = cancoder.getAbsolutePosition();
     appliedVoltage = pivot.getMotorVoltage();
@@ -51,35 +59,46 @@ public class IntakeIOReal implements IntakeIO {
     cancoder.getConfigurator().apply(cancoderConfig);
     pivot.getConfigurator().apply(motorConfig);
     canrange.getConfigurator().apply(canrangeConfig);
+
+    BaseStatusSignal.setUpdateFrequencyForAll(
+        50.0,
+        canrangeTriggered,
+        motorPositionRotations,
+        cancoderPositionRotations,
+        appliedVoltage,
+        angularVelocityRPS);
   }
 
   @Override
   public void updateInputs(IntakeIOInputs inputs) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'updateInputs'");
+    BaseStatusSignal.refreshAll(
+      canrangeTriggered,
+      motorPositionRotations,
+      cancoderPositionRotations,
+      appliedVoltage,
+      angularVelocityRPS);
+
+      inputs.motorPosition = Rotation2d.fromRotations(motorPositionRotations.getValueAsDouble());
+      inputs.cancoderPosition =
+          Rotation2d.fromRotations(cancoderPositionRotations.getValueAsDouble());
+      inputs.voltage = appliedVoltage.getValueAsDouble();
+      inputs.angularVelocityRPS = angularVelocityRPS.getValueAsDouble();
+      // inputs.canrange = canr
   }
 
   @Override
-  public void setVoltage(double voltage) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'setVoltage'");
+  public void setPivotVoltage(double voltage) {
+    pivot.setControl(voltageOut.withOutput(voltage));
   }
 
   @Override
-  public void setMotorPosition(Rotation2d position) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'setMotorPosition'");
+  public void setPivotPosition(Rotation2d position) {
+    pivot.setControl(positionTorque.withPosition(position.getRotations()));
   }
 
   @Override
   public void setEncoderPosition(Rotation2d position) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'setEncoderPosition'");
+    cancoder.setPosition(position.getRotations());
   }
 
-  @Override
-  public boolean hasCoral() {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'hasCoral'");
-  }
 }

@@ -43,7 +43,6 @@ public class IntakeSubsystem extends RollerSubsystem {
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Intake", inputs);
-    Logger.processInputs("Intake Beambreak", inputs);
   }
 
   public void setState(IntakeState state) {
@@ -55,6 +54,6 @@ public class IntakeSubsystem extends RollerSubsystem {
   }
 
   public boolean hasCoral() {
-    return io.hasCoral();
+    return inputs.canrange;
   }
 }

@@ -11,7 +11,9 @@ import org.littletonrobotics.junction.AutoLog;
 public interface ArmIO {
   @AutoLog
   public class ArmIOInputs {
+    /***Position as reported by the pivot motor */
     public Rotation2d motorPosition = new Rotation2d();
+    /***Position as reported by the cancoder on the carriage. More reliable */
     public Rotation2d cancoderPosition = new Rotation2d();
     public double voltage = 0.0;
     public double angularVelocityRPS = 0.0;

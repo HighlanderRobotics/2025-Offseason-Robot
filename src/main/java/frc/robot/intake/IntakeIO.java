@@ -21,11 +21,9 @@ public interface IntakeIO {
 
   public void updateInputs(final IntakeIOInputs inputs);
 
-  public void setVoltage(final double voltage);
+  public void setPivotVoltage(final double voltage);
 
-  public void setMotorPosition(final Rotation2d position);
+  public void setPivotPosition(final Rotation2d position);
 
   public void setEncoderPosition(final Rotation2d position);
-
-  public boolean hasCoral();
 }

@@ -26,7 +26,7 @@ public class RollerSubsystem extends SubsystemBase {
     Logger.processInputs(name, inputs);
   }
 
-  public Command setVoltage(double voltage) {
+  public Command setRollerVoltage(double voltage) {
     return this.run(() -> io.setVoltage(voltage));
   }
 }
