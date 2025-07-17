@@ -14,18 +14,15 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
 
-/** Add your docs here. */
 public class ArmIOReal implements ArmIO {
   private final TalonFX pivot;
   private final CANcoder cancoder;
 
   private final StatusSignal<Angle> motorPositionRotations;
   private final StatusSignal<Angle> cancoderPositionRotations;
-  private final StatusSignal<Voltage> appliedVoltage;
-  private final StatusSignal<AngularVelocity> angularVelocityRPS;
+  private final StatusSignal<Voltage> appliedPivotVoltage;
 
   private final VoltageOut voltageOut = new VoltageOut(0.0).withEnableFOC(true);
   private final MotionMagicTorqueCurrentFOC positionTorque =
@@ -37,8 +34,7 @@ public class ArmIOReal implements ArmIO {
 
     motorPositionRotations = pivot.getPosition();
     cancoderPositionRotations = cancoder.getAbsolutePosition();
-    appliedVoltage = pivot.getMotorVoltage();
-    angularVelocityRPS = pivot.getVelocity();
+    appliedPivotVoltage = pivot.getMotorVoltage();
 
     final TalonFXConfiguration motorConfig = new TalonFXConfiguration();
     // TODO PID things should go here
@@ -50,32 +46,27 @@ public class ArmIOReal implements ArmIO {
     pivot.getConfigurator().apply(motorConfig);
 
     BaseStatusSignal.setUpdateFrequencyForAll(
-        50.0,
-        motorPositionRotations,
-        cancoderPositionRotations,
-        appliedVoltage,
-        angularVelocityRPS);
+        50.0, motorPositionRotations, cancoderPositionRotations, appliedPivotVoltage);
   }
 
   @Override
   public void updateInputs(ArmIOInputs inputs) {
     BaseStatusSignal.refreshAll(
-        motorPositionRotations, cancoderPositionRotations, appliedVoltage, angularVelocityRPS);
+        motorPositionRotations, cancoderPositionRotations, appliedPivotVoltage);
 
     inputs.motorPosition = Rotation2d.fromRotations(motorPositionRotations.getValueAsDouble());
     inputs.cancoderPosition =
         Rotation2d.fromRotations(cancoderPositionRotations.getValueAsDouble());
-    inputs.voltage = appliedVoltage.getValueAsDouble();
-    inputs.angularVelocityRPS = angularVelocityRPS.getValueAsDouble();
+    inputs.pivotVoltage = appliedPivotVoltage.getValueAsDouble();
   }
 
   @Override
-  public void setVoltage(double voltage) {
+  public void setPivotVoltage(double voltage) {
     pivot.setControl(voltageOut.withOutput(voltage));
   }
 
   @Override
-  public void setMotorPosition(Rotation2d position) {
+  public void setPivotAngle(Rotation2d position) {
     pivot.setControl(positionTorque.withPosition(position.getRotations()));
   }
 

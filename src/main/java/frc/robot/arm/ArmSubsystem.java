@@ -12,10 +12,10 @@ import frc.robot.beambreak.BeambreakIO;
 import frc.robot.beambreak.BeambreakIOInputsAutoLogged;
 import frc.robot.roller.RollerIO;
 import frc.robot.roller.RollerSubsystem;
-import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
+/*** Works kinda the same as the intake */
 public class ArmSubsystem extends RollerSubsystem {
 
   public enum ArmState {
@@ -81,23 +81,17 @@ public class ArmSubsystem extends RollerSubsystem {
     this.state = state;
   }
 
-  public Command setAngle(Supplier<Rotation2d> target) {
+  public Command setPivotAngle(Supplier<Rotation2d> target) {
     return this.run(
         () -> {
-          armIO.setMotorPosition(target.get());
+          armIO.setPivotAngle(target.get());
           setpoint = target.get();
         });
   }
 
-  public Command setVoltage(DoubleSupplier voltage) {
-    return this.run(() -> super.setRollerVoltage(voltage.getAsDouble()));
-  }
-
-  public Command setStateAngleVoltage() { //i'll take awful method names for 500, alex
+  public Command setStateAngleVoltage() { // i'll take awful method names for 500, alex
     return Commands.parallel(
-      setAngle(() -> state.getPivotAngle()),
-      setVoltage(() -> state.getRollerVoltage())
-    );
+        setPivotAngle(() -> state.getPivotAngle()), setRollerVoltage(() -> state.getRollerVoltage()));
   }
 
   public boolean atAngle(Rotation2d target) {
@@ -105,6 +99,6 @@ public class ArmSubsystem extends RollerSubsystem {
   }
 
   public boolean hasCoral() {
-    return true; // TODO
+    return bbInputs.get;
   }
 }

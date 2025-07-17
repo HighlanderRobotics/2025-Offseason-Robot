@@ -9,21 +9,16 @@ import org.littletonrobotics.junction.AutoLog;
 
 /** Add your docs here. */
 public interface IntakeIO {
-
   @AutoLog
   public class IntakeIOInputs {
     public Rotation2d motorPosition = new Rotation2d();
     public Rotation2d cancoderPosition = new Rotation2d();
-    public double voltage = 0.0;
-    public double angularVelocityRPS = 0.0;
     public boolean canrange = false;
   }
 
   public void updateInputs(final IntakeIOInputs inputs);
 
-  public void setPivotVoltage(final double voltage);
-
-  public void setPivotPosition(final Rotation2d position);
+  public void setPivotAngle(final Rotation2d position);
 
   public void setEncoderPosition(final Rotation2d position);
 }

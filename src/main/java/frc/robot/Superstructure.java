@@ -15,8 +15,8 @@ import frc.robot.elevator.ElevatorSubsystem;
 import frc.robot.elevator.ElevatorSubsystem.ElevatorState;
 import frc.robot.intake.IntakeSubsystem;
 import frc.robot.intake.IntakeSubsystem.IntakeState;
+import frc.robot.routing.RoutingSubsystem.RoutingState;
 import java.util.ArrayList;
-
 import org.littletonrobotics.junction.Logger;
 
 public class Superstructure {
@@ -26,40 +26,65 @@ public class Superstructure {
    * positions set up in cad to make this easier?
    */
   public enum SuperState {
-    IDLE(ElevatorState.IDLE, ArmState.IDLE, IntakeState.IDLE),
+    IDLE(ElevatorState.IDLE, ArmState.IDLE, IntakeState.IDLE, RoutingState.IDLE),
     PRE_INTAKE_CORAL_GROUND(
-        ElevatorState.PRE_INTAKE_CORAL_GROUND, ArmState.INTAKE_CORAL_GROUND, IntakeState.INTAKE),
+        ElevatorState.PRE_INTAKE_CORAL_GROUND,
+        ArmState.INTAKE_CORAL_GROUND,
+        IntakeState.INTAKE,
+        RoutingState.INTAKE),
     INTAKE_CORAL_GROUND(
-        ElevatorState.INTAKE_CORAL_GROUND, ArmState.INTAKE_CORAL_GROUND, IntakeState.INTAKE),
-    POST_INTAKE_CORAL_GROUND(ElevatorState.IDLE, ArmState.IDLE, IntakeState.INTAKE),
-    L1(ElevatorState.L1, ArmState.L1, IntakeState.IDLE),
-    PRE_L2(ElevatorState.PRE_L2, ArmState.PRE_L2, IntakeState.IDLE),
-    L2(ElevatorState.L2, ArmState.L2, IntakeState.IDLE),
-    POST_L2(ElevatorState.PRE_L2, ArmState.PRE_L2, IntakeState.IDLE),
-    PRE_L3(ElevatorState.PRE_L3, ArmState.PRE_L3, IntakeState.IDLE),
-    L3(ElevatorState.L3, ArmState.L3, IntakeState.IDLE),
-    POST_L3(ElevatorState.PRE_L3, ArmState.PRE_L3, IntakeState.IDLE),
-    PRE_L4(ElevatorState.PRE_L4, ArmState.PRE_L4, IntakeState.IDLE),
-    L4(ElevatorState.L4, ArmState.L4, IntakeState.IDLE),
-    POST_L4(ElevatorState.POST_L4, ArmState.PRE_L4, IntakeState.IDLE),
+        ElevatorState.INTAKE_CORAL_GROUND,
+        ArmState.INTAKE_CORAL_GROUND,
+        IntakeState.INTAKE,
+        RoutingState.INTAKE),
+    POST_INTAKE_CORAL_GROUND(
+        ElevatorState.IDLE,
+        ArmState.IDLE,
+        IntakeState.INTAKE,
+        RoutingState.INTAKE), // TODO double check this
+    L1(ElevatorState.L1, ArmState.L1, IntakeState.IDLE, RoutingState.IDLE),
+    PRE_L2(ElevatorState.PRE_L2, ArmState.PRE_L2, IntakeState.IDLE, RoutingState.IDLE),
+    L2(ElevatorState.L2, ArmState.L2, IntakeState.IDLE, RoutingState.IDLE),
+    POST_L2(ElevatorState.PRE_L2, ArmState.PRE_L2, IntakeState.IDLE, RoutingState.IDLE),
+    PRE_L3(ElevatorState.PRE_L3, ArmState.PRE_L3, IntakeState.IDLE, RoutingState.IDLE),
+    L3(ElevatorState.L3, ArmState.L3, IntakeState.IDLE, RoutingState.IDLE),
+    POST_L3(ElevatorState.PRE_L3, ArmState.PRE_L3, IntakeState.IDLE, RoutingState.IDLE),
+    PRE_L4(ElevatorState.PRE_L4, ArmState.PRE_L4, IntakeState.IDLE, RoutingState.IDLE),
+    L4(ElevatorState.L4, ArmState.L4, IntakeState.IDLE, RoutingState.IDLE),
+    POST_L4(ElevatorState.POST_L4, ArmState.PRE_L4, IntakeState.IDLE, RoutingState.IDLE),
     INTAKE_ALGAE_REEF_HIGH(
-        ElevatorState.INTAKE_ALGAE_REEF_HIGH, ArmState.INTAKE_ALGAE_REEF, IntakeState.IDLE),
+        ElevatorState.INTAKE_ALGAE_REEF_HIGH,
+        ArmState.INTAKE_ALGAE_REEF,
+        IntakeState.IDLE,
+        RoutingState.IDLE),
     INTAKE_ALGAE_REEF_LOW(
-        ElevatorState.INTAKE_ALGAE_REEF_LOW, ArmState.INTAKE_ALGAE_REEF, IntakeState.IDLE),
+        ElevatorState.INTAKE_ALGAE_REEF_LOW,
+        ArmState.INTAKE_ALGAE_REEF,
+        IntakeState.IDLE,
+        RoutingState.IDLE),
     INTAKE_ALGAE_GROUND(
-        ElevatorState.INTAKE_ALGAE_GROUND, ArmState.INTAKE_ALGAE_GROUND, IntakeState.IDLE),
-    BARGE(ElevatorState.BARGE, ArmState.BARGE, IntakeState.IDLE),
-    PROCESSOR(ElevatorState.PROCESSOR, ArmState.PROCESSOR, IntakeState.IDLE),
-    CLIMB(ElevatorState.IDLE, ArmState.CLIMB, IntakeState.INTAKE);
+        ElevatorState.INTAKE_ALGAE_GROUND,
+        ArmState.INTAKE_ALGAE_GROUND,
+        IntakeState.IDLE,
+        RoutingState.IDLE),
+    BARGE(ElevatorState.BARGE, ArmState.BARGE, IntakeState.IDLE, RoutingState.IDLE),
+    PROCESSOR(ElevatorState.PROCESSOR, ArmState.PROCESSOR, IntakeState.IDLE, RoutingState.IDLE),
+    CLIMB(ElevatorState.IDLE, ArmState.CLIMB, IntakeState.INTAKE, RoutingState.IDLE);
 
     public final ElevatorState elevatorState;
     public final ArmState armState;
     public final IntakeState intakeState;
+    public final RoutingState routingState;
 
-    private SuperState(ElevatorState elevatorState, ArmState armState, IntakeState intakeState) {
+    private SuperState(
+        ElevatorState elevatorState,
+        ArmState armState,
+        IntakeState intakeState,
+        RoutingState routingState) {
       this.elevatorState = elevatorState;
       this.armState = armState;
       this.intakeState = intakeState;
+      this.routingState = routingState;
     }
   }
 
@@ -204,7 +229,7 @@ public class Superstructure {
 
     // maps triggers to the transitions
     for (Transition t : transitions) {
-        t.trigger().and(new Trigger(() -> state == t.start)).onTrue(changeStateTo(t.end));
+      t.trigger().and(new Trigger(() -> state == t.start)).onTrue(changeStateTo(t.end));
     }
   }
 

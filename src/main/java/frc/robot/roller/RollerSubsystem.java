@@ -6,6 +6,9 @@ package frc.robot.roller;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
+import java.util.function.DoubleSupplier;
+
 import org.littletonrobotics.junction.Logger;
 
 public class RollerSubsystem extends SubsystemBase {
@@ -26,7 +29,7 @@ public class RollerSubsystem extends SubsystemBase {
     Logger.processInputs(name, inputs);
   }
 
-  public Command setRollerVoltage(double voltage) {
-    return this.run(() -> io.setVoltage(voltage));
+  public Command setRollerVoltage(DoubleSupplier voltage) {
+    return this.run(() -> io.setVoltage(voltage.getAsDouble()));
   }
 }

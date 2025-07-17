@@ -7,23 +7,23 @@ package frc.robot.arm;
 import edu.wpi.first.math.geometry.Rotation2d;
 import org.littletonrobotics.junction.AutoLog;
 
-/** Add your docs here. */
 public interface ArmIO {
   @AutoLog
   public class ArmIOInputs {
-    /***Position as reported by the pivot motor */
+    /***Position as reported by the pivot motor, change this to change the position */
     public Rotation2d motorPosition = new Rotation2d();
-    /***Position as reported by the cancoder on the carriage. More reliable */
+
+    /***Position as reported by the cancoder on the carriage. More reliable for seeing where it is, can't change it here though*/
     public Rotation2d cancoderPosition = new Rotation2d();
-    public double voltage = 0.0;
-    public double angularVelocityRPS = 0.0;
+    public double pivotVoltage = 0.0;
   }
 
   public void updateInputs(final ArmIOInputs inputs);
 
-  public void setVoltage(final double voltage);
+  /*** Sets the voltage for the pivot. Voltage for the rollers are handled in RollerIOReal. I think this should only be needed for zeroing? */
+  public void setPivotVoltage(final double voltage);
 
-  public void setMotorPosition(final Rotation2d position);
+  public void setPivotAngle(final Rotation2d position);
 
   public void setEncoderPosition(final Rotation2d position);
 }
