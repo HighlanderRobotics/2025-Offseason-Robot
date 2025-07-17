@@ -17,6 +17,8 @@ import frc.robot.intake.IntakeSubsystem;
 import frc.robot.intake.IntakeSubsystem.IntakeState;
 import java.util.ArrayList;
 
+import org.littletonrobotics.junction.Logger;
+
 public class Superstructure {
 
   /**
@@ -91,16 +93,10 @@ public class Superstructure {
   }
 
   public void periodic() {
-    for (Transition t : transitions) {
-      if (state == t.start && t.trigger.getAsBoolean()) {
-        changeStateTo(t.end);
-        return;
-      }
-    }
+    Logger.recordOutput("Superstructure/Superstructure State", state);
   }
 
   public void addTransitions() {
-
     transitions.add(
         new Transition(SuperState.IDLE, SuperState.PRE_INTAKE_CORAL_GROUND, Robot.intakeCoralReq));
 
@@ -205,6 +201,11 @@ public class Superstructure {
             SuperState.IDLE,
             new Trigger(
                 () -> !arm.hasCoral() && this.atExtension() && !Robot.scoreReq.getAsBoolean())));
+
+    // maps triggers to the transitions
+    for (Transition t : transitions) {
+        t.trigger().and(new Trigger(() -> state == t.start)).onTrue(changeStateTo(t.end));
+    }
   }
 
   private Command changeStateTo(SuperState nextState) {
@@ -233,5 +234,9 @@ public class Superstructure {
 
   private boolean atExtension() {
     return atExtension(state);
+  }
+
+  public SuperState getState() {
+    return state;
   }
 }

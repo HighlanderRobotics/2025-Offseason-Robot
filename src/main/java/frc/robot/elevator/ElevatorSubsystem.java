@@ -63,7 +63,6 @@ public class ElevatorSubsystem extends SubsystemBase {
     // (additional logic might be needed though)
     io.updateInputs(inputs);
     Logger.processInputs("Elevator", inputs);
-    setExtension(() -> state.extensionMeters);
   }
 
   public void setState(ElevatorState state) {
@@ -76,6 +75,10 @@ public class ElevatorSubsystem extends SubsystemBase {
           io.setPosition(meters.getAsDouble());
           setpoint = meters.getAsDouble();
         });
+  }
+
+  public Command setStateExtension() {
+    return setExtension(() -> state.getExtensionMeters());
   }
 
   public boolean atExtension(double expected) {

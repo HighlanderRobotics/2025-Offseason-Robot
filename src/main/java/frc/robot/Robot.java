@@ -98,6 +98,9 @@ public class Robot extends LoggedRobot {
 
     Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may
     // be added.
+
+    elevator.setDefaultCommand(elevator.setStateExtension()); //TODO not sure if this stuff needs to be hold?
+    arm.setDefaultCommand(arm.setStateAngleVoltage());
   }
 
   @Override

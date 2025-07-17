@@ -7,6 +7,7 @@ package frc.robot.arm;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.beambreak.BeambreakIO;
 import frc.robot.beambreak.BeambreakIOInputsAutoLogged;
 import frc.robot.roller.RollerIO;
@@ -74,8 +75,6 @@ public class ArmSubsystem extends RollerSubsystem {
     bbIO.updateInputs(bbInputs);
     Logger.processInputs("Arm", inputs);
     Logger.processInputs("Arm Beambreak", bbInputs);
-    setAngle(() -> state.pivotAngle);
-    setVoltage(() -> state.getRollerVoltage());
   }
 
   public void setState(ArmState state) {
@@ -92,6 +91,13 @@ public class ArmSubsystem extends RollerSubsystem {
 
   public Command setVoltage(DoubleSupplier voltage) {
     return this.run(() -> super.setVoltage(voltage.getAsDouble()));
+  }
+
+  public Command setStateAngleVoltage() { //i'll take awful method names for 500, alex
+    return Commands.parallel(
+      setAngle(() -> state.getPivotAngle()),
+      setVoltage(() -> state.getRollerVoltage())
+    );
   }
 
   public boolean atAngle(Rotation2d target) {
