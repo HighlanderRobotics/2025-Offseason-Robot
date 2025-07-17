@@ -16,6 +16,7 @@ public interface IntakeIO {
     public Rotation2d cancoderPosition = new Rotation2d();
     public double voltage = 0.0;
     public double angularVelocityRPS = 0.0;
+    public boolean canrange = false;
   }
 
   public void updateInputs(final IntakeIOInputs inputs);
@@ -25,4 +26,6 @@ public interface IntakeIO {
   public void setMotorPosition(final Rotation2d position);
 
   public void setEncoderPosition(final Rotation2d position);
+
+  public boolean hasCoral();
 }

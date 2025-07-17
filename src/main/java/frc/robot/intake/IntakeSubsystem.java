@@ -4,11 +4,14 @@
 
 package frc.robot.intake;
 
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.roller.RollerIO;
+import frc.robot.roller.RollerSubsystem;
 
-public class IntakeSubsystem extends SubsystemBase {
+public class IntakeSubsystem extends RollerSubsystem {
 
   public enum IntakeState {
     IDLE(new Rotation2d()),
@@ -31,13 +34,16 @@ public class IntakeSubsystem extends SubsystemBase {
   private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
 
   /** Creates a new IntakeSubsystem. */
-  public IntakeSubsystem(IntakeIO io) {
+  public IntakeSubsystem(IntakeIO io, RollerIO rollerIO) {
+    super(rollerIO, "Intake");
     this.io = io;
   }
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    io.updateInputs(inputs);
+    Logger.processInputs("Intake", inputs);
+    Logger.processInputs("Intake Beambreak", inputs);
   }
 
   public void setState(IntakeState state) {
@@ -49,6 +55,6 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public boolean hasCoral() {
-    return true; // TODO beambreak stuff? not sure if this would maybe be with the indexer
+    return io.hasCoral();
   }
 }

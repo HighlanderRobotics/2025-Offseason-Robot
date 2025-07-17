@@ -7,8 +7,11 @@ package frc.robot.arm;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.beambreak.BeambreakIO;
+import frc.robot.beambreak.BeambreakIOInputsAutoLogged;
 import frc.robot.roller.RollerIO;
 import frc.robot.roller.RollerSubsystem;
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
@@ -31,7 +34,7 @@ public class ArmSubsystem extends RollerSubsystem {
     CLIMB(new Rotation2d(), 0.0);
 
     private final Rotation2d pivotAngle;
-    private final double rollerVoltage; //TODO big todo
+    private final double rollerVoltage; // TODO big todo
 
     private ArmState(Rotation2d angle, double voltage) {
       this.pivotAngle = angle;
@@ -54,18 +57,25 @@ public class ArmSubsystem extends RollerSubsystem {
   private final ArmIO armIO;
   private final ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
 
+  private final BeambreakIO bbIO;
+  private final BeambreakIOInputsAutoLogged bbInputs = new BeambreakIOInputsAutoLogged();
+
   /** Creates a new ArmSubsystem. */
-  public ArmSubsystem(ArmIO armIO, RollerIO rollerIO) {
+  public ArmSubsystem(ArmIO armIO, RollerIO rollerIO, BeambreakIO bbIO) {
     super(rollerIO, "Arm");
     this.armIO = armIO;
+    this.bbIO = bbIO;
   }
 
   @Override
   public void periodic() {
     super.periodic();
     armIO.updateInputs(inputs);
+    bbIO.updateInputs(bbInputs);
     Logger.processInputs("Arm", inputs);
+    Logger.processInputs("Arm Beambreak", bbInputs);
     setAngle(() -> state.pivotAngle);
+    setVoltage(() -> state.getRollerVoltage());
   }
 
   public void setState(ArmState state) {
@@ -78,6 +88,10 @@ public class ArmSubsystem extends RollerSubsystem {
           armIO.setMotorPosition(target.get());
           setpoint = target.get();
         });
+  }
+
+  public Command setVoltage(DoubleSupplier voltage) {
+    return this.run(() -> super.setVoltage(voltage.getAsDouble()));
   }
 
   public boolean atAngle(Rotation2d target) {
