@@ -35,6 +35,20 @@ public class ElevatorSubsystem extends SubsystemBase {
   public static final double DRUM_RADIUS_METERS = Units.inchesToMeters(1.751 / 2.0);
   public static final Rotation2d ELEVATOR_ANGLE = Rotation2d.fromDegrees(65.0);
 
+  public static final double MAX_EXTENSION_METERS = Units.inchesToMeters(63.50);
+
+  public static final double L1_EXTENSION_METERS = Units.inchesToMeters(18);
+  public static final double L2_EXTENSION_METERS = Units.inchesToMeters(16.0);
+  public static final double L3_EXTENSION_METERS = Units.inchesToMeters(31.5);
+  public static final double L4_EXTENSION_METERS = Units.inchesToMeters(58.0);
+
+  public static final double INTAKE_ALGAE_GROUND_EXTENSION = Units.inchesToMeters(5.0);
+  public static final double INTAKE_ALGAE_LOW_EXTENSION = Units.inchesToMeters(25.4);
+  public static final double INTAKE_ALGAE_HIGH_EXTENSION = Units.inchesToMeters(40.5);
+
+  public static final double ALGAE_NET_EXTENSION = Units.inchesToMeters(61.5);
+  public static final double ALGAE_PROCESSOR_EXTENSION = 0.0;
+
   public static final double MAX_EXTENSION_METERS = Units.inchesToMeters(30);
 
   public static final double AMP_EXTENSION_METERS = 0.6;
