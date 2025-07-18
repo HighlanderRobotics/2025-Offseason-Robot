@@ -91,7 +91,8 @@ public class ArmSubsystem extends RollerSubsystem {
 
   public Command setStateAngleVoltage() { // i'll take awful method names for 500, alex
     return Commands.parallel(
-        setPivotAngle(() -> state.getPivotAngle()), setRollerVoltage(() -> state.getRollerVoltage()));
+        setPivotAngle(() -> state.getPivotAngle()),
+        setRollerVoltage(() -> state.getRollerVoltage()));
   }
 
   public boolean atAngle(Rotation2d target) {

@@ -11,6 +11,8 @@ import frc.robot.Superstructure.SuperState;
 import frc.robot.arm.ArmIOReal;
 import frc.robot.arm.ArmSubsystem;
 import frc.robot.beambreak.BeambreakIOReal;
+import frc.robot.climb.ClimberIOReal;
+import frc.robot.climb.ClimberSubsystem;
 import frc.robot.elevator.ElevatorIOReal;
 import frc.robot.elevator.ElevatorSubsystem;
 import frc.robot.intake.IntakeIOReal;
@@ -82,8 +84,12 @@ public class Robot extends LoggedRobot {
       new RoutingSubsystem(
           new RollerIOReal(new int[] {1, 2}, new TalonFXConfiguration(), false),
           new BeambreakIOReal(0, false)); // TODO ids
+  private final ClimberSubsystem climber =
+      new ClimberSubsystem(
+        new RollerIOReal(new int[] {1}, new TalonFXConfiguration(), false), 
+        new ClimberIOReal());
 
-  private final Superstructure superstructure = new Superstructure(elevator, arm, intake);
+  private final Superstructure superstructure = new Superstructure(elevator, arm, intake, routing, climber);
 
   public Robot() {
     // Set up logging as per AdvantageKit docs
@@ -109,6 +115,7 @@ public class Robot extends LoggedRobot {
         elevator.setStateExtension()); // TODO not sure if this stuff needs to be hold?
     arm.setDefaultCommand(arm.setStateAngleVoltage());
     routing.setDefaultCommand(routing.setStateRollerVoltage());
+    intake.setDefaultCommand(intake.setStateAngleVoltage());
   }
 
   @Override

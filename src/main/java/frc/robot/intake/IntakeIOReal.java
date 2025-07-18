@@ -52,10 +52,7 @@ public class IntakeIOReal implements IntakeIO {
     canrange.getConfigurator().apply(canrangeConfig);
 
     BaseStatusSignal.setUpdateFrequencyForAll(
-        50.0,
-        canrangeTriggered,
-        motorPositionRotations,
-        cancoderPositionRotations);
+        50.0, canrangeTriggered, motorPositionRotations, cancoderPositionRotations);
   }
 
   @Override

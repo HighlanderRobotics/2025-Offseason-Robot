@@ -11,10 +11,13 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Robot.ReefTarget;
 import frc.robot.arm.ArmSubsystem;
 import frc.robot.arm.ArmSubsystem.ArmState;
+import frc.robot.climb.ClimberSubsystem;
+import frc.robot.climb.ClimberSubsystem.ClimberState;
 import frc.robot.elevator.ElevatorSubsystem;
 import frc.robot.elevator.ElevatorSubsystem.ElevatorState;
 import frc.robot.intake.IntakeSubsystem;
 import frc.robot.intake.IntakeSubsystem.IntakeState;
+import frc.robot.routing.RoutingSubsystem;
 import frc.robot.routing.RoutingSubsystem.RoutingState;
 import java.util.ArrayList;
 import org.littletonrobotics.junction.Logger;
@@ -42,39 +45,47 @@ public class Superstructure {
         ArmState.IDLE,
         IntakeState.INTAKE,
         RoutingState.INTAKE), // TODO double check this
-    L1(ElevatorState.L1, ArmState.L1, IntakeState.IDLE, RoutingState.IDLE),
-    PRE_L2(ElevatorState.PRE_L2, ArmState.PRE_L2, IntakeState.IDLE, RoutingState.IDLE),
-    L2(ElevatorState.L2, ArmState.L2, IntakeState.IDLE, RoutingState.IDLE),
-    POST_L2(ElevatorState.PRE_L2, ArmState.PRE_L2, IntakeState.IDLE, RoutingState.IDLE),
-    PRE_L3(ElevatorState.PRE_L3, ArmState.PRE_L3, IntakeState.IDLE, RoutingState.IDLE),
-    L3(ElevatorState.L3, ArmState.L3, IntakeState.IDLE, RoutingState.IDLE),
-    POST_L3(ElevatorState.PRE_L3, ArmState.PRE_L3, IntakeState.IDLE, RoutingState.IDLE),
-    PRE_L4(ElevatorState.PRE_L4, ArmState.PRE_L4, IntakeState.IDLE, RoutingState.IDLE),
-    L4(ElevatorState.L4, ArmState.L4, IntakeState.IDLE, RoutingState.IDLE),
-    POST_L4(ElevatorState.POST_L4, ArmState.PRE_L4, IntakeState.IDLE, RoutingState.IDLE),
+    L1(ElevatorState.L1, ArmState.L1),
+    PRE_L2(ElevatorState.PRE_L2, ArmState.PRE_L2),
+    L2(ElevatorState.L2, ArmState.L2),
+    POST_L2(ElevatorState.PRE_L2, ArmState.PRE_L2),
+    PRE_L3(ElevatorState.PRE_L3, ArmState.PRE_L3),
+    L3(ElevatorState.L3, ArmState.L3),
+    POST_L3(ElevatorState.PRE_L3, ArmState.PRE_L3),
+    PRE_L4(ElevatorState.PRE_L4, ArmState.PRE_L4),
+    L4(ElevatorState.L4, ArmState.L4),
+    POST_L4(ElevatorState.POST_L4, ArmState.PRE_L4),
     INTAKE_ALGAE_REEF_HIGH(
         ElevatorState.INTAKE_ALGAE_REEF_HIGH,
-        ArmState.INTAKE_ALGAE_REEF,
-        IntakeState.IDLE,
-        RoutingState.IDLE),
+        ArmState.INTAKE_ALGAE_REEF),
     INTAKE_ALGAE_REEF_LOW(
         ElevatorState.INTAKE_ALGAE_REEF_LOW,
-        ArmState.INTAKE_ALGAE_REEF,
-        IntakeState.IDLE,
-        RoutingState.IDLE),
+        ArmState.INTAKE_ALGAE_REEF),
     INTAKE_ALGAE_GROUND(
         ElevatorState.INTAKE_ALGAE_GROUND,
-        ArmState.INTAKE_ALGAE_GROUND,
-        IntakeState.IDLE,
-        RoutingState.IDLE),
-    BARGE(ElevatorState.BARGE, ArmState.BARGE, IntakeState.IDLE, RoutingState.IDLE),
-    PROCESSOR(ElevatorState.PROCESSOR, ArmState.PROCESSOR, IntakeState.IDLE, RoutingState.IDLE),
-    CLIMB(ElevatorState.IDLE, ArmState.CLIMB, IntakeState.INTAKE, RoutingState.IDLE);
+        ArmState.INTAKE_ALGAE_GROUND),
+    BARGE(ElevatorState.BARGE, ArmState.BARGE),
+    PROCESSOR(ElevatorState.PROCESSOR, ArmState.PROCESSOR),
+    PRE_CLIMB(ElevatorState.IDLE, ArmState.CLIMB, IntakeState.INTAKE, RoutingState.IDLE, ClimberState.PRE_CLIMB);
 
     public final ElevatorState elevatorState;
     public final ArmState armState;
     public final IntakeState intakeState;
     public final RoutingState routingState;
+    public final ClimberState climberState;
+
+    private SuperState(
+        ElevatorState elevatorState,
+        ArmState armState,
+        IntakeState intakeState,
+        RoutingState routingState,
+        ClimberState climberState) {
+      this.elevatorState = elevatorState;
+      this.armState = armState;
+      this.intakeState = intakeState;
+      this.routingState = routingState;
+      this.climberState = climberState;
+    }
 
     private SuperState(
         ElevatorState elevatorState,
@@ -85,6 +96,28 @@ public class Superstructure {
       this.armState = armState;
       this.intakeState = intakeState;
       this.routingState = routingState;
+      this.climberState = ClimberState.IDLE;
+    }
+
+    private SuperState(
+        ElevatorState elevatorState,
+        ArmState armState,
+        IntakeState intakeState) {
+      this.elevatorState = elevatorState;
+      this.armState = armState;
+      this.intakeState = intakeState;
+      this.routingState = RoutingState.IDLE;
+      this.climberState = ClimberState.IDLE;
+    }
+
+    private SuperState(
+        ElevatorState elevatorState,
+        ArmState armState) {
+      this.elevatorState = elevatorState;
+      this.armState = armState;
+      this.intakeState = IntakeState.IDLE;
+      this.routingState = RoutingState.IDLE;
+      this.climberState = ClimberState.IDLE;
     }
   }
 
@@ -107,12 +140,16 @@ public class Superstructure {
   private final ElevatorSubsystem elevator;
   private final ArmSubsystem arm;
   private final IntakeSubsystem intake;
+  private final RoutingSubsystem routing;
+  private final ClimberSubsystem climber;
 
   /** Creates a new Superstructure. */
-  public Superstructure(ElevatorSubsystem elevator, ArmSubsystem arm, IntakeSubsystem intake) {
+  public Superstructure(ElevatorSubsystem elevator, ArmSubsystem arm, IntakeSubsystem intake, RoutingSubsystem routing, ClimberSubsystem climber) {
     this.elevator = elevator;
     this.arm = arm;
     this.intake = intake;
+    this.routing = routing;
+    this.climber = climber;
 
     addTransitions();
   }
@@ -249,6 +286,8 @@ public class Superstructure {
     elevator.setState(state.elevatorState);
     arm.setState(state.armState);
     intake.setState(state.intakeState);
+    routing.setState(state.routingState);
+    climber.setState(state.climberState);
   }
 
   private boolean atExtension(SuperState state) {

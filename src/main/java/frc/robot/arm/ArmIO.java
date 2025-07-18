@@ -15,6 +15,7 @@ public interface ArmIO {
 
     /***Position as reported by the cancoder on the carriage. More reliable for seeing where it is, can't change it here though*/
     public Rotation2d cancoderPosition = new Rotation2d();
+
     public double pivotVoltage = 0.0;
   }
 
