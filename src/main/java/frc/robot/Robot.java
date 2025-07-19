@@ -11,7 +11,7 @@ import frc.robot.elevator.ElevatorSubsystem;
 import frc.robot.intake.IntakeSubsystem;
 import frc.robot.shoulder.ShoulderSubsystem;
 
-public class Robot extends TimedRobot {
+public class Robot extends LoggedRobot {
 
   private final ElevatorSubsystem elevator =
       new ElevatorSubsystem();
