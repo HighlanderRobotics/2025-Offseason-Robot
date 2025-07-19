@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class ShoulderSubsystem extends SubsystemBase {
 
   public enum ShoulderState {
-    IDLE(new Rotation2d()); //this will not be the real number!! this is just a placeholder
+    IDLE(new Rotation2d()); // this will not be the real number!! this is just a placeholder
 
     private final Rotation2d angle;
 

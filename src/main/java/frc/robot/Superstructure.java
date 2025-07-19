@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import java.util.ArrayList;
-
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -16,11 +14,14 @@ import frc.robot.intake.IntakeSubsystem;
 import frc.robot.intake.IntakeSubsystem.IntakeState;
 import frc.robot.shoulder.ShoulderSubsystem;
 import frc.robot.shoulder.ShoulderSubsystem.ShoulderState;
+import java.util.ArrayList;
 
-public class Superstructure{
+public class Superstructure {
 
-  /**We should have a state for every single "pose" the robot will hit. Hopefully we can get named positions set up in cad to make this easier?
-   * */
+  /**
+   * We should have a state for every single "pose" the robot will hit. Hopefully we can get named
+   * positions set up in cad to make this easier?
+   */
   public enum SuperState {
     IDLE(ElevatorState.IDLE, ShoulderState.IDLE, IntakeState.IDLE);
 
@@ -36,15 +37,16 @@ public class Superstructure{
     }
   }
 
-    /**
+  /**
    * @param start first state
    * @param end second state
    * @param trigger trigger to make it go from the first state to the second (assuming it's already
    *     in the first state)
-   * @param cmd additional cmd to be run while transitioning between the start and end states. 
-   * Can be Commands.none() if nothing is needed beyond moving the subsystems
+   * @param cmd additional cmd to be run while transitioning between the start and end states. Can
+   *     be Commands.none() if nothing is needed beyond moving the subsystems
    */
-  public record Transition(SuperState start, SuperState end, Trigger trigger, Command cmd) {};
+  public record Transition(SuperState start, SuperState end, Trigger trigger, Command cmd) {}
+  ;
 
   private SuperState state = SuperState.IDLE;
   private SuperState prevState = SuperState.IDLE;
@@ -59,10 +61,7 @@ public class Superstructure{
 
   /** Creates a new Superstructure. */
   public Superstructure(
-    ElevatorSubsystem elevator,
-      ShoulderSubsystem shoulder,
-      IntakeSubsystem intake
-  ) {
+      ElevatorSubsystem elevator, ShoulderSubsystem shoulder, IntakeSubsystem intake) {
     this.elevator = elevator;
     this.shoulder = shoulder;
     this.intake = intake;
@@ -81,7 +80,7 @@ public class Superstructure{
   }
 
   public void addTransitions() {
-    //TODO
+    // TODO
   }
 
   private Command forceState(SuperState nextState) {
@@ -97,8 +96,8 @@ public class Superstructure{
   }
 
   private void setSubstates() {
-      elevator.setState(state.elevatorState);
-      shoulder.setState(state.shoulderState);
-      intake.setState(state.intakeState);
+    elevator.setState(state.elevatorState);
+    shoulder.setState(state.shoulderState);
+    intake.setState(state.intakeState);
   }
 }

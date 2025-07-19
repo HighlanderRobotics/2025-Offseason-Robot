@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class IntakeSubsystem extends SubsystemBase {
 
   public enum IntakeState {
-    IDLE(new Rotation2d()); //this will not be the real number!! this is just a placeholder
+    IDLE(new Rotation2d()); // this will not be the real number!! this is just a placeholder
 
     private final Rotation2d angle;
 
@@ -33,7 +33,7 @@ public class IntakeSubsystem extends SubsystemBase {
     // This method will be called once per scheduler run
   }
 
-    public void setState(IntakeState state) {
+  public void setState(IntakeState state) {
     this.state = state;
   }
 }
