@@ -48,6 +48,8 @@ public class ArmIOReal implements ArmIO {
         config.CurrentLimits.SupplyCurrentLimit = 20.0;
         config.CurrentLimits.SupplyCurrentLimitEnable = true;
     
+      //  config.Feedback.SensorToMechanismRatio = IntakePivotSubsystem.PIVOT_RATIO; idk if i need this need to look into config stuff
+
         motor.getConfigurator().apply(config);
         motor.optimizeBusUtilization();
     

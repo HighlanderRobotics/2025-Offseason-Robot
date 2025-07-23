@@ -24,6 +24,6 @@ import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
 import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
 import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 
-public class ArmSubsystem implements ArmIO {
+public class ArmSubsystem extends SubsystemBase {
     
 }
