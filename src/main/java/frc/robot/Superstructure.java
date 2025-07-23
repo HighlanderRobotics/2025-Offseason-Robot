@@ -55,18 +55,17 @@ public class Superstructure {
     PRE_L4(ElevatorState.PRE_L4, ArmState.PRE_L4),
     L4(ElevatorState.L4, ArmState.L4),
     POST_L4(ElevatorState.POST_L4, ArmState.PRE_L4),
-    INTAKE_ALGAE_REEF_HIGH(
-        ElevatorState.INTAKE_ALGAE_REEF_HIGH,
-        ArmState.INTAKE_ALGAE_REEF),
-    INTAKE_ALGAE_REEF_LOW(
-        ElevatorState.INTAKE_ALGAE_REEF_LOW,
-        ArmState.INTAKE_ALGAE_REEF),
-    INTAKE_ALGAE_GROUND(
-        ElevatorState.INTAKE_ALGAE_GROUND,
-        ArmState.INTAKE_ALGAE_GROUND),
+    INTAKE_ALGAE_REEF_HIGH(ElevatorState.INTAKE_ALGAE_REEF_HIGH, ArmState.INTAKE_ALGAE_REEF),
+    INTAKE_ALGAE_REEF_LOW(ElevatorState.INTAKE_ALGAE_REEF_LOW, ArmState.INTAKE_ALGAE_REEF),
+    INTAKE_ALGAE_GROUND(ElevatorState.INTAKE_ALGAE_GROUND, ArmState.INTAKE_ALGAE_GROUND),
     BARGE(ElevatorState.BARGE, ArmState.BARGE),
     PROCESSOR(ElevatorState.PROCESSOR, ArmState.PROCESSOR),
-    PRE_CLIMB(ElevatorState.IDLE, ArmState.CLIMB, IntakeState.INTAKE, RoutingState.IDLE, ClimberState.PRE_CLIMB);
+    PRE_CLIMB(
+        ElevatorState.IDLE,
+        ArmState.CLIMB,
+        IntakeState.INTAKE,
+        RoutingState.IDLE,
+        ClimberState.PRE_CLIMB);
 
     public final ElevatorState elevatorState;
     public final ArmState armState;
@@ -99,10 +98,7 @@ public class Superstructure {
       this.climberState = ClimberState.IDLE;
     }
 
-    private SuperState(
-        ElevatorState elevatorState,
-        ArmState armState,
-        IntakeState intakeState) {
+    private SuperState(ElevatorState elevatorState, ArmState armState, IntakeState intakeState) {
       this.elevatorState = elevatorState;
       this.armState = armState;
       this.intakeState = intakeState;
@@ -110,9 +106,7 @@ public class Superstructure {
       this.climberState = ClimberState.IDLE;
     }
 
-    private SuperState(
-        ElevatorState elevatorState,
-        ArmState armState) {
+    private SuperState(ElevatorState elevatorState, ArmState armState) {
       this.elevatorState = elevatorState;
       this.armState = armState;
       this.intakeState = IntakeState.IDLE;
@@ -144,7 +138,12 @@ public class Superstructure {
   private final ClimberSubsystem climber;
 
   /** Creates a new Superstructure. */
-  public Superstructure(ElevatorSubsystem elevator, ArmSubsystem arm, IntakeSubsystem intake, RoutingSubsystem routing, ClimberSubsystem climber) {
+  public Superstructure(
+      ElevatorSubsystem elevator,
+      ArmSubsystem arm,
+      IntakeSubsystem intake,
+      RoutingSubsystem routing,
+      ClimberSubsystem climber) {
     this.elevator = elevator;
     this.arm = arm;
     this.intake = intake;
@@ -185,7 +184,9 @@ public class Superstructure {
         new Transition(
             SuperState.IDLE,
             SuperState.L1,
-            new Trigger(() -> Robot.getCurrentCoralTarget() == ReefTarget.L1).and(Robot.scoreReq)));
+            new Trigger(() -> Robot.getCurrentCoralTarget() == ReefTarget.L1)
+                .and(Robot.scoreReq)
+                .and(new Trigger(() -> arm.hasCoral()))));
 
     transitions.add(
         new Transition(

@@ -29,8 +29,8 @@ public class ElevatorIOReal implements ElevatorIO {
           0.0); // TODO i still don't know which control request you would use when
 
   public ElevatorIOReal() {
-    leader = new TalonFX(0, "*"); // TODO don't forget about device ids
-    follower = new TalonFX(0, "*");
+    leader = new TalonFX(10, "*"); // TODO don't forget about device ids
+    follower = new TalonFX(11, "*");
 
     final TalonFXConfiguration motorConfig = new TalonFXConfiguration();
     motorConfig.Feedback.SensorToMechanismRatio =
@@ -44,7 +44,7 @@ public class ElevatorIOReal implements ElevatorIO {
     appliedVoltage = leader.getMotorVoltage();
     velocity = leader.getVelocity();
 
-    follower.setControl(new Follower(0, false));
+    follower.setControl(new Follower(10, false));
 
     BaseStatusSignal.setUpdateFrequencyForAll(50.0, position, appliedVoltage, velocity);
   }

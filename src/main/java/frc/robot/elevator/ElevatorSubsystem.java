@@ -5,6 +5,7 @@
 package frc.robot.elevator;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.function.DoubleSupplier;
@@ -12,8 +13,9 @@ import org.littletonrobotics.junction.Logger;
 
 public class ElevatorSubsystem extends SubsystemBase {
 
-  public static final double GEAR_RATIO = 0; // TODO
-  public static final double DRUM_RADIUS_METERS = 0; // TODO
+  public static final double GEAR_RATIO = 2.5 / 1.0; // TODO
+  public static final double DRUM_RADIUS_METERS = Units.inchesToMeters(1.751 / 2.0); // TODO
+  public static final double MAX_EXTENSION_METERS = Units.inchesToMeters(63.50); // TODO
 
   public enum ElevatorState {
     IDLE(0.0),
@@ -83,5 +85,9 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   public boolean atExtension(double expected) {
     return MathUtil.isNear(expected, inputs.positionMeters, 0.05);
+  }
+
+  public double getExtensionMeters() {
+    return inputs.positionMeters;
   }
 }

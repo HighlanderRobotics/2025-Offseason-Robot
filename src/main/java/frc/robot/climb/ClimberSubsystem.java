@@ -6,7 +6,6 @@ package frc.robot.climb;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.arm.ArmSubsystem.ArmState;
 import frc.robot.roller.RollerIO;
 import frc.robot.roller.RollerSubsystem;
 import org.littletonrobotics.junction.Logger;

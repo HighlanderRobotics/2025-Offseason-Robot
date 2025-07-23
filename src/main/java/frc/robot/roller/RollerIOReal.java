@@ -26,9 +26,9 @@ public class RollerIOReal implements RollerIO {
   private final StatusSignal<AngularVelocity> velocity;
   private final StatusSignal<Voltage> voltage;
 
-  public RollerIOReal(int[] ids, final TalonFXConfiguration config, boolean opposeLeader) {
-    for (int i : ids) {
-      motors.add(new TalonFX(i, "*"));
+  public RollerIOReal(final TalonFXConfiguration config, boolean opposeLeader, int... ids) {
+    for (int i = 0; i < ids.length; i++) { // TODO is this allowed
+      motors.add(new TalonFX(ids[i], "*"));
       motors.get(i).getConfigurator().apply(config);
     }
     for (int i = 1; i < motors.size(); i++) {

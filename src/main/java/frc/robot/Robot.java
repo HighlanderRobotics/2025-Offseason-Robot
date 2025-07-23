@@ -5,6 +5,10 @@
 package frc.robot;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Superstructure.SuperState;
@@ -14,6 +18,7 @@ import frc.robot.beambreak.BeambreakIOReal;
 import frc.robot.climb.ClimberIOReal;
 import frc.robot.climb.ClimberSubsystem;
 import frc.robot.elevator.ElevatorIOReal;
+import frc.robot.elevator.ElevatorIOSim;
 import frc.robot.elevator.ElevatorSubsystem;
 import frc.robot.intake.IntakeIOReal;
 import frc.robot.intake.IntakeSubsystem;
@@ -23,6 +28,8 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
@@ -62,38 +69,51 @@ public class Robot extends LoggedRobot {
   @AutoLogOutput private static AlgaeIntakeTarget algaeIntakeTarget = AlgaeIntakeTarget.STACK;
   @AutoLogOutput private static AlgaeScoreTarget algaeScoreTarget = AlgaeScoreTarget.NET;
 
+  public enum RobotType {
+    REAL,
+    SIM,
+    REPLAY
+  }
+
+  public static final RobotType ROBOT_TYPE = Robot.isReal() ? RobotType.REAL : RobotType.SIM;
+
   public static Trigger preScoreReq =
       new Trigger(() -> true); // TODO this would be the driver button
   public static Trigger scoreReq = new Trigger(() -> true);
   public static Trigger intakeAlgaeReq = new Trigger(() -> true);
   public static Trigger intakeCoralReq = new Trigger(() -> true);
 
-  private final ElevatorSubsystem elevator = new ElevatorSubsystem(new ElevatorIOReal());
+  private final ElevatorSubsystem elevator =
+      new ElevatorSubsystem(
+          ROBOT_TYPE != RobotType.SIM ? new ElevatorIOReal() : new ElevatorIOSim());
   private final ArmSubsystem arm =
       new ArmSubsystem(
           new ArmIOReal(),
-          new RollerIOReal(
-              new int[] {1},
-              new TalonFXConfiguration(),
-              false), // TODO so this is just embarrassing
+          new RollerIOReal(new TalonFXConfiguration(), false, 9),
           new BeambreakIOReal(0, false));
   private final IntakeSubsystem intake =
       new IntakeSubsystem(
-          new IntakeIOReal(), new RollerIOReal(new int[] {0}, new TalonFXConfiguration(), false));
+          new IntakeIOReal(), new RollerIOReal(new TalonFXConfiguration(), false, 13));
   private final RoutingSubsystem routing =
       new RoutingSubsystem(
-          new RollerIOReal(new int[] {1, 2}, new TalonFXConfiguration(), false),
-          new BeambreakIOReal(0, false)); // TODO ids
+          new RollerIOReal(new TalonFXConfiguration(), false, 14, 15),
+          new BeambreakIOReal(1, false)); // TODO ids
   private final ClimberSubsystem climber =
       new ClimberSubsystem(
-        new RollerIOReal(new int[] {1}, new TalonFXConfiguration(), false), 
-        new ClimberIOReal());
+          new RollerIOReal(new TalonFXConfiguration(), false, 17), new ClimberIOReal());
 
-  private final Superstructure superstructure = new Superstructure(elevator, arm, intake, routing, climber);
+  private final Superstructure superstructure =
+      new Superstructure(elevator, arm, intake, routing, climber);
+
+  private final LoggedMechanism2d elevatorMech2d =
+      new LoggedMechanism2d(3.0, Units.feetToMeters(4.0));
+  private final LoggedMechanismRoot2d
+      elevatorRoot = // CAD distance from origin to center of carriage at full retraction
+      elevatorMech2d.getRoot("Elevator", Units.inchesToMeters(21.5), 0.0);
 
   public Robot() {
     // Set up logging as per AdvantageKit docs
-    Logger.recordMetadata("ProjectName", "MyProject"); // Set a metadata value
+    Logger.recordMetadata("Codebase", "Offseason 2025"); // Set a metadata value
     if (isReal()) {
       Logger.addDataReceiver(new WPILOGWriter()); // Log to a USB stick ("/U/logs")
       Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
@@ -121,6 +141,16 @@ public class Robot extends LoggedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
+    Logger.recordOutput(
+        "Mechanism Poses",
+        new Pose3d[] {
+          new Pose3d( // first stage
+              new Translation3d(0, 0, elevator.getExtensionMeters() / 2.0), new Rotation3d()),
+          // carriage
+          new Pose3d(new Translation3d(0, 0, elevator.getExtensionMeters()), new Rotation3d())
+        });
+    if (Robot.ROBOT_TYPE != RobotType.REAL)
+      Logger.recordOutput("Mechanism/Elevator", elevatorMech2d);
     superstructure.periodic();
   }
 
