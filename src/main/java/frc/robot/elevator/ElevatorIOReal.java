@@ -37,6 +37,7 @@ public class ElevatorIOReal implements ElevatorIO {
 
   public ElevatorIOReal() {
     // congfig:
+    // TODO
     var config = new TalonFXConfiguration();
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
@@ -84,7 +85,7 @@ public class ElevatorIOReal implements ElevatorIO {
   }
 
   @Override
-  public void updateInputs(final ElevatorIOInputsAutoLogged inputs) {
+  public void updateInputs(final ElevatorIOInputs inputs) {
     // update inputs
     BaseStatusSignal.refreshAll(position, velocity, voltage, statorCurrent, supplyCurrent);
     inputs.positionMeters = position.getValueAsDouble();
@@ -101,7 +102,7 @@ public class ElevatorIOReal implements ElevatorIO {
   }
 
   @Override
-  public void setTarget(final double meters) {
+  public void setPositionTarget(final double meters) {
     motor.setControl(positionTorque.withPosition(meters));
   }
 

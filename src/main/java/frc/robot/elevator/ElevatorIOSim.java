@@ -10,8 +10,9 @@ import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 
 public class ElevatorIOSim implements ElevatorIO {
   private final ElevatorSim sim =
+  // TODO 
       new ElevatorSim(
-          DCMotor.getKrakenX60Foc(2),
+          DCMotor.getKrakenX60Foc(1),
           ElevatorSubsystem.GEAR_RATIO,
           Units.lbsToKilograms(7.0 + (3.25 / 2)),
           ElevatorSubsystem.DRUM_RADIUS_METERS,
@@ -31,7 +32,7 @@ public class ElevatorIOSim implements ElevatorIO {
       new ProfiledPIDController(40.0, 0.0, 0.1, new Constraints(5.0, 10.0));
 
   @Override
-  public void updateInputs(final ElevatorIOInputsAutoLogged inputs) {
+  public void updateInputs(final ElevatorIOInputs inputs) {
     sim.update(0.02);
     inputs.positionMeters = sim.getPositionMeters();
     inputs.velocityMetersPerSec = sim.getVelocityMetersPerSecond();
@@ -47,7 +48,7 @@ public class ElevatorIOSim implements ElevatorIO {
   }
 
   @Override
-  public void setTarget(final double meters) {
+  public void setPositionTarget(final double meters) {
     setVoltage(
         pid.calculate(sim.getPositionMeters(), meters) + ff.calculate(pid.getSetpoint().velocity));
   }

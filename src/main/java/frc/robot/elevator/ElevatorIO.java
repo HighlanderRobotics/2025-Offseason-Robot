@@ -12,11 +12,11 @@ public interface ElevatorIO {
     public double supplyCurrentAmps = 0.0;
   }
 
-  public void updateInputs(final ElevatorIOInputsAutoLogged inputs);
+  public void updateInputs(final ElevatorIOInputs inputs);
 
   public void setVoltage(final double volts);
 
-  public void setTarget(final double meters);
+  public void setPositionTarget(final double meters);
 
   public void setCurrent(final double amps);
 

@@ -19,6 +19,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import frc.robot.Robot;
 import frc.robot.Robot.RobotType;
+import frc.robot.elevator.ElevatorIO.ElevatorIOInputs;
+
 import java.util.function.DoubleSupplier;
 import java.util.function.Function;
 import org.littletonrobotics.junction.Logger;
@@ -28,23 +30,36 @@ public class ElevatorSubsystem extends SubsystemBase {
   // TODO CHANGE THESE VALUES TO THE REAL ONES
   public static final double GEAR_RATIO = 12.5 / 1.0;
   public static final double DRUM_RADIUS_METERS = Units.inchesToMeters(1.751 / 2.0);
-  public static final Rotation2d ELEVATOR_ANGLE = Rotation2d.fromDegrees(65.0);
+  public static final Rotation2d ELEVATOR_ANGLE = Rotation2d.fromDegrees(90.0);
 
-  public static final double MAX_EXTENSION_METERS = Units.inchesToMeters(63.50);
+  public static final double MAX_EXTENSION_METERS = Units.inchesToMeters(68.50);
+
+  public static final double IDLE_EXTENSION_METERS = Units.inchesToMeters(18);
+
+  //coral
+  public static final double PRE_INTAKE_CORAL_GROUND_EXTENSION = Units.inchesToMeters(5.0);
+  public static final double INTAKE_CORAL_GROUND_EXTENSION = Units.inchesToMeters(5.0);
 
   public static final double L1_EXTENSION_METERS = Units.inchesToMeters(18);
+  public static final double PRE_L2_EXTENSION_METERS = Units.inchesToMeters(16.0);
   public static final double L2_EXTENSION_METERS = Units.inchesToMeters(16.0);
+  public static final double PRE_L3_EXTENSION_METERS = Units.inchesToMeters(31.5);
   public static final double L3_EXTENSION_METERS = Units.inchesToMeters(31.5);
+  public static final double PRE_L4_EXTENSION_METERS = Units.inchesToMeters(58.0);
   public static final double L4_EXTENSION_METERS = Units.inchesToMeters(58.0);
+  public static final double POST_L4_EXTENSION_METERS = Units.inchesToMeters(58.0);
 
+  //algae
   public static final double INTAKE_ALGAE_GROUND_EXTENSION = Units.inchesToMeters(5.0);
-  public static final double INTAKE_ALGAE_LOW_EXTENSION = Units.inchesToMeters(25.4);
-  public static final double INTAKE_ALGAE_HIGH_EXTENSION = Units.inchesToMeters(40.5);
+  public static final double INTAKE_ALGAE_REEF_LOW_EXTENSION = Units.inchesToMeters(25.4);
+  public static final double INTAKE_ALGAE_REEF_HIGH_EXTENSION = Units.inchesToMeters(40.5);
 
-  public static final double ALGAE_NET_EXTENSION = Units.inchesToMeters(61.5);
+  public static final double ALGAE_BARGE_EXTENSION = Units.inchesToMeters(61.5);
   public static final double ALGAE_PROCESSOR_EXTENSION = 0.0;
 
-  //  public static final double AMP_EXTENSION_METERS = 0.6;
+  //climbing 
+  public static final double PRE_CLIMB_EXTENSION = Units.inchesToMeters(61.5);
+  public static final double CLIMB_EXTENSION = Units.inchesToMeters(61.5);
 
   private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
   private final ElevatorIO io;
@@ -58,6 +73,37 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   private final SysIdRoutine voltageSysid;
   private final SysIdRoutine currentSysid;
+
+  public enum ElevatorState {
+    IDLE(IDLE_EXTENSION_METERS),
+    PRE_INTAKE_CORAL_GROUND(PRE_INTAKE_CORAL_GROUND_EXTENSION),
+    INTAKE_CORAL_GROUND(INTAKE_CORAL_GROUND_EXTENSION),
+    L1(L1_EXTENSION_METERS),
+    PRE_L2(PRE_L2_EXTENSION_METERS),
+    L2(L2_EXTENSION_METERS),
+    PRE_L3(PRE_L3_EXTENSION_METERS),
+    L3(L3_EXTENSION_METERS),
+    PRE_L4(PRE_L4_EXTENSION_METERS),
+    L4(L4_EXTENSION_METERS),
+    POST_L4(POST_L4_EXTENSION_METERS),
+    INTAKE_ALGAE_REEF_HIGH(INTAKE_ALGAE_REEF_HIGH_EXTENSION),
+    INTAKE_ALGAE_REEF_LOW(INTAKE_ALGAE_REEF_LOW_EXTENSION),
+    INTAKE_ALGAE_GROUND(INTAKE_ALGAE_GROUND_EXTENSION),
+    BARGE(ALGAE_BARGE_EXTENSION),
+    PROCESSOR(ALGAE_PROCESSOR_EXTENSION),
+    PRE_CLIMB(PRE_CLIMB_EXTENSION),
+    CLIMB(CLIMB_EXTENSION);
+
+    private final double extensionMeters;
+
+    private ElevatorState(double extensionMeters) {
+      this.extensionMeters = extensionMeters;
+    }
+
+    public double getExtensionMeters() {
+      return extensionMeters;
+    }
+  }
 
   /** Creates a new ElevatorSubsystem. */
   public ElevatorSubsystem(ElevatorIO io) {
@@ -99,8 +145,9 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+    @Override
     io.updateInputs(inputs);
-    // Logger.processInputs("Elevator", inputs);
+    Logger.processInputs("Elevator", inputs);
     // currentFilterValue = currentFilter.calculate(inputs.statorCurrentAmps);
 
     // carriage.setLength(inputs.positionMeters);
@@ -122,7 +169,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   public Command setExtension(DoubleSupplier meters) {
     return this.run(
         () -> {
-          io.setTarget(meters.getAsDouble());
+          io.setPositionTarget(meters.getAsDouble());
           setpoint = meters.getAsDouble();
           if (Robot.ROBOT_TYPE != RobotType.REAL)
             Logger.recordOutput("Elevator/Setpoint", setpoint);
