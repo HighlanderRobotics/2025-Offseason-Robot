@@ -3,6 +3,7 @@ package frc.robot.elevator;
 import org.littletonrobotics.junction.AutoLog;
 
 public interface ElevatorIO {
+
   @AutoLog
   public static class ElevatorIOInputs {
     public double positionMeters = 0.0;
@@ -12,7 +13,7 @@ public interface ElevatorIO {
     public double supplyCurrentAmps = 0.0;
   }
 
-  public void updateInputs(final ElevatorIOInputs inputs);
+  public void updateInputs(final ElevatorIOInputsAutoLogged inputs);
 
   public void setVoltage(final double volts);
 

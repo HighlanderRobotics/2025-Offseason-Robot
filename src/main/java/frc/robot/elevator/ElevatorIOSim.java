@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 
 public class ElevatorIOSim implements ElevatorIO {
   private final ElevatorSim sim =
-  // TODO 
+      // TODO
       new ElevatorSim(
           DCMotor.getKrakenX60Foc(1),
           ElevatorSubsystem.GEAR_RATIO,
@@ -32,7 +32,7 @@ public class ElevatorIOSim implements ElevatorIO {
       new ProfiledPIDController(40.0, 0.0, 0.1, new Constraints(5.0, 10.0));
 
   @Override
-  public void updateInputs(final ElevatorIOInputs inputs) {
+  public void updateInputs(final ElevatorIOInputsAutoLogged inputs) {
     sim.update(0.02);
     inputs.positionMeters = sim.getPositionMeters();
     inputs.velocityMetersPerSec = sim.getVelocityMetersPerSecond();

@@ -85,7 +85,7 @@ public class ElevatorIOReal implements ElevatorIO {
   }
 
   @Override
-  public void updateInputs(final ElevatorIOInputs inputs) {
+  public void updateInputs(final ElevatorIOInputsAutoLogged inputs) {
     // update inputs
     BaseStatusSignal.refreshAll(position, velocity, voltage, statorCurrent, supplyCurrent);
     inputs.positionMeters = position.getValueAsDouble();

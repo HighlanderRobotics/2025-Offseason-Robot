@@ -19,8 +19,6 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import frc.robot.Robot;
 import frc.robot.Robot.RobotType;
-import frc.robot.elevator.ElevatorIO.ElevatorIOInputs;
-
 import java.util.function.DoubleSupplier;
 import java.util.function.Function;
 import org.littletonrobotics.junction.Logger;
@@ -36,7 +34,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   public static final double IDLE_EXTENSION_METERS = Units.inchesToMeters(18);
 
-  //coral
+  // coral
   public static final double PRE_INTAKE_CORAL_GROUND_EXTENSION = Units.inchesToMeters(5.0);
   public static final double INTAKE_CORAL_GROUND_EXTENSION = Units.inchesToMeters(5.0);
 
@@ -49,7 +47,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   public static final double L4_EXTENSION_METERS = Units.inchesToMeters(58.0);
   public static final double POST_L4_EXTENSION_METERS = Units.inchesToMeters(58.0);
 
-  //algae
+  // algae
   public static final double INTAKE_ALGAE_GROUND_EXTENSION = Units.inchesToMeters(5.0);
   public static final double INTAKE_ALGAE_REEF_LOW_EXTENSION = Units.inchesToMeters(25.4);
   public static final double INTAKE_ALGAE_REEF_HIGH_EXTENSION = Units.inchesToMeters(40.5);
@@ -57,7 +55,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   public static final double ALGAE_BARGE_EXTENSION = Units.inchesToMeters(61.5);
   public static final double ALGAE_PROCESSOR_EXTENSION = 0.0;
 
-  //climbing 
+  // climbing
   public static final double PRE_CLIMB_EXTENSION = Units.inchesToMeters(61.5);
   public static final double CLIMB_EXTENSION = Units.inchesToMeters(61.5);
 
@@ -127,25 +125,10 @@ public class ElevatorSubsystem extends SubsystemBase {
             new Mechanism((volts) -> io.setCurrent(volts.in(Volts)), null, this));
   }
 
-  public enum ElevatorState {
-    IDLE(0.0); // this will not be the real number!! this is just a placeholder
-
-    private final double extensionMeters;
-
-    private ElevatorState(double extensionMeters) {
-      this.extensionMeters = extensionMeters;
-    }
-
-    public double getExtensionMeters() {
-      return extensionMeters;
-    }
-  }
-
   private ElevatorState state = ElevatorState.IDLE;
 
   @Override
   public void periodic() {
-    @Override
     io.updateInputs(inputs);
     Logger.processInputs("Elevator", inputs);
     // currentFilterValue = currentFilter.calculate(inputs.statorCurrentAmps);
