@@ -23,7 +23,24 @@ public class Superstructure {
    * positions set up in cad to make this easier?
    */
   public enum SuperState {
-    IDLE(ElevatorState.IDLE, ShoulderState.IDLE, IntakeState.IDLE);
+    IDLE(ElevatorState.IDLE, ShoulderState.IDLE, IntakeState.IDLE),
+    PRE_INTAKE_CORAL_GROUND(ElevatorState.PRE_INTAKE_CORAL_GROUND, ShoulderState.IDLE, IntakeState.IDLE),
+    INTAKE_CORAL_GROUND(ElevatorState.INTAKE_CORAL_GROUND, ShoulderState.IDLE, IntakeState.IDLE),
+    L1(ElevatorState.L1, ShoulderState.IDLE, IntakeState.IDLE),
+    PRE_L2(ElevatorState.PRE_L2, ShoulderState.IDLE, IntakeState.IDLE),
+    L2(ElevatorState.L2, ShoulderState.IDLE, IntakeState.IDLE),
+    PRE_L3(ElevatorState.PRE_L3, ShoulderState.IDLE, IntakeState.IDLE),
+    L3(ElevatorState.L3, ShoulderState.IDLE, IntakeState.IDLE),
+    PRE_L4(ElevatorState.PRE_L4, ShoulderState.IDLE, IntakeState.IDLE),
+    L4(ElevatorState.L4, ShoulderState.IDLE, IntakeState.IDLE),
+    POST_L4(ElevatorState.POST_L4, ShoulderState.IDLE, IntakeState.IDLE),
+    INTAKE_ALGAE_REEF_HIGH(ElevatorState.INTAKE_ALGAE_REEF_HIGH, ShoulderState.IDLE, IntakeState.IDLE),
+    INTAKE_ALGAE_REEF_LOW(ElevatorState.INTAKE_ALGAE_REEF_LOW, ShoulderState.IDLE, IntakeState.IDLE),
+    INTAKE_ALGAE_GROUND(ElevatorState.INTAKE_ALGAE_GROUND, ShoulderState.IDLE, IntakeState.IDLE),
+    BARGE(ElevatorState.BARGE, ShoulderState.IDLE, IntakeState.IDLE),
+    PROCESSOR(ElevatorState.PROCESSOR, ShoulderState.IDLE, IntakeState.IDLE),
+    PRE_CLIMB(ElevatorState.PRE_CLIMB, ShoulderState.IDLE, IntakeState.IDLE),
+    CLIMB(ElevatorState.CLIMB, ShoulderState.IDLE, IntakeState.IDLE);
 
     public final ElevatorState elevatorState;
     public final ShoulderState shoulderState;
