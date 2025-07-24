@@ -15,7 +15,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   public static final double GEAR_RATIO = 2.5 / 1.0; // TODO
   public static final double DRUM_RADIUS_METERS = Units.inchesToMeters(1.751 / 2.0); // TODO
-  public static final double MAX_EXTENSION_METERS = Units.inchesToMeters(63.50); // TODO
+  public static final double MAX_EXTENSION_METERS = Units.inchesToMeters(68.50);
 
   public enum ElevatorState {
     IDLE(0.0),
@@ -76,6 +76,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         () -> {
           io.setPosition(meters.getAsDouble());
           setpoint = meters.getAsDouble();
+          Logger.recordOutput("Elevator/Setpoint", setpoint);
         });
   }
 

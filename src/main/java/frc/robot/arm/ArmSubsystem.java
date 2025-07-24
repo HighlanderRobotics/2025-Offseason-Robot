@@ -82,15 +82,17 @@ public class ArmSubsystem extends RollerSubsystem {
   }
 
   public Command setPivotAngle(Supplier<Rotation2d> target) {
-    return this.run(
+    return this.runOnce(
         () -> {
           armIO.setPivotAngle(target.get());
           setpoint = target.get();
         });
   }
 
+  // TODO this is cooked apparently because they both require the arm but it's the default command
+  // so i also can't just proxy it
   public Command setStateAngleVoltage() { // i'll take awful method names for 500, alex
-    return Commands.parallel(
+    return Commands.sequence(
         setPivotAngle(() -> state.getPivotAngle()),
         setRollerVoltage(() -> state.getRollerVoltage()));
   }

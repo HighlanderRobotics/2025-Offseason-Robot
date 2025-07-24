@@ -9,6 +9,9 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Superstructure.SuperState;
@@ -29,6 +32,7 @@ import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
 import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
@@ -77,12 +81,14 @@ public class Robot extends LoggedRobot {
 
   public static final RobotType ROBOT_TYPE = Robot.isReal() ? RobotType.REAL : RobotType.SIM;
 
+  // ---define triggers---
   public static Trigger preScoreReq =
       new Trigger(() -> true); // TODO this would be the driver button
   public static Trigger scoreReq = new Trigger(() -> true);
   public static Trigger intakeAlgaeReq = new Trigger(() -> true);
   public static Trigger intakeCoralReq = new Trigger(() -> true);
 
+  // ---instantiate subsystems---
   private final ElevatorSubsystem elevator =
       new ElevatorSubsystem(
           ROBOT_TYPE != RobotType.SIM ? new ElevatorIOReal() : new ElevatorIOSim());
@@ -102,45 +108,65 @@ public class Robot extends LoggedRobot {
       new ClimberSubsystem(
           new RollerIOReal(new TalonFXConfiguration(), false, 17), new ClimberIOReal());
 
+  // ---instantiate superstructure---
   private final Superstructure superstructure =
       new Superstructure(elevator, arm, intake, routing, climber);
 
+  // ---instantiate mechanism sims---
   private final LoggedMechanism2d elevatorMech2d =
       new LoggedMechanism2d(3.0, Units.feetToMeters(4.0));
-  private final LoggedMechanismRoot2d
-      elevatorRoot = // CAD distance from origin to center of carriage at full retraction
-      elevatorMech2d.getRoot("Elevator", Units.inchesToMeters(21.5), 0.0);
+  private final LoggedMechanismRoot2d elevatorRoot =
+      elevatorMech2d.getRoot(
+          "Elevator",
+          Units.inchesToMeters(21.5),
+          0.0); // CAD distance from origin to center of carriage at full retraction
+  private final LoggedMechanismLigament2d carriageLigament =
+      new LoggedMechanismLigament2d("Carriage", 0, 90);
 
   public Robot() {
-    // Set up logging as per AdvantageKit docs
+    // ---Set up logging as per AdvantageKit docs---
     Logger.recordMetadata("Codebase", "Offseason 2025"); // Set a metadata value
-    if (isReal()) {
-      Logger.addDataReceiver(new WPILOGWriter()); // Log to a USB stick ("/U/logs")
-      Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
-    } else {
-      setUseTiming(false); // Run as fast as possible
-      String logPath =
-          LogFileUtil
-              .findReplayLog(); // Pull the replay log from AdvantageScope (or prompt the user)
-      Logger.setReplaySource(new WPILOGReader(logPath)); // Read replay log
-      Logger.addDataReceiver(
-          new WPILOGWriter(
-              LogFileUtil.addPathSuffix(logPath, "_sim"))); // Save outputs to a new log
+    switch (ROBOT_TYPE) {
+      case REAL:
+        Logger.addDataReceiver(new WPILOGWriter("/U")); // Log to a USB stick
+        Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
+        new PowerDistribution(1, ModuleType.kRev); // Enables power distribution logging
+        break;
+      case REPLAY:
+        setUseTiming(false); // Run as fast as possible
+        String logPath =
+            LogFileUtil
+                .findReplayLog(); // Pull the replay log from AdvantageScope (or prompt the user)
+        Logger.setReplaySource(new WPILOGReader(logPath)); // Read replay log
+        Logger.addDataReceiver(
+            new WPILOGWriter(
+                LogFileUtil.addPathSuffix(logPath, "_sim"))); // Save outputs to a new log
+        break;
+      case SIM:
+        Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
+        break;
     }
     Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may
     // be added.
 
-    // Set default commands for each subsystem
+    // ---Set default commands for each subsystem---
     elevator.setDefaultCommand(
         elevator.setStateExtension()); // TODO not sure if this stuff needs to be hold?
     arm.setDefaultCommand(arm.setStateAngleVoltage());
     routing.setDefaultCommand(routing.setStateRollerVoltage());
     intake.setDefaultCommand(intake.setStateAngleVoltage());
+
+    // ---SmartDashboard bindings---
+    SmartDashboard.putData("elevator sim test", elevator.setExtension(() -> 1));
+
+    // ---add sim mechanisms---
+    elevatorRoot.append(carriageLigament);
   }
 
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
+
     Logger.recordOutput(
         "Mechanism Poses",
         new Pose3d[] {
@@ -149,8 +175,10 @@ public class Robot extends LoggedRobot {
           // carriage
           new Pose3d(new Translation3d(0, 0, elevator.getExtensionMeters()), new Rotation3d())
         });
+    carriageLigament.setLength(elevator.getExtensionMeters());
     if (Robot.ROBOT_TYPE != RobotType.REAL)
       Logger.recordOutput("Mechanism/Elevator", elevatorMech2d);
+
     superstructure.periodic();
   }
 

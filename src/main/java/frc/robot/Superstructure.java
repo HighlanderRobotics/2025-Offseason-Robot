@@ -158,6 +158,7 @@ public class Superstructure {
   }
 
   public void addTransitions() {
+    // ----Intake coral----
     transitions.add(
         new Transition(SuperState.IDLE, SuperState.PRE_INTAKE_CORAL_GROUND, Robot.intakeCoralReq));
 
@@ -294,7 +295,7 @@ public class Superstructure {
   private boolean atExtension(SuperState state) {
     return elevator.atExtension(state.elevatorState.getExtensionMeters())
         && arm.atAngle(state.armState.getPivotAngle())
-        && intake.atAngle(state.intakeState.getAngle());
+        && intake.atAngle(state.intakeState.getPivotAngle());
   }
 
   private boolean atExtension() {

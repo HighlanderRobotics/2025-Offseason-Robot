@@ -45,13 +45,15 @@ public class ElevatorIOSim implements ElevatorIO {
   public void updateInputs(ElevatorIOInputs inputs) {
     sim.update(0.02);
     inputs.positionMeters = sim.getPositionMeters();
-    inputs.voltage = inputs.velocityMetersPerSec = sim.getVelocityMetersPerSecond();
+    inputs.voltage = volts;
+    inputs.velocityMetersPerSec = sim.getVelocityMetersPerSecond();
   }
 
   @Override
   public void setPosition(double positionMeters) {
-    sim.setInputVoltage(
+    volts =
         pid.calculate(sim.getPositionMeters(), positionMeters)
-            + ff.calculate(pid.getSetpoint().velocity));
+            + ff.calculate(pid.getSetpoint().velocity);
+    sim.setInputVoltage(volts);
   }
 }

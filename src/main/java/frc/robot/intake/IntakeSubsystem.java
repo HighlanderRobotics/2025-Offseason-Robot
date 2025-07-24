@@ -20,20 +20,20 @@ public class IntakeSubsystem extends RollerSubsystem {
     IDLE(new Rotation2d(), 0.0),
     INTAKE(new Rotation2d(), 0.0);
 
-    private final Rotation2d angle;
-    private final double voltage;
+    private final Rotation2d pivotAngle;
+    private final double rollerVoltage;
 
-    private IntakeState(Rotation2d angle, double voltage) {
-      this.angle = angle;
-      this.voltage = voltage;
+    private IntakeState(Rotation2d pivotAngle, double rollerVoltage) {
+      this.pivotAngle = pivotAngle;
+      this.rollerVoltage = rollerVoltage;
     }
 
-    public Rotation2d getAngle() {
-      return angle;
+    public Rotation2d getPivotAngle() {
+      return pivotAngle;
     }
 
-    public double getVoltage() {
-      return voltage;
+    public double getRollerVoltage() {
+      return rollerVoltage;
     }
   }
 
@@ -61,16 +61,19 @@ public class IntakeSubsystem extends RollerSubsystem {
   }
 
   public Command setPivotAngle(Supplier<Rotation2d> target) {
-    return this.run(
+    return this.runOnce(
         () -> {
           io.setPivotAngle(target.get());
           setpoint = target.get();
         });
   }
 
+  // TODO this is cooked apparently because they both require the arm but it's the default command
+  // so i also can't just proxy it
   public Command setStateAngleVoltage() { // i'll take awful method names for 500, alex
-    return Commands.parallel(
-        setPivotAngle(() -> state.getAngle()), setRollerVoltage(() -> state.getVoltage()));
+    return Commands.sequence(
+        setPivotAngle(() -> state.getPivotAngle()),
+        setRollerVoltage(() -> state.getRollerVoltage()));
   }
 
   public boolean atAngle(Rotation2d target) {
