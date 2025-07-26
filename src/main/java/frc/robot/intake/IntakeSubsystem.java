@@ -68,8 +68,6 @@ public class IntakeSubsystem extends RollerSubsystem {
         });
   }
 
-  // TODO this is cooked apparently because they both require the arm but it's the default command
-  // so i also can't just proxy it
   public Command setStateAngleVoltage() { // i'll take awful method names for 500, alex
     return Commands.sequence(
         setPivotAngle(() -> state.getPivotAngle()),

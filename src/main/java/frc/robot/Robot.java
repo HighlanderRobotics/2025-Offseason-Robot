@@ -157,7 +157,9 @@ public class Robot extends LoggedRobot {
     intake.setDefaultCommand(intake.setStateAngleVoltage());
 
     // ---SmartDashboard bindings---
-    SmartDashboard.putData("elevator sim test", elevator.setExtension(() -> 1));
+    SmartDashboard.putData("idle", superstructure.changeStateTo(() -> SuperState.IDLE));
+    SmartDashboard.putData("l1", superstructure.changeStateTo(() -> SuperState.L1));
+    SmartDashboard.putData("l2", superstructure.changeStateTo(() -> SuperState.L2));
 
     // ---add sim mechanisms---
     elevatorRoot.append(carriageLigament);

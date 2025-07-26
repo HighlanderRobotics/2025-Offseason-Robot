@@ -9,6 +9,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.function.DoubleSupplier;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class ElevatorSubsystem extends SubsystemBase {
@@ -18,22 +19,23 @@ public class ElevatorSubsystem extends SubsystemBase {
   public static final double MAX_EXTENSION_METERS = Units.inchesToMeters(68.50);
 
   public enum ElevatorState {
+    // i don't trust l4 or barge one bit
     IDLE(0.0),
-    PRE_INTAKE_CORAL_GROUND(0.0),
-    INTAKE_CORAL_GROUND(0.0),
-    L1(0.0),
-    PRE_L2(0.0),
-    L2(0.0),
-    PRE_L3(0.0),
-    L3(0.0),
-    PRE_L4(0.0),
-    L4(0.0),
-    POST_L4(0.0),
-    INTAKE_ALGAE_REEF_HIGH(0.0),
-    INTAKE_ALGAE_REEF_LOW(0.0),
-    INTAKE_ALGAE_GROUND(0.0),
-    BARGE(0.0),
-    PROCESSOR(0.0);
+    PRE_INTAKE_CORAL_GROUND(Units.inchesToMeters(29.941)),
+    INTAKE_CORAL_GROUND(Units.inchesToMeters(18.103)),
+    L1(Units.inchesToMeters(21.523)),
+    PRE_L2(Units.inchesToMeters(11.984)),
+    L2(Units.inchesToMeters(11.5)),
+    PRE_L3(Units.inchesToMeters(26.852)),
+    L3(Units.inchesToMeters(25.8)),
+    PRE_L4(Units.inchesToMeters(61.5)),
+    L4(Units.inchesToMeters(55)),
+    POST_L4(Units.inchesToMeters(43.405)),
+    INTAKE_ALGAE_REEF_HIGH(Units.inchesToMeters(45)),
+    INTAKE_ALGAE_REEF_LOW(Units.inchesToMeters(28)),
+    INTAKE_ALGAE_GROUND(Units.inchesToMeters(18.8)),
+    BARGE(Units.inchesToMeters(61.5)),
+    PROCESSOR(Units.inchesToMeters(7));
 
     private final double extensionMeters;
 
@@ -46,8 +48,12 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
   }
 
-  private ElevatorState state = ElevatorState.IDLE;
+  @AutoLogOutput(key = "Elevator/State")
+  public ElevatorState state = ElevatorState.IDLE;
 
+  private ElevatorState prevState = ElevatorState.IDLE;
+
+  @AutoLogOutput(key = "Elevator/Setpoint")
   private double setpoint = 0.0;
 
   private final ElevatorIO io;
@@ -60,9 +66,6 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // Sets the elevator to the height corresponding to the current state of the robot
-    // Arm, intake, and any future subsystems should more or less follow this same pattern
-    // (additional logic might be needed though)
     io.updateInputs(inputs);
     Logger.processInputs("Elevator", inputs);
   }

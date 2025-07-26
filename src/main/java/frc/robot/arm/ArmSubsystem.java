@@ -13,26 +13,28 @@ import frc.robot.beambreak.BeambreakIOInputsAutoLogged;
 import frc.robot.roller.RollerIO;
 import frc.robot.roller.RollerSubsystem;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 /*** Works kinda the same as the intake */
 public class ArmSubsystem extends RollerSubsystem {
 
   public enum ArmState {
+    // i actually have no idea which direction is positive
     IDLE(Rotation2d.fromDegrees(0), 0.0),
     INTAKE_CORAL_GROUND(Rotation2d.fromDegrees(180), 0.0),
-    L1(new Rotation2d(), 0.0),
-    PRE_L2(new Rotation2d(), 0.0),
-    L2(new Rotation2d(), 0.0),
-    PRE_L3(new Rotation2d(), 0.0),
-    L3(new Rotation2d(), 0.0),
-    PRE_L4(new Rotation2d(), 0.0),
-    L4(new Rotation2d(), 0.0),
+    L1(Rotation2d.fromDegrees(202.171), 0.0),
+    PRE_L2(Rotation2d.fromDegrees(360 - 128.445), 0.0),
+    L2(Rotation2d.fromDegrees(330), 0.0),
+    PRE_L3(Rotation2d.fromDegrees(360 - 128.445), 0.0),
+    L3(Rotation2d.fromDegrees(330), 0.0),
+    PRE_L4(Rotation2d.fromDegrees(360 - 36), 0.0),
+    L4(Rotation2d.fromDegrees(360 - 90), 0.0),
     INTAKE_ALGAE_REEF(Rotation2d.fromDegrees(90), 0.0),
-    INTAKE_ALGAE_GROUND(new Rotation2d(), 0.0),
-    BARGE(new Rotation2d(), 0.0),
+    INTAKE_ALGAE_GROUND(Rotation2d.fromDegrees(360 - 131), 0.0),
+    BARGE(Rotation2d.fromDegrees(360 - 55), 0.0),
     PROCESSOR(Rotation2d.fromDegrees(90), 0.0),
-    CLIMB(new Rotation2d(), 0.0);
+    CLIMB(Rotation2d.fromDegrees(300), 0.0);
 
     private final Rotation2d pivotAngle;
     private final double rollerVoltage; // TODO big todo
@@ -51,8 +53,10 @@ public class ArmSubsystem extends RollerSubsystem {
     }
   }
 
+  @AutoLogOutput(key = "Arm/Setpoint")
   private Rotation2d setpoint = Rotation2d.kZero;
 
+  @AutoLogOutput(key = "Arm/State")
   private ArmState state = ArmState.IDLE;
 
   private final ArmIO armIO;
@@ -89,8 +93,6 @@ public class ArmSubsystem extends RollerSubsystem {
         });
   }
 
-  // TODO this is cooked apparently because they both require the arm but it's the default command
-  // so i also can't just proxy it
   public Command setStateAngleVoltage() { // i'll take awful method names for 500, alex
     return Commands.sequence(
         setPivotAngle(() -> state.getPivotAngle()),

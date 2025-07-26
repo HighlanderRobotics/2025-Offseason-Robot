@@ -20,6 +20,7 @@ import frc.robot.intake.IntakeSubsystem.IntakeState;
 import frc.robot.routing.RoutingSubsystem;
 import frc.robot.routing.RoutingSubsystem.RoutingState;
 import java.util.ArrayList;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 public class Superstructure {
@@ -150,7 +151,7 @@ public class Superstructure {
     this.routing = routing;
     this.climber = climber;
 
-    addTransitions();
+    // addTransitions();
   }
 
   public void periodic() {
@@ -282,6 +283,10 @@ public class Superstructure {
               setSubstates();
             })
         .ignoringDisable(true);
+  }
+
+  public Command changeStateTo(Supplier<SuperState> state) {
+    return changeStateTo(state.get());
   }
 
   private void setSubstates() {
