@@ -8,6 +8,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.Robot;
 import frc.robot.beambreak.BeambreakIO;
 import frc.robot.beambreak.BeambreakIOInputsAutoLogged;
 import frc.robot.roller.RollerIO;
@@ -18,14 +19,17 @@ import org.littletonrobotics.junction.Logger;
 
 /*** Works kinda the same as the intake */
 public class ArmSubsystem extends RollerSubsystem {
+  public static final double GEAR_RATIO = (44.0 / 16.0) * 23.0;
 
   public enum ArmState {
     // i actually have no idea which direction is positive
     IDLE(Rotation2d.fromDegrees(0), 0.0),
     INTAKE_CORAL_GROUND(Rotation2d.fromDegrees(180), 0.0),
-    L1(Rotation2d.fromDegrees(202.171), 0.0),
+    // L1(Rotation2d.fromDegrees(202.171), 0.0),
+    L1(Rotation2d.fromDegrees(-157), 0.0),
     PRE_L2(Rotation2d.fromDegrees(360 - 128.445), 0.0),
-    L2(Rotation2d.fromDegrees(330), 0.0),
+    // L2(Rotation2d.fromDegrees(330), 0.0),
+    L2(Rotation2d.fromDegrees(-30), 0.0),
     PRE_L3(Rotation2d.fromDegrees(360 - 128.445), 0.0),
     L3(Rotation2d.fromDegrees(330), 0.0),
     PRE_L4(Rotation2d.fromDegrees(360 - 36), 0.0),
@@ -90,6 +94,7 @@ public class ArmSubsystem extends RollerSubsystem {
         () -> {
           armIO.setPivotAngle(target.get());
           setpoint = target.get();
+          Logger.recordOutput("Arm/Setpoint", setpoint);
         });
   }
 
@@ -105,5 +110,9 @@ public class ArmSubsystem extends RollerSubsystem {
 
   public boolean hasCoral() {
     return bbInputs.get;
+  }
+
+  public Rotation2d getAngle() {
+    return Robot.isReal() ? inputs.cancoderPosition : inputs.motorPosition;
   }
 }

@@ -12,10 +12,13 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Superstructure.SuperState;
 import frc.robot.arm.ArmIOReal;
+import frc.robot.arm.ArmIOSim;
 import frc.robot.arm.ArmSubsystem;
 import frc.robot.beambreak.BeambreakIOReal;
 import frc.robot.climb.ClimberIOReal;
@@ -26,6 +29,7 @@ import frc.robot.elevator.ElevatorSubsystem;
 import frc.robot.intake.IntakeIOReal;
 import frc.robot.intake.IntakeSubsystem;
 import frc.robot.roller.RollerIOReal;
+import frc.robot.roller.RollerIOSim;
 import frc.robot.routing.RoutingSubsystem;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.LogFileUtil;
@@ -94,8 +98,10 @@ public class Robot extends LoggedRobot {
           ROBOT_TYPE != RobotType.SIM ? new ElevatorIOReal() : new ElevatorIOSim());
   private final ArmSubsystem arm =
       new ArmSubsystem(
-          new ArmIOReal(),
-          new RollerIOReal(new TalonFXConfiguration(), false, 9),
+          ROBOT_TYPE != RobotType.SIM ? new ArmIOReal() : new ArmIOSim(),
+          ROBOT_TYPE != RobotType.SIM
+              ? new RollerIOReal(new TalonFXConfiguration(), false, 9)
+              : new RollerIOSim(0.01, 16.0 / 64.0),
           new BeambreakIOReal(0, false));
   private final IntakeSubsystem intake =
       new IntakeSubsystem(
@@ -122,6 +128,8 @@ public class Robot extends LoggedRobot {
           0.0); // CAD distance from origin to center of carriage at full retraction
   private final LoggedMechanismLigament2d carriageLigament =
       new LoggedMechanismLigament2d("Carriage", 0, 90);
+  private final LoggedMechanismLigament2d armLigament =
+      new LoggedMechanismLigament2d("Arm", Units.inchesToMeters(15.7), 120);
 
   public Robot() {
     // ---Set up logging as per AdvantageKit docs---
@@ -163,6 +171,7 @@ public class Robot extends LoggedRobot {
 
     // ---add sim mechanisms---
     elevatorRoot.append(carriageLigament);
+    carriageLigament.append(armLigament);
   }
 
   @Override
@@ -178,6 +187,8 @@ public class Robot extends LoggedRobot {
           new Pose3d(new Translation3d(0, 0, elevator.getExtensionMeters()), new Rotation3d())
         });
     carriageLigament.setLength(elevator.getExtensionMeters());
+    armLigament.setAngle(arm.getAngle().getDegrees());
+    armLigament.setColor(new Color8Bit(Color.kPurple));
     if (Robot.ROBOT_TYPE != RobotType.REAL)
       Logger.recordOutput("Mechanism/Elevator", elevatorMech2d);
 

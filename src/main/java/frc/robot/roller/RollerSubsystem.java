@@ -15,6 +15,8 @@ public class RollerSubsystem extends SubsystemBase {
   private final RollerIOInputsAutoLogged inputs = new RollerIOInputsAutoLogged();
   private final String name;
 
+  private double setpoint = 0.0;
+
   /** Creates a new RollerSubsystem. */
   public RollerSubsystem(RollerIO io, String name) {
     this.io = io;
@@ -28,6 +30,11 @@ public class RollerSubsystem extends SubsystemBase {
   }
 
   public Command setRollerVoltage(DoubleSupplier voltage) {
-    return this.run(() -> io.setVoltage(voltage.getAsDouble()));
+    return this.runOnce(
+        () -> {
+          io.setVoltage(voltage.getAsDouble());
+          setpoint = voltage.getAsDouble();
+          Logger.recordOutput(name + "/Voltage Setpoint", setpoint);
+        });
   }
 }
