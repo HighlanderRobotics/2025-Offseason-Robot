@@ -32,33 +32,6 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   public static final double MAX_EXTENSION_METERS = Units.inchesToMeters(68.50);
 
-  public static final double IDLE_EXTENSION_METERS = Units.inchesToMeters(18);
-
-  // coral
-  public static final double PRE_INTAKE_CORAL_GROUND_EXTENSION = Units.inchesToMeters(5.0);
-  public static final double INTAKE_CORAL_GROUND_EXTENSION = Units.inchesToMeters(5.0);
-
-  public static final double L1_EXTENSION_METERS = Units.inchesToMeters(18);
-  public static final double PRE_L2_EXTENSION_METERS = Units.inchesToMeters(16.0);
-  public static final double L2_EXTENSION_METERS = Units.inchesToMeters(16.0);
-  public static final double PRE_L3_EXTENSION_METERS = Units.inchesToMeters(31.5);
-  public static final double L3_EXTENSION_METERS = Units.inchesToMeters(31.5);
-  public static final double PRE_L4_EXTENSION_METERS = Units.inchesToMeters(58.0);
-  public static final double L4_EXTENSION_METERS = Units.inchesToMeters(58.0);
-  public static final double POST_L4_EXTENSION_METERS = Units.inchesToMeters(58.0);
-
-  // algae
-  public static final double INTAKE_ALGAE_GROUND_EXTENSION = Units.inchesToMeters(5.0);
-  public static final double INTAKE_ALGAE_REEF_LOW_EXTENSION = Units.inchesToMeters(25.4);
-  public static final double INTAKE_ALGAE_REEF_HIGH_EXTENSION = Units.inchesToMeters(40.5);
-
-  public static final double ALGAE_BARGE_EXTENSION = Units.inchesToMeters(61.5);
-  public static final double ALGAE_PROCESSOR_EXTENSION = 0.0;
-
-  // climbing
-  public static final double PRE_CLIMB_EXTENSION = Units.inchesToMeters(61.5);
-  public static final double CLIMB_EXTENSION = Units.inchesToMeters(61.5);
-
   private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
   private final ElevatorIO io;
 
@@ -73,24 +46,29 @@ public class ElevatorSubsystem extends SubsystemBase {
   private final SysIdRoutine currentSysid;
 
   public enum ElevatorState {
-    IDLE(IDLE_EXTENSION_METERS),
-    PRE_INTAKE_CORAL_GROUND(PRE_INTAKE_CORAL_GROUND_EXTENSION),
-    INTAKE_CORAL_GROUND(INTAKE_CORAL_GROUND_EXTENSION),
-    L1(L1_EXTENSION_METERS),
-    PRE_L2(PRE_L2_EXTENSION_METERS),
-    L2(L2_EXTENSION_METERS),
-    PRE_L3(PRE_L3_EXTENSION_METERS),
-    L3(L3_EXTENSION_METERS),
-    PRE_L4(PRE_L4_EXTENSION_METERS),
-    L4(L4_EXTENSION_METERS),
-    POST_L4(POST_L4_EXTENSION_METERS),
-    INTAKE_ALGAE_REEF_HIGH(INTAKE_ALGAE_REEF_HIGH_EXTENSION),
-    INTAKE_ALGAE_REEF_LOW(INTAKE_ALGAE_REEF_LOW_EXTENSION),
-    INTAKE_ALGAE_GROUND(INTAKE_ALGAE_GROUND_EXTENSION),
-    BARGE(ALGAE_BARGE_EXTENSION),
-    PROCESSOR(ALGAE_PROCESSOR_EXTENSION),
-    PRE_CLIMB(PRE_CLIMB_EXTENSION),
-    CLIMB(CLIMB_EXTENSION);
+    IDLE(Units.inchesToMeters(6)),
+    //coral
+    READY_CORAL(Units.inchesToMeters(6)),
+    PRE_INTAKE_CORAL_GROUND(Units.inchesToMeters(36)),
+    INTAKE_CORAL_GROUND(Units.inchesToMeters(28)),
+    L1(Units.inchesToMeters(25)),
+    PRE_L2(Units.inchesToMeters(22)),
+    L2(Units.inchesToMeters(22)),
+    PRE_L3(Units.inchesToMeters(36)),
+    L3(Units.inchesToMeters(36)),
+    PRE_L4(Units.inchesToMeters(68.50)),
+    L4(Units.inchesToMeters(61.5)),
+    POST_L4(Units.inchesToMeters(61.5)),
+    //algae
+    INTAKE_ALGAE_REEF_HIGH(Units.inchesToMeters(53)),
+    INTAKE_ALGAE_REEF_LOW(Units.inchesToMeters(36)),
+    INTAKE_ALGAE_GROUND(Units.inchesToMeters(25)),
+    BARGE(Units.inchesToMeters(61.5)),
+    READY_ALGAE(Units.inchesToMeters(6)),
+    PROCESSOR(Units.inchesToMeters(14)),
+    //climbing
+    PRE_CLIMB(Units.inchesToMeters(6)),
+    CLIMB(Units.inchesToMeters(6));
 
     private final double extensionMeters;
 
