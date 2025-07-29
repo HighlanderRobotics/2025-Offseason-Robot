@@ -23,6 +23,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     IDLE(0.0),
     PRE_INTAKE_CORAL_GROUND(Units.inchesToMeters(29.941)),
     INTAKE_CORAL_GROUND(Units.inchesToMeters(18.103)),
+    POST_INTAKE_CORAL_GROUND(Units.inchesToMeters(29.941)),
     L1(Units.inchesToMeters(21.523)),
     PRE_L2(Units.inchesToMeters(11.984)),
     L2(Units.inchesToMeters(11.5)),

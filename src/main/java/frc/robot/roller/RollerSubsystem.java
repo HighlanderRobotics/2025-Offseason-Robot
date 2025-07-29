@@ -34,7 +34,7 @@ public class RollerSubsystem extends SubsystemBase {
         () -> {
           io.setVoltage(voltage.getAsDouble());
           setpoint = voltage.getAsDouble();
-          Logger.recordOutput(name + "/Voltage Setpoint", setpoint);
+          Logger.recordOutput(name + "/Roller Voltage Setpoint", setpoint);
         });
   }
 }

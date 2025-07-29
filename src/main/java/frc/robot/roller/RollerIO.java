@@ -10,8 +10,8 @@ import org.littletonrobotics.junction.AutoLog;
 public interface RollerIO {
   @AutoLog
   public class RollerIOInputs {
-    public double voltage = 0.0;
-    public double angularVelocityRPS = 0.0;
+    public double rollerVoltage = 0.0;
+    public double rollerAngularVelocityRPS = 0.0;
   }
 
   public void updateInputs(final RollerIOInputsAutoLogged inputs);

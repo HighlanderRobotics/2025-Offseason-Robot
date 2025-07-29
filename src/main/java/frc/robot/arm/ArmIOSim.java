@@ -4,8 +4,6 @@
 
 package frc.robot.arm;
 
-import org.littletonrobotics.junction.Logger;
-
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -14,6 +12,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+import org.littletonrobotics.junction.Logger;
 
 /** Add your docs here. */
 public class ArmIOSim implements ArmIO {
@@ -34,13 +33,13 @@ public class ArmIOSim implements ArmIO {
   private final ArmFeedforward ff = new ArmFeedforward(0.0, 0.0, 0.0); // 1.31085, 0.278);
   private final ProfiledPIDController pid =
       new ProfiledPIDController(
-          80.0, 0.0, 0.0, new TrapezoidProfile.Constraints(10.0, 10.0)); // magic!
+          80.0, 0.0, 0.0, new TrapezoidProfile.Constraints(50.0, 50.0)); // magic!
 
   private double volts = 0.0;
 
   @Override
   public void updateInputs(ArmIOInputs inputs) {
-        if (DriverStation.isDisabled()) sim.setInput(0);
+    if (DriverStation.isDisabled()) sim.setInput(0);
     sim.update(0.02);
     inputs.motorPosition = Rotation2d.fromRadians(sim.getAngleRads());
     Logger.recordOutput("Arm/Sim position", sim.getAngleRads());

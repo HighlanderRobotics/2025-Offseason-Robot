@@ -25,20 +25,18 @@ public class ArmSubsystem extends RollerSubsystem {
     // i actually have no idea which direction is positive
     IDLE(Rotation2d.fromDegrees(0), 0.0),
     INTAKE_CORAL_GROUND(Rotation2d.fromDegrees(180), 0.0),
-    // L1(Rotation2d.fromDegrees(202.171), 0.0),
-    L1(Rotation2d.fromDegrees(-157), 0.0),
-    PRE_L2(Rotation2d.fromDegrees(360 - 128.445), 0.0),
-    // L2(Rotation2d.fromDegrees(330), 0.0),
-    L2(Rotation2d.fromDegrees(-30), 0.0),
-    PRE_L3(Rotation2d.fromDegrees(360 - 128.445), 0.0),
-    L3(Rotation2d.fromDegrees(330), 0.0),
-    PRE_L4(Rotation2d.fromDegrees(360 - 36), 0.0),
-    L4(Rotation2d.fromDegrees(360 - 90), 0.0),
-    INTAKE_ALGAE_REEF(Rotation2d.fromDegrees(90), 0.0),
-    INTAKE_ALGAE_GROUND(Rotation2d.fromDegrees(360 - 131), 0.0),
-    BARGE(Rotation2d.fromDegrees(360 - 55), 0.0),
-    PROCESSOR(Rotation2d.fromDegrees(90), 0.0),
-    CLIMB(Rotation2d.fromDegrees(300), 0.0);
+    L1(Rotation2d.fromDegrees(-157), 1.0),
+    PRE_L2(Rotation2d.fromDegrees(-128.445), 0.0),
+    L2(Rotation2d.fromDegrees(-30), 2.0),
+    PRE_L3(Rotation2d.fromDegrees(128.445), 0.0),
+    L3(Rotation2d.fromDegrees(-30), 0.0),
+    PRE_L4(Rotation2d.fromDegrees(-36), 0.0),
+    L4(Rotation2d.fromDegrees(-90), 0.0),
+    INTAKE_ALGAE_REEF(Rotation2d.fromDegrees(-90), 0.0),
+    INTAKE_ALGAE_GROUND(Rotation2d.fromDegrees(-131), 0.0),
+    BARGE(Rotation2d.fromDegrees(-55), 0.0),
+    PROCESSOR(Rotation2d.fromDegrees(-90), 0.0),
+    CLIMB(Rotation2d.fromDegrees(-60), 0.0);
 
     private final Rotation2d pivotAngle;
     private final double rollerVoltage; // TODO big todo
@@ -69,6 +67,9 @@ public class ArmSubsystem extends RollerSubsystem {
   private final BeambreakIO bbIO;
   private final BeambreakIOInputsAutoLogged bbInputs = new BeambreakIOInputsAutoLogged();
 
+  // For sim
+  private boolean bbSim = false;
+
   /** Creates a new ArmSubsystem. */
   public ArmSubsystem(ArmIO armIO, RollerIO rollerIO, BeambreakIO bbIO) {
     super(rollerIO, "Arm");
@@ -82,7 +83,8 @@ public class ArmSubsystem extends RollerSubsystem {
     armIO.updateInputs(inputs);
     bbIO.updateInputs(bbInputs);
     Logger.processInputs("Arm", inputs);
-    Logger.processInputs("Arm Beambreak", bbInputs);
+    Logger.processInputs("Arm/Beambreak", bbInputs);
+    if (Robot.isSimulation()) Logger.recordOutput("Arm/Sim Beambreak", bbSim);
   }
 
   public void setState(ArmState state) {
@@ -109,10 +111,18 @@ public class ArmSubsystem extends RollerSubsystem {
   }
 
   public boolean hasCoral() {
-    return bbInputs.get;
+    return Robot.isSimulation() ? bbSim : bbInputs.get;
   }
 
   public Rotation2d getAngle() {
     return Robot.isReal() ? inputs.cancoderPosition : inputs.motorPosition;
+  }
+
+  public void setSimBeambreak(boolean b) {
+    if (Robot.isSimulation()) {
+      bbSim = b;
+    } else {
+      return;
+    }
   }
 }

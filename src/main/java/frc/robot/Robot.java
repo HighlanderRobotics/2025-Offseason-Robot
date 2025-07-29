@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Superstructure.SuperState;
 import frc.robot.arm.ArmIOReal;
@@ -86,11 +87,18 @@ public class Robot extends LoggedRobot {
   public static final RobotType ROBOT_TYPE = Robot.isReal() ? RobotType.REAL : RobotType.SIM;
 
   // ---define triggers---
+  @AutoLogOutput
   public static Trigger preScoreReq =
       new Trigger(() -> true); // TODO this would be the driver button
-  public static Trigger scoreReq = new Trigger(() -> true);
-  public static Trigger intakeAlgaeReq = new Trigger(() -> true);
-  public static Trigger intakeCoralReq = new Trigger(() -> true);
+
+  @AutoLogOutput
+  public static Trigger scoreReq = new Trigger(() -> SmartDashboard.getBoolean("scorereq", false));
+
+  @AutoLogOutput public static Trigger intakeAlgaeReq = new Trigger(() -> false);
+
+  @AutoLogOutput
+  public static Trigger intakeCoralReq =
+      new Trigger(() -> SmartDashboard.getBoolean("intakereq", false));
 
   // ---instantiate subsystems---
   private final ElevatorSubsystem elevator =
@@ -168,6 +176,25 @@ public class Robot extends LoggedRobot {
     SmartDashboard.putData("idle", superstructure.changeStateTo(() -> SuperState.IDLE));
     SmartDashboard.putData("l1", superstructure.changeStateTo(() -> SuperState.L1));
     SmartDashboard.putData("l2", superstructure.changeStateTo(() -> SuperState.L2));
+
+    SmartDashboard.putData(
+        "toggle intakereq",
+        Commands.runOnce(
+            () ->
+                SmartDashboard.putBoolean(
+                    "intakereq", !SmartDashboard.getBoolean("intakereq", false))));
+    SmartDashboard.putData(
+        "toggle scorereq",
+        Commands.runOnce(
+            () ->
+                SmartDashboard.putBoolean(
+                    "scorereq", !SmartDashboard.getBoolean("scorereq", false))));
+    SmartDashboard.putData(
+        "toggle bb", Commands.runOnce(() -> arm.setSimBeambreak(!arm.hasCoral())));
+    SmartDashboard.putData("L1", Commands.runOnce(() -> currentCoralTarget = ReefTarget.L1));
+    SmartDashboard.putData("L2", Commands.runOnce(() -> currentCoralTarget = ReefTarget.L2));
+    SmartDashboard.putData("L3", Commands.runOnce(() -> currentCoralTarget = ReefTarget.L3));
+    SmartDashboard.putData("L4", Commands.runOnce(() -> currentCoralTarget = ReefTarget.L4));
 
     // ---add sim mechanisms---
     elevatorRoot.append(carriageLigament);

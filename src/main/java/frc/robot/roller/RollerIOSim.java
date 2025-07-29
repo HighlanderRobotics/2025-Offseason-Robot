@@ -25,8 +25,8 @@ public class RollerIOSim implements RollerIO {
   @Override
   public void updateInputs(RollerIOInputsAutoLogged inputs) {
     sim.update(0.02);
-    inputs.voltage = sim.getInputVoltage();
-    inputs.angularVelocityRPS = sim.getAngularVelocityRadPerSec();
+    inputs.rollerVoltage = sim.getInputVoltage();
+    inputs.rollerAngularVelocityRPS = sim.getAngularVelocityRadPerSec();
   }
 
   @Override
