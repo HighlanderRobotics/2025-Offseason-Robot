@@ -19,5 +19,6 @@ public interface ArmIO {
   void setMotorVoltage(double voltage);
 
   void setMotorPosition(Rotation2d targetPosition);
-    
+
+  void setRollerVoltage(double voltage);
 }

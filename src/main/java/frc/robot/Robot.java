@@ -10,6 +10,14 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 public class Robot extends LoggedRobot {
+  public static final RobotType ROBOT_TYPE = Robot.isReal() ? RobotType.REAL : RobotType.SIM;
+
+  public enum RobotType {
+    REAL,
+    SIM,
+    REPLAY
+  }
+  
   private Command m_autonomousCommand;
 
   private final RobotContainer m_robotContainer;
