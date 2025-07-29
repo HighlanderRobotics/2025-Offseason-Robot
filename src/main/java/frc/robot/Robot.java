@@ -5,11 +5,14 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.arm.ArmIOReal;
+import frc.robot.arm.ArmIOSim;
+import frc.robot.arm.ArmSubsystem;
+// import frc.robot.shoulder.ShoulderSubsystem;
+// import frc.robot.intake.IntakeSubsystem;
 import frc.robot.elevator.ElevatorIOReal;
 import frc.robot.elevator.ElevatorIOSim;
 import frc.robot.elevator.ElevatorSubsystem;
-import frc.robot.intake.IntakeSubsystem;
-import frc.robot.shoulder.ShoulderSubsystem;
 import org.littletonrobotics.junction.LoggedRobot;
 
 public class Robot extends LoggedRobot {
@@ -24,10 +27,13 @@ public class Robot extends LoggedRobot {
   private final ElevatorSubsystem elevator =
       new ElevatorSubsystem(
           ROBOT_TYPE != RobotType.SIM ? new ElevatorIOReal() : new ElevatorIOSim());
-  private final ShoulderSubsystem shoulder = new ShoulderSubsystem();
-  private final IntakeSubsystem intake = new IntakeSubsystem();
 
-  private final Superstructure superstructure = new Superstructure(elevator, shoulder, intake);
+  private final ArmSubsystem arm =
+      new ArmSubsystem(ROBOT_TYPE != RobotType.SIM ? new ArmIOReal() : new ArmIOSim());
+  // private final ShoulderSubsystem shoulder = new ShoulderSubsystem();
+  // private final IntakeSubsystem intake = new IntakeSubsystem();
+
+  private final Superstructure superstructure = new Superstructure(elevator, arm);
 
   public Robot() {}
 
