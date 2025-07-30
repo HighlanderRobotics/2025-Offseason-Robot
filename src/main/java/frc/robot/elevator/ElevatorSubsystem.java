@@ -47,7 +47,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   public enum ElevatorState {
     IDLE(Units.inchesToMeters(6)),
-    //coral
+    // coral
     READY_CORAL(Units.inchesToMeters(6)),
     PRE_INTAKE_CORAL_GROUND(Units.inchesToMeters(36)),
     INTAKE_CORAL_GROUND(Units.inchesToMeters(28)),
@@ -59,14 +59,14 @@ public class ElevatorSubsystem extends SubsystemBase {
     PRE_L4(Units.inchesToMeters(68.50)),
     L4(Units.inchesToMeters(61.5)),
     POST_L4(Units.inchesToMeters(61.5)),
-    //algae
+    // algae
     INTAKE_ALGAE_REEF_HIGH(Units.inchesToMeters(53)),
     INTAKE_ALGAE_REEF_LOW(Units.inchesToMeters(36)),
     INTAKE_ALGAE_GROUND(Units.inchesToMeters(25)),
     BARGE(Units.inchesToMeters(61.5)),
     READY_ALGAE(Units.inchesToMeters(6)),
     PROCESSOR(Units.inchesToMeters(14)),
-    //climbing
+    // climbing
     PRE_CLIMB(Units.inchesToMeters(6)),
     CLIMB(Units.inchesToMeters(6));
 
