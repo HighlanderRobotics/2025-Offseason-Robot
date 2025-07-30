@@ -47,6 +47,7 @@ public class Superstructure {
         IntakeState.INTAKE,
         RoutingState.INTAKE), // TODO double check this
     READY_CORAL(ElevatorState.IDLE, ArmState.IDLE, IntakeState.IDLE, RoutingState.IDLE),
+    PRE_L1(ElevatorState.L1, ArmState.PRE_L1),
     L1(ElevatorState.L1, ArmState.L1),
     POST_L1(ElevatorState.L1, ArmState.IDLE),
     PRE_L2(ElevatorState.PRE_L2, ArmState.PRE_L2),
@@ -154,45 +155,10 @@ public class Superstructure {
     this.climber = climber;
 
     addTransitions();
-    // addSimTransitions();
   }
 
   public void periodic() {
     Logger.recordOutput("Superstructure/Superstructure State", state);
-  }
-
-  // for testing only!!
-  public void addSimTransitions() {
-
-    // transitions.add(
-    //     new Transition(
-    //         SuperState.IDLE,
-    //         SuperState.L1,
-    //         new Trigger(() -> Robot.s == SuperState.L1)));
-
-    transitions.add(
-        new Transition(
-            SuperState.IDLE,
-            SuperState.L1,
-            new Trigger(() -> Robot.getCurrentCoralTarget() == ReefTarget.L1)
-                .and(Robot.scoreReq)
-                .and(new Trigger(() -> arm.hasCoral()))));
-
-    transitions.add(
-        new Transition(
-            SuperState.L1,
-            SuperState.IDLE,
-            new Trigger(
-                () ->
-                    !arm.hasCoral()
-                        && !Robot.scoreReq
-                            .getAsBoolean()))); // also might need to check that it's backed away
-    // from the reef?
-
-    // maps triggers to the transitions
-    for (Transition t : transitions) {
-      t.trigger().and(new Trigger(() -> state == t.start)).onTrue(changeStateTo(t.end));
-    }
   }
 
   public void addTransitions() {
@@ -225,10 +191,18 @@ public class Superstructure {
     transitions.add(
         new Transition(
             SuperState.READY_CORAL,
+            SuperState.PRE_L1,
+            new Trigger(() -> Robot.getCurrentCoralTarget() == ReefTarget.L1)
+                .and(new Trigger(() -> arm.hasCoral()))
+                .and(Robot.preScoreReq)));
+
+    transitions.add(
+        new Transition(
+            SuperState.PRE_L1,
             SuperState.L1,
             new Trigger(() -> Robot.getCurrentCoralTarget() == ReefTarget.L1)
-                .and(Robot.scoreReq)
-                .and(new Trigger(() -> arm.hasCoral()))));
+                .and(new Trigger(() -> arm.hasCoral()))
+                .and(Robot.scoreReq)));
 
     transitions.add(
         new Transition(
@@ -240,7 +214,7 @@ public class Superstructure {
                         && !Robot.scoreReq
                             .getAsBoolean()))); // also might need to check that it's backed away
     // from the reef?
-  
+
     transitions.add(
         new Transition(
             SuperState.POST_L1,
@@ -310,6 +284,38 @@ public class Superstructure {
     transitions.add(
         new Transition(
             SuperState.POST_L3,
+            SuperState.IDLE,
+            new Trigger(
+                () -> !arm.hasCoral() && this.atExtension() && !Robot.scoreReq.getAsBoolean())));
+
+    // ----L4----
+    transitions.add(
+        new Transition(
+            SuperState.READY_CORAL,
+            SuperState.PRE_L4,
+            new Trigger(() -> Robot.getCurrentCoralTarget() == ReefTarget.L4)
+                .and(Robot.preScoreReq)));
+
+    transitions.add(
+        new Transition(
+            SuperState.PRE_L4,
+            SuperState.L4,
+            new Trigger(() -> this.atExtension()).and(Robot.scoreReq)));
+
+    transitions.add(
+        new Transition(
+            SuperState.L4,
+            SuperState.POST_L4,
+            new Trigger(() -> !Robot.scoreReq.getAsBoolean())
+                .and(
+                    () -> !arm.hasCoral()))); // also might need to check that it HASN'T backed away
+    // from the reef?
+    // also my gutfeel is that it should check the beambreak here but if it's on the pole it'll
+    // still pick up on the coral?
+
+    transitions.add(
+        new Transition(
+            SuperState.POST_L4,
             SuperState.IDLE,
             new Trigger(
                 () -> !arm.hasCoral() && this.atExtension() && !Robot.scoreReq.getAsBoolean())));

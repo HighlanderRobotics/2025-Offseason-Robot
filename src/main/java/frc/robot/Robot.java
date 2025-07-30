@@ -89,7 +89,7 @@ public class Robot extends LoggedRobot {
   // ---define triggers---
   @AutoLogOutput
   public static Trigger preScoreReq =
-      new Trigger(() -> true); // TODO this would be the driver button
+      new Trigger(() -> SmartDashboard.getBoolean("prescorereq", false));
 
   @AutoLogOutput
   public static Trigger scoreReq = new Trigger(() -> SmartDashboard.getBoolean("scorereq", false));
@@ -139,6 +139,7 @@ public class Robot extends LoggedRobot {
   private final LoggedMechanismLigament2d armLigament =
       new LoggedMechanismLigament2d("Arm", Units.inchesToMeters(15.7), 120);
 
+  @SuppressWarnings("resource")
   public Robot() {
     // ---Set up logging as per AdvantageKit docs---
     Logger.recordMetadata("Codebase", "Offseason 2025"); // Set a metadata value
@@ -177,6 +178,7 @@ public class Robot extends LoggedRobot {
     SmartDashboard.putData("l1", superstructure.changeStateTo(() -> SuperState.L1));
     SmartDashboard.putData("l2", superstructure.changeStateTo(() -> SuperState.L2));
 
+    // surely there's a better way to do this but i'm sort of a clown and also lazy
     SmartDashboard.putData(
         "toggle intakereq",
         Commands.runOnce(
@@ -189,6 +191,13 @@ public class Robot extends LoggedRobot {
             () ->
                 SmartDashboard.putBoolean(
                     "scorereq", !SmartDashboard.getBoolean("scorereq", false))));
+
+    SmartDashboard.putData(
+      "toggle pre scorereq",
+      Commands.runOnce(
+          () ->
+              SmartDashboard.putBoolean(
+                  "prescorereq", !SmartDashboard.getBoolean("prescorereq", false))));               
     SmartDashboard.putData(
         "toggle bb", Commands.runOnce(() -> arm.setSimBeambreak(!arm.hasCoral())));
     SmartDashboard.putData("L1", Commands.runOnce(() -> currentCoralTarget = ReefTarget.L1));

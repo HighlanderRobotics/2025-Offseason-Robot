@@ -24,12 +24,13 @@ public class ArmSubsystem extends RollerSubsystem {
   public enum ArmState {
     // i actually have no idea which direction is positive
     IDLE(Rotation2d.fromDegrees(0), 0.0),
-    INTAKE_CORAL_GROUND(Rotation2d.fromDegrees(180), 0.0),
+    INTAKE_CORAL_GROUND(Rotation2d.fromDegrees(-180), 0.0),
+    PRE_L1(Rotation2d.fromDegrees(-157), 0.0),
     L1(Rotation2d.fromDegrees(-157), 1.0),
-    PRE_L2(Rotation2d.fromDegrees(-128.445), 0.0),
-    L2(Rotation2d.fromDegrees(-30), 2.0),
-    PRE_L3(Rotation2d.fromDegrees(128.445), 0.0),
-    L3(Rotation2d.fromDegrees(-30), 0.0),
+    PRE_L2(Rotation2d.fromDegrees(-30), 0.0),
+    L2(Rotation2d.fromDegrees(-52), 1.0),
+    PRE_L3(Rotation2d.fromDegrees(-30), 0.0),
+    L3(Rotation2d.fromDegrees(-52), 0.0),
     PRE_L4(Rotation2d.fromDegrees(-36), 0.0),
     L4(Rotation2d.fromDegrees(-90), 0.0),
     INTAKE_ALGAE_REEF(Rotation2d.fromDegrees(-90), 0.0),
