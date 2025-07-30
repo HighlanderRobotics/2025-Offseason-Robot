@@ -4,10 +4,17 @@
 
 package frc.robot;
 
+import java.util.ArrayList;
+import java.util.function.Supplier;
+
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Robot.AlgaeIntakeTarget;
+import frc.robot.Robot.AlgaeScoreTarget;
 import frc.robot.Robot.ReefTarget;
 import frc.robot.arm.ArmSubsystem;
 import frc.robot.arm.ArmSubsystem.ArmState;
@@ -19,9 +26,6 @@ import frc.robot.intake.IntakeSubsystem;
 import frc.robot.intake.IntakeSubsystem.IntakeState;
 import frc.robot.routing.RoutingSubsystem;
 import frc.robot.routing.RoutingSubsystem.RoutingState;
-import java.util.ArrayList;
-import java.util.function.Supplier;
-import org.littletonrobotics.junction.Logger;
 
 public class Superstructure {
 
@@ -31,17 +35,17 @@ public class Superstructure {
    */
   public enum SuperState {
     IDLE(ElevatorState.IDLE, ArmState.IDLE, IntakeState.IDLE, RoutingState.IDLE),
-    PRE_INTAKE_CORAL_GROUND(
+    PRE_INTAKE_CORAL(
         ElevatorState.PRE_INTAKE_CORAL_GROUND,
         ArmState.INTAKE_CORAL_GROUND,
         IntakeState.INTAKE,
         RoutingState.INTAKE),
-    INTAKE_CORAL_GROUND(
+    INTAKE_CORAL(
         ElevatorState.INTAKE_CORAL_GROUND,
         ArmState.INTAKE_CORAL_GROUND,
         IntakeState.INTAKE,
         RoutingState.INTAKE),
-    POST_INTAKE_CORAL_GROUND(
+    POST_INTAKE_CORAL(
         ElevatorState.POST_INTAKE_CORAL_GROUND,
         ArmState.IDLE,
         IntakeState.INTAKE,
@@ -62,14 +66,24 @@ public class Superstructure {
     INTAKE_ALGAE_REEF_HIGH(ElevatorState.INTAKE_ALGAE_REEF_HIGH, ArmState.INTAKE_ALGAE_REEF),
     INTAKE_ALGAE_REEF_LOW(ElevatorState.INTAKE_ALGAE_REEF_LOW, ArmState.INTAKE_ALGAE_REEF),
     INTAKE_ALGAE_GROUND(ElevatorState.INTAKE_ALGAE_GROUND, ArmState.INTAKE_ALGAE_GROUND),
+    POST_INTAKE_ALGAE_GROUND(ElevatorState.POST_INTAKE_ALGAE_GROUND, ArmState.IDLE),
+    READY_ALGAE(ElevatorState.IDLE, ArmState.IDLE),
+    PRE_BARGE(ElevatorState.BARGE, ArmState.PRE_BARGE),
     BARGE(ElevatorState.BARGE, ArmState.BARGE),
+    PRE_PROCESSOR(ElevatorState.PROCESSOR, ArmState.PRE_PROCESSOR),
     PROCESSOR(ElevatorState.PROCESSOR, ArmState.PROCESSOR),
     PRE_CLIMB(
         ElevatorState.IDLE,
         ArmState.CLIMB,
         IntakeState.INTAKE,
         RoutingState.IDLE,
-        ClimberState.PRE_CLIMB);
+        ClimberState.PRE_CLIMB),
+    CLIMB(
+        ElevatorState.IDLE,
+        ArmState.CLIMB,
+        IntakeState.INTAKE,
+        RoutingState.IDLE,
+        ClimberState.CLIMB);
 
     public final ElevatorState elevatorState;
     public final ArmState armState;
@@ -166,24 +180,24 @@ public class Superstructure {
     transitions.add(
         new Transition(
             SuperState.IDLE,
-            SuperState.PRE_INTAKE_CORAL_GROUND,
-            Robot.intakeCoralReq.and(() -> !arm.hasCoral())));
+            SuperState.PRE_INTAKE_CORAL,
+            Robot.intakeCoralReq.and(() -> !arm.hasPiece())));
 
     transitions.add(
         new Transition(
-            SuperState.PRE_INTAKE_CORAL_GROUND,
-            SuperState.INTAKE_CORAL_GROUND,
+            SuperState.PRE_INTAKE_CORAL,
+            SuperState.INTAKE_CORAL,
             new Trigger(() -> this.atExtension() && intake.hasCoral())));
 
     transitions.add(
         new Transition(
-            SuperState.INTAKE_CORAL_GROUND,
-            SuperState.POST_INTAKE_CORAL_GROUND,
-            new Trigger(() -> arm.hasCoral())));
+            SuperState.INTAKE_CORAL,
+            SuperState.POST_INTAKE_CORAL,
+            new Trigger(() -> arm.hasPiece() && !Robot.intakeCoralReq.getAsBoolean())));
 
     transitions.add(
         new Transition(
-            SuperState.POST_INTAKE_CORAL_GROUND,
+            SuperState.POST_INTAKE_CORAL,
             SuperState.READY_CORAL,
             new Trigger(() -> this.atExtension())));
 
@@ -192,16 +206,16 @@ public class Superstructure {
         new Transition(
             SuperState.READY_CORAL,
             SuperState.PRE_L1,
-            new Trigger(() -> Robot.getCurrentCoralTarget() == ReefTarget.L1)
-                .and(new Trigger(() -> arm.hasCoral()))
+            new Trigger(() -> Robot.getCoralTarget() == ReefTarget.L1)
+                .and(new Trigger(() -> arm.hasPiece()))
                 .and(Robot.preScoreReq)));
 
     transitions.add(
         new Transition(
             SuperState.PRE_L1,
             SuperState.L1,
-            new Trigger(() -> Robot.getCurrentCoralTarget() == ReefTarget.L1)
-                .and(new Trigger(() -> arm.hasCoral()))
+            new Trigger(() -> Robot.getCoralTarget() == ReefTarget.L1)
+                .and(new Trigger(() -> arm.hasPiece()))
                 .and(Robot.scoreReq)));
 
     transitions.add(
@@ -210,7 +224,7 @@ public class Superstructure {
             SuperState.POST_L1,
             new Trigger(
                 () ->
-                    !arm.hasCoral()
+                    !arm.hasPiece()
                         && !Robot.scoreReq
                             .getAsBoolean()))); // also might need to check that it's backed away
     // from the reef?
@@ -220,15 +234,14 @@ public class Superstructure {
             SuperState.POST_L1,
             SuperState.IDLE,
             new Trigger(
-                () -> !arm.hasCoral() && this.atExtension() && !Robot.scoreReq.getAsBoolean())));
+                () -> !arm.hasPiece() && this.atExtension() && !Robot.scoreReq.getAsBoolean())));
 
     // ----L2----
     transitions.add(
         new Transition(
             SuperState.READY_CORAL,
             SuperState.PRE_L2,
-            new Trigger(() -> Robot.getCurrentCoralTarget() == ReefTarget.L2)
-                .and(Robot.preScoreReq)));
+            new Trigger(() -> Robot.getCoralTarget() == ReefTarget.L2).and(Robot.preScoreReq)));
 
     transitions.add(
         new Transition(
@@ -253,15 +266,14 @@ public class Superstructure {
             SuperState.POST_L2,
             SuperState.IDLE,
             new Trigger(
-                () -> !arm.hasCoral() && this.atExtension() && !Robot.scoreReq.getAsBoolean())));
+                () -> !arm.hasPiece() && this.atExtension() && !Robot.scoreReq.getAsBoolean())));
 
     // ----L3----
     transitions.add(
         new Transition(
             SuperState.READY_CORAL,
             SuperState.PRE_L3,
-            new Trigger(() -> Robot.getCurrentCoralTarget() == ReefTarget.L3)
-                .and(Robot.preScoreReq)));
+            new Trigger(() -> Robot.getCoralTarget() == ReefTarget.L3).and(Robot.preScoreReq)));
 
     transitions.add(
         new Transition(
@@ -286,15 +298,14 @@ public class Superstructure {
             SuperState.POST_L3,
             SuperState.IDLE,
             new Trigger(
-                () -> !arm.hasCoral() && this.atExtension() && !Robot.scoreReq.getAsBoolean())));
+                () -> !arm.hasPiece() && this.atExtension() && !Robot.scoreReq.getAsBoolean())));
 
     // ----L4----
     transitions.add(
         new Transition(
             SuperState.READY_CORAL,
             SuperState.PRE_L4,
-            new Trigger(() -> Robot.getCurrentCoralTarget() == ReefTarget.L4)
-                .and(Robot.preScoreReq)));
+            new Trigger(() -> Robot.getCoralTarget() == ReefTarget.L4).and(Robot.preScoreReq)));
 
     transitions.add(
         new Transition(
@@ -308,7 +319,7 @@ public class Superstructure {
             SuperState.POST_L4,
             new Trigger(() -> !Robot.scoreReq.getAsBoolean())
                 .and(
-                    () -> !arm.hasCoral()))); // also might need to check that it HASN'T backed away
+                    () -> !arm.hasPiece()))); // also might need to check that it HASN'T backed away
     // from the reef?
     // also my gutfeel is that it should check the beambreak here but if it's on the pole it'll
     // still pick up on the coral?
@@ -318,7 +329,117 @@ public class Superstructure {
             SuperState.POST_L4,
             SuperState.IDLE,
             new Trigger(
-                () -> !arm.hasCoral() && this.atExtension() && !Robot.scoreReq.getAsBoolean())));
+                () -> !arm.hasPiece() && this.atExtension() && !Robot.scoreReq.getAsBoolean())));
+
+    // ---Intake Algae---
+    transitions.add(
+        new Transition(
+            SuperState.IDLE,
+            SuperState.INTAKE_ALGAE_REEF_HIGH,
+            Robot.intakeAlgaeReq
+                .and(new Trigger(() -> Robot.getAlgaeIntakeTarget() == AlgaeIntakeTarget.HIGH))
+                .and(() -> !arm.hasPiece()))); // TODO should probably do better checks for specific
+    // pieces (prob what the last intakereq was)
+
+    transitions.add(
+        new Transition(
+            SuperState.INTAKE_ALGAE_REEF_HIGH,
+            SuperState.READY_ALGAE,
+            new Trigger(
+                () ->
+                    this.atExtension() && arm.hasPiece() && !Robot.intakeAlgaeReq.getAsBoolean())));
+
+    transitions.add(
+        new Transition(
+            SuperState.IDLE,
+            SuperState.INTAKE_ALGAE_REEF_LOW,
+            Robot.intakeAlgaeReq
+                .and(new Trigger(() -> Robot.getAlgaeIntakeTarget() == AlgaeIntakeTarget.LOW))
+                .and(() -> !arm.hasPiece()))); // TODO should probably do better checks for specific
+    // pieces (prob what the last intakereq was)
+
+    transitions.add(
+        new Transition(
+            SuperState.INTAKE_ALGAE_REEF_LOW,
+            SuperState.READY_ALGAE,
+            new Trigger(
+                () ->
+                    this.atExtension() && arm.hasPiece() && !Robot.intakeAlgaeReq.getAsBoolean())));
+
+    transitions.add(
+        new Transition(
+            SuperState.IDLE,
+            SuperState.INTAKE_ALGAE_GROUND,
+            Robot.intakeAlgaeReq
+                .and(new Trigger(() -> Robot.getAlgaeIntakeTarget() == AlgaeIntakeTarget.GROUND))
+                .and(() -> !arm.hasPiece()))); // TODO should probably do better checks for specific
+    // pieces (prob what the last intakereq was)
+
+    transitions.add(
+        new Transition(
+            SuperState.INTAKE_ALGAE_GROUND,
+            SuperState.POST_INTAKE_ALGAE_GROUND,
+            new Trigger(() -> arm.hasPiece() && !Robot.intakeAlgaeReq.getAsBoolean())));
+
+    transitions.add(
+        new Transition(
+            SuperState.POST_INTAKE_ALGAE_GROUND,
+            SuperState.READY_ALGAE,
+            new Trigger(() -> this.atExtension())));
+
+    // ---Score algae--
+    transitions.add(
+        new Transition(
+            SuperState.READY_ALGAE,
+            SuperState.PRE_PROCESSOR,
+            new Trigger(() -> Robot.getAlgaeScoreTarget() == AlgaeScoreTarget.PROCESSOR)
+                .and(Robot.preScoreReq)));
+
+    transitions.add(
+        new Transition(
+            SuperState.PRE_PROCESSOR,
+            SuperState.PROCESSOR,
+            new Trigger(() -> this.atExtension()).and(Robot.scoreReq)));
+
+    transitions.add(
+        new Transition(
+            SuperState.PROCESSOR,
+            SuperState.IDLE,
+            new Trigger(() -> !Robot.scoreReq.getAsBoolean()).and(() -> !arm.hasPiece())));
+
+    // TODO this assumes, perhaps naively, that there's no intermediate barge extension!
+    transitions.add(
+        new Transition(
+            SuperState.READY_ALGAE,
+            SuperState.PRE_BARGE,
+            new Trigger(() -> Robot.getAlgaeScoreTarget() == AlgaeScoreTarget.BARGE)
+                .and(Robot.preScoreReq)));
+
+    transitions.add(
+        new Transition(
+            SuperState.PRE_BARGE,
+            SuperState.BARGE,
+            new Trigger(() -> this.atExtension()).and(Robot.scoreReq)));
+
+    transitions.add(
+        new Transition(
+            SuperState.BARGE,
+            SuperState.IDLE,
+            new Trigger(() -> !Robot.scoreReq.getAsBoolean()).and(() -> !arm.hasPiece())));
+
+    //---Climb---
+    transitions.add(
+        new Transition(
+            SuperState.IDLE,
+            SuperState.PRE_CLIMB,
+            Robot.preClimbReq));
+
+    transitions.add(
+        new Transition(
+            SuperState.PRE_CLIMB,
+            SuperState.CLIMB,
+            Robot.climbReq
+                .and(() -> this.atExtension()))); //check climber current?
 
     // maps triggers to the transitions
     for (Transition t : transitions) {
@@ -350,6 +471,7 @@ public class Superstructure {
     climber.setState(state.climberState);
   }
 
+  // add check for climber too maybe
   private boolean atExtension(SuperState state) {
     return elevator.atExtension(state.elevatorState.getExtensionMeters())
         && arm.atAngle(state.armState.getPivotAngle())

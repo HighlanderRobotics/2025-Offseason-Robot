@@ -35,6 +35,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     INTAKE_ALGAE_REEF_HIGH(Units.inchesToMeters(45)),
     INTAKE_ALGAE_REEF_LOW(Units.inchesToMeters(28)),
     INTAKE_ALGAE_GROUND(Units.inchesToMeters(18.8)),
+    POST_INTAKE_ALGAE_GROUND(Units.inchesToMeters(15)),
     BARGE(Units.inchesToMeters(61.5)),
     PROCESSOR(Units.inchesToMeters(7));
 

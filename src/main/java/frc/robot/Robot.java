@@ -69,14 +69,14 @@ public class Robot extends LoggedRobot {
   }
 
   public static enum AlgaeScoreTarget {
-    NET,
+    BARGE,
     PROCESSOR
   }
 
   // Current score/intake targets
-  @AutoLogOutput private static ReefTarget currentCoralTarget = ReefTarget.L4;
+  @AutoLogOutput private static ReefTarget coralTarget = ReefTarget.L4;
   @AutoLogOutput private static AlgaeIntakeTarget algaeIntakeTarget = AlgaeIntakeTarget.STACK;
-  @AutoLogOutput private static AlgaeScoreTarget algaeScoreTarget = AlgaeScoreTarget.NET;
+  @AutoLogOutput private static AlgaeScoreTarget algaeScoreTarget = AlgaeScoreTarget.BARGE;
 
   public enum RobotType {
     REAL,
@@ -94,10 +94,20 @@ public class Robot extends LoggedRobot {
   @AutoLogOutput
   public static Trigger scoreReq = new Trigger(() -> SmartDashboard.getBoolean("scorereq", false));
 
-  @AutoLogOutput public static Trigger intakeAlgaeReq = new Trigger(() -> false);
+  @AutoLogOutput
+  public static Trigger intakeAlgaeReq =
+      new Trigger(() -> SmartDashboard.getBoolean("intake algae req", false));
 
   @AutoLogOutput
   public static Trigger intakeCoralReq =
+      new Trigger(() -> SmartDashboard.getBoolean("intakereq", false));
+
+  @AutoLogOutput
+  public static Trigger preClimbReq =
+      new Trigger(() -> SmartDashboard.getBoolean("intakereq", false));
+
+  @AutoLogOutput
+  public static Trigger climbReq =
       new Trigger(() -> SmartDashboard.getBoolean("intakereq", false));
 
   // ---instantiate subsystems---
@@ -193,17 +203,35 @@ public class Robot extends LoggedRobot {
                     "scorereq", !SmartDashboard.getBoolean("scorereq", false))));
 
     SmartDashboard.putData(
-      "toggle pre scorereq",
-      Commands.runOnce(
-          () ->
-              SmartDashboard.putBoolean(
-                  "prescorereq", !SmartDashboard.getBoolean("prescorereq", false))));               
+        "toggle pre scorereq",
+        Commands.runOnce(
+            () ->
+                SmartDashboard.putBoolean(
+                    "prescorereq", !SmartDashboard.getBoolean("prescorereq", false))));
     SmartDashboard.putData(
-        "toggle bb", Commands.runOnce(() -> arm.setSimBeambreak(!arm.hasCoral())));
-    SmartDashboard.putData("L1", Commands.runOnce(() -> currentCoralTarget = ReefTarget.L1));
-    SmartDashboard.putData("L2", Commands.runOnce(() -> currentCoralTarget = ReefTarget.L2));
-    SmartDashboard.putData("L3", Commands.runOnce(() -> currentCoralTarget = ReefTarget.L3));
-    SmartDashboard.putData("L4", Commands.runOnce(() -> currentCoralTarget = ReefTarget.L4));
+        "toggle bb", Commands.runOnce(() -> arm.setSimBeambreak(!arm.hasPiece())));
+    SmartDashboard.putData(
+        "toggle intake algae req",
+        Commands.runOnce(
+            () ->
+                SmartDashboard.putBoolean(
+                    "intake algae req", !SmartDashboard.getBoolean("intake algae req", false))));
+    SmartDashboard.putData("L1", Commands.runOnce(() -> coralTarget = ReefTarget.L1));
+    SmartDashboard.putData("L2", Commands.runOnce(() -> coralTarget = ReefTarget.L2));
+    SmartDashboard.putData("L3", Commands.runOnce(() -> coralTarget = ReefTarget.L3));
+    SmartDashboard.putData("L4", Commands.runOnce(() -> coralTarget = ReefTarget.L4));
+
+    SmartDashboard.putData(
+        "high", Commands.runOnce(() -> algaeIntakeTarget = AlgaeIntakeTarget.HIGH));
+    SmartDashboard.putData(
+        "low", Commands.runOnce(() -> algaeIntakeTarget = AlgaeIntakeTarget.LOW));
+    SmartDashboard.putData(
+        "ground", Commands.runOnce(() -> algaeIntakeTarget = AlgaeIntakeTarget.GROUND));
+
+    SmartDashboard.putData(
+        "barge", Commands.runOnce(() -> algaeScoreTarget = AlgaeScoreTarget.BARGE));
+    SmartDashboard.putData(
+        "processor", Commands.runOnce(() -> algaeScoreTarget = AlgaeScoreTarget.PROCESSOR));
 
     // ---add sim mechanisms---
     elevatorRoot.append(carriageLigament);
@@ -231,8 +259,16 @@ public class Robot extends LoggedRobot {
     superstructure.periodic();
   }
 
-  public static ReefTarget getCurrentCoralTarget() {
-    return currentCoralTarget;
+  public static ReefTarget getCoralTarget() {
+    return coralTarget;
+  }
+
+  public static AlgaeIntakeTarget getAlgaeIntakeTarget() {
+    return algaeIntakeTarget;
+  }
+
+  public static AlgaeScoreTarget getAlgaeScoreTarget() {
+    return algaeScoreTarget;
   }
 
   @Override

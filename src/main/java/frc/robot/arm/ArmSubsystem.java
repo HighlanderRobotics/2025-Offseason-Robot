@@ -24,19 +24,21 @@ public class ArmSubsystem extends RollerSubsystem {
   public enum ArmState {
     // i actually have no idea which direction is positive
     IDLE(Rotation2d.fromDegrees(0), 0.0),
-    INTAKE_CORAL_GROUND(Rotation2d.fromDegrees(-180), 0.0),
+    INTAKE_CORAL_GROUND(Rotation2d.fromDegrees(-180), -1.0),
     PRE_L1(Rotation2d.fromDegrees(-157), 0.0),
     L1(Rotation2d.fromDegrees(-157), 1.0),
     PRE_L2(Rotation2d.fromDegrees(-30), 0.0),
     L2(Rotation2d.fromDegrees(-52), 1.0),
     PRE_L3(Rotation2d.fromDegrees(-30), 0.0),
-    L3(Rotation2d.fromDegrees(-52), 0.0),
+    L3(Rotation2d.fromDegrees(-52), 1.0),
     PRE_L4(Rotation2d.fromDegrees(-36), 0.0),
-    L4(Rotation2d.fromDegrees(-90), 0.0),
-    INTAKE_ALGAE_REEF(Rotation2d.fromDegrees(-90), 0.0),
-    INTAKE_ALGAE_GROUND(Rotation2d.fromDegrees(-131), 0.0),
-    BARGE(Rotation2d.fromDegrees(-55), 0.0),
-    PROCESSOR(Rotation2d.fromDegrees(-90), 0.0),
+    L4(Rotation2d.fromDegrees(-90), 1.0),
+    INTAKE_ALGAE_REEF(Rotation2d.fromDegrees(-90), -1.0),
+    INTAKE_ALGAE_GROUND(Rotation2d.fromDegrees(-131), -1.0),
+    PRE_BARGE(Rotation2d.fromDegrees(-55), 0.0),
+    BARGE(Rotation2d.fromDegrees(-55), 1.0),
+    PRE_PROCESSOR(Rotation2d.fromDegrees(-90), 0.0),
+    PROCESSOR(Rotation2d.fromDegrees(-90), 1.0),
     CLIMB(Rotation2d.fromDegrees(-60), 0.0);
 
     private final Rotation2d pivotAngle;
@@ -111,7 +113,7 @@ public class ArmSubsystem extends RollerSubsystem {
     return MathUtil.isNear(target.getDegrees(), inputs.motorPosition.getDegrees(), 10.0);
   }
 
-  public boolean hasCoral() {
+  public boolean hasPiece() {
     return Robot.isSimulation() ? bbSim : bbInputs.get;
   }
 
