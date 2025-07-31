@@ -1,0 +1,70 @@
+name: checks
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+jobs:
+  # Checks that the build succeded
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    # Wpilib docker container
+    # Latest as of 7/30/25
+    container: wpilib/roborio-cross-ubuntu:2025-22.04
+
+   # Steps represent a sequence of tasks that will be executed as part of the job
+   # Copied from onseason bot's action
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v3
+
+    # Declares the repository safe and not under dubious ownership.
+    - name: Add repository to git safe directories
+      run: git config --global --add safe.directory $GITHUB_WORKSPACE
+
+    # Grant execute permission for gradlew
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
+    # Runs a single command using the runners shell
+    - name: Compile and run tests on robot code
+      run: ./gradlew build
+  
+  format:
+    name: Format
+
+    permissions: 
+      # Gives permissions for any formatting changes to be commited
+      contents: write
+
+    runs-on: ubuntu-latest
+
+    # Wpilib docker container
+    # Latest as of 7/30/25
+    container: wpilib/roborio-cross-ubuntu:2025-22.04
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    # Copied from Onseason implementation
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v3
+
+    # Declares the repository safe and not under dubious ownership.
+    - name: Add repository to git safe directories
+      run: git config --global --add safe.directory $GITHUB_WORKSPACE
+
+    # Grant execute permission for gradlew
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
+    # Runs a single command using the runners shell
+    - name: Compile and run tests on robot code
+      run: ./gradlew spotlessApply
+
+    # Commit changes
+    - uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+          commit_message: run spotless
