@@ -185,19 +185,19 @@ public class Superstructure {
         new Transition(
             SuperState.PRE_INTAKE_CORAL,
             SuperState.INTAKE_CORAL,
-            new Trigger(() -> this.atExtension() && intake.hasCoral())));
+            new Trigger(this::atExtension).and(intake::hasCoral)));
 
     transitions.add(
         new Transition(
             SuperState.INTAKE_CORAL,
             SuperState.POST_INTAKE_CORAL,
-            new Trigger(() -> arm.hasPiece() && !Robot.intakeCoralReq.getAsBoolean())));
+            new Trigger(arm::hasPiece).and(() -> !Robot.intakeCoralReq.getAsBoolean())));
 
     transitions.add(
         new Transition(
             SuperState.POST_INTAKE_CORAL,
             SuperState.READY_CORAL,
-            new Trigger(() -> this.atExtension())));
+            new Trigger(this::atExtension)));
 
     // ----L1----
     transitions.add(
@@ -205,7 +205,7 @@ public class Superstructure {
             SuperState.READY_CORAL,
             SuperState.PRE_L1,
             new Trigger(() -> Robot.getCoralTarget() == ReefTarget.L1)
-                .and(new Trigger(() -> arm.hasPiece()))
+                .and(arm::hasPiece)
                 .and(Robot.preScoreReq)));
 
     transitions.add(
@@ -213,7 +213,7 @@ public class Superstructure {
             SuperState.PRE_L1,
             SuperState.L1,
             new Trigger(() -> Robot.getCoralTarget() == ReefTarget.L1)
-                .and(new Trigger(() -> arm.hasPiece()))
+                .and(arm::hasPiece)
                 .and(Robot.scoreReq)));
 
     transitions.add(
@@ -232,7 +232,7 @@ public class Superstructure {
             SuperState.POST_L1,
             SuperState.IDLE,
             new Trigger(
-                () -> !arm.hasPiece() && this.atExtension() && !Robot.scoreReq.getAsBoolean())));
+                () -> !arm.hasPiece()).and(this::atExtension).and(() -> !Robot.scoreReq.getAsBoolean())));
 
     // ----L2----
     transitions.add(
@@ -245,7 +245,7 @@ public class Superstructure {
         new Transition(
             SuperState.PRE_L2,
             SuperState.L2,
-            new Trigger(() -> this.atExtension()).and(Robot.scoreReq)));
+            new Trigger(this::atExtension).and(Robot.scoreReq)));
 
     transitions.add(
         new Transition(
@@ -264,7 +264,7 @@ public class Superstructure {
             SuperState.POST_L2,
             SuperState.IDLE,
             new Trigger(
-                () -> !arm.hasPiece() && this.atExtension() && !Robot.scoreReq.getAsBoolean())));
+                () -> !arm.hasPiece()).and(this::atExtension).and(() -> !Robot.scoreReq.getAsBoolean())));
 
     // ----L3----
     transitions.add(
@@ -277,7 +277,7 @@ public class Superstructure {
         new Transition(
             SuperState.PRE_L3,
             SuperState.L3,
-            new Trigger(() -> this.atExtension()).and(Robot.scoreReq)));
+            new Trigger(this::atExtension).and(Robot.scoreReq)));
 
     transitions.add(
         new Transition(
@@ -296,7 +296,7 @@ public class Superstructure {
             SuperState.POST_L3,
             SuperState.IDLE,
             new Trigger(
-                () -> !arm.hasPiece() && this.atExtension() && !Robot.scoreReq.getAsBoolean())));
+                () -> !arm.hasPiece()).and(this::atExtension).and(() -> !Robot.scoreReq.getAsBoolean())));
 
     // ----L4----
     transitions.add(
@@ -309,7 +309,7 @@ public class Superstructure {
         new Transition(
             SuperState.PRE_L4,
             SuperState.L4,
-            new Trigger(() -> this.atExtension()).and(Robot.scoreReq)));
+            new Trigger(this::atExtension).and(Robot.scoreReq)));
 
     transitions.add(
         new Transition(
@@ -327,7 +327,7 @@ public class Superstructure {
             SuperState.POST_L4,
             SuperState.IDLE,
             new Trigger(
-                () -> !arm.hasPiece() && this.atExtension() && !Robot.scoreReq.getAsBoolean())));
+                () -> !arm.hasPiece()).and(this::atExtension).and(() -> !Robot.scoreReq.getAsBoolean())));
 
     // ---Intake Algae---
     transitions.add(
@@ -344,8 +344,7 @@ public class Superstructure {
             SuperState.INTAKE_ALGAE_REEF_HIGH,
             SuperState.READY_ALGAE,
             new Trigger(
-                () ->
-                    this.atExtension() && arm.hasPiece() && !Robot.intakeAlgaeReq.getAsBoolean())));
+                this::atExtension).and(arm::hasPiece).and(() -> !Robot.intakeAlgaeReq.getAsBoolean())));
 
     transitions.add(
         new Transition(
@@ -361,8 +360,7 @@ public class Superstructure {
             SuperState.INTAKE_ALGAE_REEF_LOW,
             SuperState.READY_ALGAE,
             new Trigger(
-                () ->
-                    this.atExtension() && arm.hasPiece() && !Robot.intakeAlgaeReq.getAsBoolean())));
+                this::atExtension).and(arm::hasPiece).and(() -> !Robot.intakeAlgaeReq.getAsBoolean())));
 
     transitions.add(
         new Transition(
@@ -377,13 +375,13 @@ public class Superstructure {
         new Transition(
             SuperState.INTAKE_ALGAE_GROUND,
             SuperState.POST_INTAKE_ALGAE_GROUND,
-            new Trigger(() -> arm.hasPiece() && !Robot.intakeAlgaeReq.getAsBoolean())));
+            new Trigger(arm::hasPiece).and(() -> !Robot.intakeAlgaeReq.getAsBoolean())));
 
     transitions.add(
         new Transition(
             SuperState.POST_INTAKE_ALGAE_GROUND,
             SuperState.READY_ALGAE,
-            new Trigger(() -> this.atExtension())));
+            new Trigger(this::atExtension)));
 
     // ---Score algae--
     transitions.add(
@@ -397,7 +395,7 @@ public class Superstructure {
         new Transition(
             SuperState.PRE_PROCESSOR,
             SuperState.PROCESSOR,
-            new Trigger(() -> this.atExtension()).and(Robot.scoreReq)));
+            new Trigger(this::atExtension).and(Robot.scoreReq)));
 
     transitions.add(
         new Transition(
@@ -417,7 +415,7 @@ public class Superstructure {
         new Transition(
             SuperState.PRE_BARGE,
             SuperState.BARGE,
-            new Trigger(() -> this.atExtension()).and(Robot.scoreReq)));
+            new Trigger(this::atExtension).and(Robot.scoreReq)));
 
     transitions.add(
         new Transition(
