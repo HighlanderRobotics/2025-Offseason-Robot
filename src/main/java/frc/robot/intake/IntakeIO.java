@@ -14,9 +14,13 @@ public interface IntakeIO {
     public Rotation2d motorPosition = new Rotation2d();
     public Rotation2d cancoderPosition = new Rotation2d();
     public boolean canrange = false;
+    public double pivotVoltage = 0.0;
   }
 
   public void updateInputs(final IntakeIOInputs inputs);
+
+  /*** Sets the voltage for the pivot. Voltage for the rollers are handled in RollerIOReal*/
+  public void setPivotVoltage(final double voltage);
 
   public void setPivotAngle(final Rotation2d position);
 

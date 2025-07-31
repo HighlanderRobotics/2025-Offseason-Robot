@@ -28,6 +28,7 @@ import frc.robot.elevator.ElevatorIOReal;
 import frc.robot.elevator.ElevatorIOSim;
 import frc.robot.elevator.ElevatorSubsystem;
 import frc.robot.intake.IntakeIOReal;
+import frc.robot.intake.IntakeIOSim;
 import frc.robot.intake.IntakeSubsystem;
 import frc.robot.roller.RollerIOReal;
 import frc.robot.roller.RollerIOSim;
@@ -102,14 +103,6 @@ public class Robot extends LoggedRobot {
   public static Trigger intakeCoralReq =
       new Trigger(() -> SmartDashboard.getBoolean("intakereq", false));
 
-  @AutoLogOutput
-  public static Trigger preClimbReq =
-      new Trigger(() -> SmartDashboard.getBoolean("intakereq", false));
-
-  @AutoLogOutput
-  public static Trigger climbReq =
-      new Trigger(() -> SmartDashboard.getBoolean("intakereq", false));
-
   // ---instantiate subsystems---
   private final ElevatorSubsystem elevator =
       new ElevatorSubsystem(
@@ -123,7 +116,10 @@ public class Robot extends LoggedRobot {
           new BeambreakIOReal(0, false));
   private final IntakeSubsystem intake =
       new IntakeSubsystem(
-          new IntakeIOReal(), new RollerIOReal(new TalonFXConfiguration(), false, 13));
+          ROBOT_TYPE != RobotType.SIM ? new IntakeIOReal() : new IntakeIOSim(),
+          ROBOT_TYPE != RobotType.SIM
+              ? new RollerIOReal(new TalonFXConfiguration(), false, 13)
+              : new RollerIOSim(0.01, 0.2)); // idk but idc
   private final RoutingSubsystem routing =
       new RoutingSubsystem(
           new RollerIOReal(new TalonFXConfiguration(), false, 14, 15),
@@ -138,16 +134,22 @@ public class Robot extends LoggedRobot {
 
   // ---instantiate mechanism sims---
   private final LoggedMechanism2d elevatorMech2d =
-      new LoggedMechanism2d(3.0, Units.feetToMeters(4.0));
+      new LoggedMechanism2d(3.0, Units.feetToMeters(6.0));
   private final LoggedMechanismRoot2d elevatorRoot =
       elevatorMech2d.getRoot(
           "Elevator",
-          Units.inchesToMeters(21.5),
+          Units.inchesToMeters(21.5 + 20),
           0.0); // CAD distance from origin to center of carriage at full retraction
   private final LoggedMechanismLigament2d carriageLigament =
       new LoggedMechanismLigament2d("Carriage", 0, 90);
   private final LoggedMechanismLigament2d armLigament =
       new LoggedMechanismLigament2d("Arm", Units.inchesToMeters(15.7), 120);
+  private final LoggedMechanismRoot2d intakeRoot =
+      elevatorMech2d.getRoot("Intake Root", Units.inchesToMeters(2 + 20), 0.0);
+  private final LoggedMechanismLigament2d intakeBaseLigament =
+      new LoggedMechanismLigament2d("Intake Base", 0, 90);
+  private final LoggedMechanismLigament2d intakePivotLigament =
+      new LoggedMechanismLigament2d("Intake Pivot", Units.inchesToMeters(18), 90);
 
   @SuppressWarnings("resource")
   public Robot() {
@@ -209,7 +211,9 @@ public class Robot extends LoggedRobot {
                 SmartDashboard.putBoolean(
                     "prescorereq", !SmartDashboard.getBoolean("prescorereq", false))));
     SmartDashboard.putData(
-        "toggle bb", Commands.runOnce(() -> arm.setSimBeambreak(!arm.hasPiece())));
+        "toggle arm bb", Commands.runOnce(() -> arm.setSimBeambreak(!arm.hasPiece())));
+    SmartDashboard.putData(
+        "toggle intake bb", Commands.runOnce(() -> intake.setSimBeambreak(!intake.hasCoral())));
     SmartDashboard.putData(
         "toggle intake algae req",
         Commands.runOnce(
@@ -236,6 +240,8 @@ public class Robot extends LoggedRobot {
     // ---add sim mechanisms---
     elevatorRoot.append(carriageLigament);
     carriageLigament.append(armLigament);
+    intakeRoot.append(intakeBaseLigament);
+    intakeBaseLigament.append(intakePivotLigament);
   }
 
   @Override
@@ -253,6 +259,9 @@ public class Robot extends LoggedRobot {
     carriageLigament.setLength(elevator.getExtensionMeters());
     armLigament.setAngle(arm.getAngle().getDegrees());
     armLigament.setColor(new Color8Bit(Color.kPurple));
+    intakeBaseLigament.setLength(Units.inchesToMeters(11.3));
+    intakePivotLigament.setColor(new Color8Bit(Color.kBlue));
+    intakePivotLigament.setAngle(intake.getAngle().getDegrees());
     if (Robot.ROBOT_TYPE != RobotType.REAL)
       Logger.recordOutput("Mechanism/Elevator", elevatorMech2d);
 

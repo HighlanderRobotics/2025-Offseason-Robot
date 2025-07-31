@@ -21,7 +21,7 @@ public interface ArmIO {
 
   public void updateInputs(final ArmIOInputs inputs);
 
-  /*** Sets the voltage for the pivot. Voltage for the rollers are handled in RollerIOReal. I think this should only be needed for zeroing? */
+  /*** Sets the voltage for the pivot. Voltage for the rollers are handled in RollerIOReal*/
   public void setPivotVoltage(final double voltage);
 
   public void setPivotAngle(final Rotation2d position);

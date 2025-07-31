@@ -4,11 +4,6 @@
 
 package frc.robot;
 
-import java.util.ArrayList;
-import java.util.function.Supplier;
-
-import org.littletonrobotics.junction.Logger;
-
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -26,6 +21,9 @@ import frc.robot.intake.IntakeSubsystem;
 import frc.robot.intake.IntakeSubsystem.IntakeState;
 import frc.robot.routing.RoutingSubsystem;
 import frc.robot.routing.RoutingSubsystem.RoutingState;
+import java.util.ArrayList;
+import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 
 public class Superstructure {
 
@@ -427,19 +425,14 @@ public class Superstructure {
             SuperState.IDLE,
             new Trigger(() -> !Robot.scoreReq.getAsBoolean()).and(() -> !arm.hasPiece())));
 
-    //---Climb---
-    transitions.add(
-        new Transition(
-            SuperState.IDLE,
-            SuperState.PRE_CLIMB,
-            Robot.preClimbReq));
+    // ---Climb---
+    // transitions.add(new Transition(SuperState.IDLE, SuperState.PRE_CLIMB, Robot.preClimbReq));
 
-    transitions.add(
-        new Transition(
-            SuperState.PRE_CLIMB,
-            SuperState.CLIMB,
-            Robot.climbReq
-                .and(() -> this.atExtension()))); //check climber current?
+    // transitions.add(
+    //     new Transition(
+    //         SuperState.PRE_CLIMB,
+    //         SuperState.CLIMB,
+    //         Robot.climbReq.and(() -> this.atExtension()))); // check climber current?
 
     // maps triggers to the transitions
     for (Transition t : transitions) {
