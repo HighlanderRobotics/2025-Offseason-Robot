@@ -6,61 +6,24 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.Robot.RobotType;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class ArmSubsystem extends SubsystemBase {
   // constants
   // TODO: change to real values
-  public static final double PIVOT_RATIO = 10;
+  public static final double PIVOT_RATIO = (44.0 / 16.0) * 23;
   public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(180);
   public static final Rotation2d MIN_ANGLE = Rotation2d.fromDegrees(0);
 
   private ArmIO io;
   private ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
 
-  private ArmState armState = ArmState.IDLE;
-  private IntakeState intakeState = IntakeState.IDLE;
+  @AutoLogOutput(key = "Arm/State") // why do i need this
+  private ArmState state = ArmState.IDLE;
 
   public ArmSubsystem(ArmIO io) {
     this.io = io;
-  }
-
-  @Override
-  public void periodic() {
-    io.updateInputs(inputs);
-    Logger.processInputs("arm", inputs);
-  }
-
-  public Command setTargetAngle(Rotation2d target) {
-    return setTargetAngle(() -> target);
-  }
-
-  public Command setTargetAngle(Supplier<Rotation2d> target) {
-    return this.runOnce(
-            () -> {
-              if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("arm", target.get());
-            })
-        .andThen(this.run(() -> io.setMotorPosition(target.get())));
-  }
-
-  public void setMotorVoltage(double voltage) {
-    io.setMotorVoltage(voltage);
-  }
-
-  public void setMotorPosition(Rotation2d targetPosition) {
-    io.setMotorPosition(targetPosition);
-  }
-
-  public void setRollerVoltage(double voltage) {
-    io.setRollerVoltage(voltage);
-  }
-
-  public void setArmState(ArmState state) {
-    this.armState = state;
-  }
-
-  public void setIntakeState(IntakeState state) {
-    this.intakeState = state;
   }
 
   // TODO : change these values to the real ones
@@ -96,15 +59,29 @@ public class ArmSubsystem extends SubsystemBase {
     }
   }
 
-  public enum IntakeState {
-    IDLE(0.0),
-    INTAKE(10.0), // prob add intake/outtake algae and intake coral as different states
-    OUTTAKE(-10.0);
+  @Override
+  public void periodic() {
+    io.updateInputs(inputs);
+    Logger.processInputs("Arm", inputs);
+  }
 
-    public final double voltage;
+  public Command setTargetAngle(Rotation2d target) {
+    return setTargetAngle(() -> target);
+  }
 
-    IntakeState(double voltage) {
-      this.voltage = voltage;
-    }
+  public Command setTargetAngle(Supplier<Rotation2d> target) {
+    return this.runOnce(
+        () -> {
+          if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("Arm", target.get());
+          io.setMotorPosition(target.get());
+        });
+  }
+
+  public void setRollerVoltage(double voltage) {
+    io.setRollerVoltage(voltage);
+  }
+
+  public void setArmState(ArmState state) {
+    this.state = state;
   }
 }

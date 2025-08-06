@@ -1,6 +1,5 @@
 package frc.robot.elevator;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -44,7 +43,7 @@ public class ElevatorIOSim implements ElevatorIO {
   @Override
   public void setVoltage(final double volts) {
     this.volts = volts;
-    sim.setInputVoltage(MathUtil.clamp(volts, -12.0, 12.0));
+    sim.setInputVoltage(volts);
   }
 
   @Override

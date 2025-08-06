@@ -152,13 +152,6 @@ public class ElevatorSubsystem extends SubsystemBase {
     return this.setVoltage(voltage.getAsDouble());
   }
 
-  // public Command setCurrent(double amps) {
-  //   return this.run(
-  //       () -> {
-  //         io.setCurrent(amps);
-  //       });
-  // }
-
   public Command runCurrentZeroing() {
     return this.run(
             () -> {

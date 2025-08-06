@@ -10,11 +10,10 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.arm.ArmSubsystem;
 import frc.robot.arm.ArmSubsystem.ArmState;
-import frc.robot.arm.ArmSubsystem.IntakeState;
 import frc.robot.elevator.ElevatorSubsystem;
 import frc.robot.elevator.ElevatorSubsystem.ElevatorState;
-// import frc.robot.intake.IntakeSubsystem;
-// import frc.robot.intake.IntakeSubsystem.IntakeState;
+import frc.robot.intake.IntakeSubsystem;
+import frc.robot.intake.IntakeSubsystem.IntakeState;
 import java.util.ArrayList;
 
 public class Superstructure {
@@ -26,26 +25,25 @@ public class Superstructure {
   public enum SuperState {
     IDLE(ElevatorState.IDLE, ArmState.IDLE, IntakeState.IDLE),
     READY_CORAL(ElevatorState.READY_CORAL, ArmState.IDLE, IntakeState.IDLE),
-    PRE_INTAKE_CORAL_GROUND(
-        ElevatorState.PRE_INTAKE_CORAL_GROUND, ArmState.IDLE, IntakeState.INTAKE),
-    INTAKE_CORAL_GROUND(ElevatorState.INTAKE_CORAL_GROUND, ArmState.IDLE, IntakeState.INTAKE),
-    L1(ElevatorState.L1, ArmState.L1, IntakeState.INTAKE),
-    PRE_L2(ElevatorState.PRE_L2, ArmState.PRE_L2, IntakeState.INTAKE),
-    L2(ElevatorState.L2, ArmState.L2, IntakeState.INTAKE),
-    PRE_L3(ElevatorState.PRE_L3, ArmState.PRE_L3, IntakeState.INTAKE),
-    L3(ElevatorState.L3, ArmState.L3, IntakeState.INTAKE),
-    PRE_L4(ElevatorState.PRE_L4, ArmState.PRE_L4, IntakeState.INTAKE),
-    L4(ElevatorState.L4, ArmState.L4, IntakeState.INTAKE),
+    PRE_INTAKE_CORAL_GROUND(ElevatorState.PRE_INTAKE_CORAL_GROUND, ArmState.IDLE, IntakeState.IDLE),
+    INTAKE_CORAL_GROUND(ElevatorState.INTAKE_CORAL_GROUND, ArmState.IDLE, IntakeState.IDLE),
+    L1(ElevatorState.L1, ArmState.L1, IntakeState.IDLE),
+    PRE_L2(ElevatorState.PRE_L2, ArmState.PRE_L2, IntakeState.IDLE),
+    L2(ElevatorState.L2, ArmState.L2, IntakeState.IDLE),
+    PRE_L3(ElevatorState.PRE_L3, ArmState.PRE_L3, IntakeState.IDLE),
+    L3(ElevatorState.L3, ArmState.L3, IntakeState.IDLE),
+    PRE_L4(ElevatorState.PRE_L4, ArmState.PRE_L4, IntakeState.IDLE),
+    L4(ElevatorState.L4, ArmState.L4, IntakeState.IDLE),
     POST_L4(ElevatorState.POST_L4, ArmState.POST_L4, IntakeState.IDLE),
     INTAKE_ALGAE_REEF_HIGH(
-        ElevatorState.INTAKE_ALGAE_REEF_HIGH, ArmState.INTAKE_ALGAE_REEF_HIGH, IntakeState.INTAKE),
+        ElevatorState.INTAKE_ALGAE_REEF_HIGH, ArmState.INTAKE_ALGAE_REEF_HIGH, IntakeState.IDLE),
     INTAKE_ALGAE_REEF_LOW(
-        ElevatorState.INTAKE_ALGAE_REEF_LOW, ArmState.INTAKE_ALGAE_REEF_LOW, IntakeState.INTAKE),
+        ElevatorState.INTAKE_ALGAE_REEF_LOW, ArmState.INTAKE_ALGAE_REEF_LOW, IntakeState.IDLE),
     INTAKE_ALGAE_GROUND(
-        ElevatorState.INTAKE_ALGAE_GROUND, ArmState.INTAKE_ALGAE_GROUND, IntakeState.INTAKE),
-    BARGE(ElevatorState.BARGE, ArmState.BARGE, IntakeState.OUTTAKE),
+        ElevatorState.INTAKE_ALGAE_GROUND, ArmState.INTAKE_ALGAE_GROUND, IntakeState.IDLE),
+    BARGE(ElevatorState.BARGE, ArmState.BARGE, IntakeState.IDLE),
     READY_ALGAE(ElevatorState.READY_ALGAE, ArmState.READY_ALGAE, IntakeState.IDLE),
-    PROCESSOR(ElevatorState.PROCESSOR, ArmState.PROCESSOR, IntakeState.OUTTAKE),
+    PROCESSOR(ElevatorState.PROCESSOR, ArmState.PROCESSOR, IntakeState.IDLE),
     PRE_CLIMB(ElevatorState.PRE_CLIMB, ArmState.PRE_CLIMB, IntakeState.IDLE),
     CLIMB(ElevatorState.CLIMB, ArmState.CLIMB, IntakeState.IDLE);
 
@@ -80,11 +78,13 @@ public class Superstructure {
 
   private final ElevatorSubsystem elevator;
   private final ArmSubsystem arm;
+  private final IntakeSubsystem intake;
 
   /** Creates a new Superstructure. */
-  public Superstructure(ElevatorSubsystem elevator, ArmSubsystem arm) {
+  public Superstructure(ElevatorSubsystem elevator, ArmSubsystem arm, IntakeSubsystem intake) {
     this.elevator = elevator;
     this.arm = arm;
+    this.intake = intake;
 
     addTransitions();
   }
@@ -118,6 +118,6 @@ public class Superstructure {
   private void setSubstates() {
     elevator.setState(state.elevatorState);
     arm.setArmState(state.armState);
-    arm.setIntakeState(state.intakeState);
+    intake.setState(state.intakeState);
   }
 }

@@ -8,12 +8,16 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.arm.ArmIOReal;
 import frc.robot.arm.ArmIOSim;
 import frc.robot.arm.ArmSubsystem;
-// import frc.robot.shoulder.ShoulderSubsystem;
-// import frc.robot.intake.IntakeSubsystem;
 import frc.robot.elevator.ElevatorIOReal;
 import frc.robot.elevator.ElevatorIOSim;
 import frc.robot.elevator.ElevatorSubsystem;
+import frc.robot.intake.IntakeSubsystem;
+import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGReader;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 public class Robot extends LoggedRobot {
   public static final RobotType ROBOT_TYPE = Robot.isReal() ? RobotType.REAL : RobotType.SIM;
@@ -30,16 +34,35 @@ public class Robot extends LoggedRobot {
 
   private final ArmSubsystem arm =
       new ArmSubsystem(ROBOT_TYPE != RobotType.SIM ? new ArmIOReal() : new ArmIOSim());
-  // private final ShoulderSubsystem shoulder = new ShoulderSubsystem();
-  // private final IntakeSubsystem intake = new IntakeSubsystem();
 
-  private final Superstructure superstructure = new Superstructure(elevator, arm);
+  private final IntakeSubsystem intake = new IntakeSubsystem();
 
-  public Robot() {}
+  private final Superstructure superstructure = new Superstructure(elevator, arm, intake);
+
+  public Robot() {
+    Logger.recordMetadata("ProjectName", "MyProject"); // Set a metadata value
+
+    if (isReal()) {
+      Logger.addDataReceiver(new WPILOGWriter()); // Log to a USB stick ("/U/logs")
+      Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
+    } else {
+      setUseTiming(false); // Run as fast as possible
+      String logPath =
+          LogFileUtil
+              .findReplayLog(); // Pull the replay log from AdvantageScope (or prompt the user)
+      Logger.setReplaySource(new WPILOGReader(logPath)); // Read replay log
+      Logger.addDataReceiver(
+          new WPILOGWriter(
+              LogFileUtil.addPathSuffix(logPath, "_sim"))); // Save outputs to a new log
+    }
+    Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may
+    // be added.
+  }
 
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
+    superstructure.periodic();
   }
 
   @Override

@@ -17,17 +17,18 @@ public class ArmIOSim implements ArmIO {
   private final SingleJointedArmSim armSim =
       new SingleJointedArmSim(
           DCMotor.getKrakenX60Foc(1),
-          ArmSubsystem.PIVOT_RATIO, // pivot ratio
+          ArmSubsystem.PIVOT_RATIO,
           0.1,
-          Units.inchesToMeters(20), // arm length
+          Units.inchesToMeters(25), // arm length
           ArmSubsystem.MIN_ANGLE.getRadians(), // min angle
           ArmSubsystem.MAX_ANGLE.getRadians(), // max angle
           true,
           0.0);
 
   private final ProfiledPIDController pivotPid =
-      new ProfiledPIDController(0.0, 0.0, 0.0, new TrapezoidProfile.Constraints(10.0, 10.0));
-  private final ArmFeedforward pivotFf = new ArmFeedforward(0.0, 0.0, 0.0);
+      // TODO tune these values
+      new ProfiledPIDController(2.0, 0.0, 0.0, new TrapezoidProfile.Constraints(10.0, 10.0));
+  private final ArmFeedforward pivotFf = new ArmFeedforward(0.2, 0.2, 0.2);
 
   private double appliedVoltage = 0.0;
 
@@ -59,9 +60,5 @@ public class ArmIOSim implements ArmIO {
   @Override
   public void setRollerVoltage(double voltage) {
     // not gonna simulate the rollers
-  }
-
-  public void setResetSimState() {
-    armSim.setState(0.0, 0.0);
   }
 }
