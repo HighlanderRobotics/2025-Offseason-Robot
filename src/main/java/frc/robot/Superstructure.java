@@ -4,10 +4,6 @@
 
 package frc.robot;
 
-import java.util.function.Supplier;
-
-import org.littletonrobotics.junction.Logger;
-
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -25,6 +21,8 @@ import frc.robot.intake.IntakeSubsystem;
 import frc.robot.intake.IntakeSubsystem.IntakeState;
 import frc.robot.routing.RoutingSubsystem;
 import frc.robot.routing.RoutingSubsystem.RoutingState;
+import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 
 public class Superstructure {
 
@@ -172,7 +170,7 @@ public class Superstructure {
   private void bindTransition(SuperState start, SuperState end, Trigger trigger) {
     // maps triggers to the transitions
     trigger.and(new Trigger(() -> state == start)).onTrue(changeStateTo(end));
-    }
+  }
 
   private void addTransitions() {
     // ----Intake coral----
@@ -182,214 +180,209 @@ public class Superstructure {
         Robot.intakeCoralReq.and(() -> !arm.hasPiece()));
 
     bindTransition(
-            SuperState.PRE_INTAKE_CORAL,
-            SuperState.INTAKE_CORAL,
-            new Trigger(this::atExtension).and(intake::hasCoral));
+        SuperState.PRE_INTAKE_CORAL,
+        SuperState.INTAKE_CORAL,
+        new Trigger(this::atExtension).and(intake::hasCoral));
 
     bindTransition(
-            SuperState.INTAKE_CORAL,
-            SuperState.POST_INTAKE_CORAL,
-            new Trigger(arm::hasPiece).and(() -> !Robot.intakeCoralReq.getAsBoolean()));
+        SuperState.INTAKE_CORAL,
+        SuperState.POST_INTAKE_CORAL,
+        new Trigger(arm::hasPiece).and(() -> !Robot.intakeCoralReq.getAsBoolean()));
 
     bindTransition(
-            SuperState.POST_INTAKE_CORAL,
-            SuperState.READY_CORAL,
-            new Trigger(this::atExtension));
+        SuperState.POST_INTAKE_CORAL, SuperState.READY_CORAL, new Trigger(this::atExtension));
 
     // ----L1----
     bindTransition(
-            SuperState.READY_CORAL,
-            SuperState.PRE_L1,
-            new Trigger(() -> Robot.getCoralTarget() == ReefTarget.L1)
-                .and(arm::hasPiece)
-                .and(Robot.preScoreReq));
+        SuperState.READY_CORAL,
+        SuperState.PRE_L1,
+        new Trigger(() -> Robot.getCoralTarget() == ReefTarget.L1)
+            .and(arm::hasPiece)
+            .and(Robot.preScoreReq));
 
     bindTransition(
-            SuperState.PRE_L1,
-            SuperState.L1,
-            new Trigger(() -> Robot.getCoralTarget() == ReefTarget.L1)
-                .and(arm::hasPiece)
-                .and(Robot.scoreReq));
+        SuperState.PRE_L1,
+        SuperState.L1,
+        new Trigger(() -> Robot.getCoralTarget() == ReefTarget.L1)
+            .and(arm::hasPiece)
+            .and(Robot.scoreReq));
 
     bindTransition(
-            SuperState.L1,
-            SuperState.POST_L1,
-            new Trigger(
-                () ->
-                    !arm.hasPiece()
-                        && !Robot.scoreReq
-                            .getAsBoolean())); // also might need to check that it's backed away
+        SuperState.L1,
+        SuperState.POST_L1,
+        new Trigger(
+            () ->
+                !arm.hasPiece()
+                    && !Robot.scoreReq
+                        .getAsBoolean())); // also might need to check that it's backed away
     // from the reef?
 
     bindTransition(
-            SuperState.POST_L1,
-            SuperState.IDLE,
-            new Trigger(
-                () -> !arm.hasPiece()).and(this::atExtension).and(() -> !Robot.scoreReq.getAsBoolean()));
+        SuperState.POST_L1,
+        SuperState.IDLE,
+        new Trigger(() -> !arm.hasPiece())
+            .and(this::atExtension)
+            .and(() -> !Robot.scoreReq.getAsBoolean()));
 
     // ----L2----
     bindTransition(
-            SuperState.READY_CORAL,
-            SuperState.PRE_L2,
-            new Trigger(() -> Robot.getCoralTarget() == ReefTarget.L2).and(Robot.preScoreReq));
+        SuperState.READY_CORAL,
+        SuperState.PRE_L2,
+        new Trigger(() -> Robot.getCoralTarget() == ReefTarget.L2).and(Robot.preScoreReq));
 
     bindTransition(
-            SuperState.PRE_L2,
-            SuperState.L2,
-            new Trigger(this::atExtension).and(Robot.scoreReq));
+        SuperState.PRE_L2, SuperState.L2, new Trigger(this::atExtension).and(Robot.scoreReq));
 
     bindTransition(
-            SuperState.L2,
-            SuperState.POST_L2,
-            new Trigger(
-                () ->
-                    !Robot.scoreReq
-                        .getAsBoolean())); // also might need to check that it HASN'T backed away
+        SuperState.L2,
+        SuperState.POST_L2,
+        new Trigger(
+            () ->
+                !Robot.scoreReq
+                    .getAsBoolean())); // also might need to check that it HASN'T backed away
     // from the reef?
     // also my gutfeel is that it should check the beambreak here but if it's on the pole it'll
     // still pick up on the coral?
 
     bindTransition(
-            SuperState.POST_L2,
-            SuperState.IDLE,
-            new Trigger(
-                () -> !arm.hasPiece()).and(this::atExtension).and(() -> !Robot.scoreReq.getAsBoolean()));
+        SuperState.POST_L2,
+        SuperState.IDLE,
+        new Trigger(() -> !arm.hasPiece())
+            .and(this::atExtension)
+            .and(() -> !Robot.scoreReq.getAsBoolean()));
 
     // ----L3----
     bindTransition(
-            SuperState.READY_CORAL,
-            SuperState.PRE_L3,
-            new Trigger(() -> Robot.getCoralTarget() == ReefTarget.L3).and(Robot.preScoreReq));
+        SuperState.READY_CORAL,
+        SuperState.PRE_L3,
+        new Trigger(() -> Robot.getCoralTarget() == ReefTarget.L3).and(Robot.preScoreReq));
 
     bindTransition(
-            SuperState.PRE_L3,
-            SuperState.L3,
-            new Trigger(this::atExtension).and(Robot.scoreReq));
+        SuperState.PRE_L3, SuperState.L3, new Trigger(this::atExtension).and(Robot.scoreReq));
 
     bindTransition(
-            SuperState.L3,
-            SuperState.POST_L3,
-            new Trigger(
-                () ->
-                    !Robot.scoreReq
-                        .getAsBoolean())); // also might need to check that it HASN'T backed away
+        SuperState.L3,
+        SuperState.POST_L3,
+        new Trigger(
+            () ->
+                !Robot.scoreReq
+                    .getAsBoolean())); // also might need to check that it HASN'T backed away
     // from the reef?
     // also my gutfeel is that it should check the beambreak here but if it's on the pole it'll
     // still pick up on the coral?
 
     bindTransition(
-            SuperState.POST_L3,
-            SuperState.IDLE,
-            new Trigger(
-                () -> !arm.hasPiece()).and(this::atExtension).and(() -> !Robot.scoreReq.getAsBoolean()));
+        SuperState.POST_L3,
+        SuperState.IDLE,
+        new Trigger(() -> !arm.hasPiece())
+            .and(this::atExtension)
+            .and(() -> !Robot.scoreReq.getAsBoolean()));
 
     // ----L4----
     bindTransition(
-            SuperState.READY_CORAL,
-            SuperState.PRE_L4,
-            new Trigger(() -> Robot.getCoralTarget() == ReefTarget.L4).and(Robot.preScoreReq));
+        SuperState.READY_CORAL,
+        SuperState.PRE_L4,
+        new Trigger(() -> Robot.getCoralTarget() == ReefTarget.L4).and(Robot.preScoreReq));
 
     bindTransition(
-            SuperState.PRE_L4,
-            SuperState.L4,
-            new Trigger(this::atExtension).and(Robot.scoreReq));
+        SuperState.PRE_L4, SuperState.L4, new Trigger(this::atExtension).and(Robot.scoreReq));
 
     bindTransition(
-            SuperState.L4,
-            SuperState.POST_L4,
-            new Trigger(() -> !Robot.scoreReq.getAsBoolean())
-                .and(
-                    () -> !arm.hasPiece())); // also might need to check that it HASN'T backed away
+        SuperState.L4,
+        SuperState.POST_L4,
+        new Trigger(() -> !Robot.scoreReq.getAsBoolean())
+            .and(() -> !arm.hasPiece())); // also might need to check that it HASN'T backed away
     // from the reef?
     // also my gutfeel is that it should check the beambreak here but if it's on the pole it'll
     // still pick up on the coral?
 
     bindTransition(
-            SuperState.POST_L4,
-            SuperState.IDLE,
-            new Trigger(
-                () -> !arm.hasPiece()).and(this::atExtension).and(() -> !Robot.scoreReq.getAsBoolean()));
+        SuperState.POST_L4,
+        SuperState.IDLE,
+        new Trigger(() -> !arm.hasPiece())
+            .and(this::atExtension)
+            .and(() -> !Robot.scoreReq.getAsBoolean()));
 
     // ---Intake Algae---
     bindTransition(
-            SuperState.IDLE,
-            SuperState.INTAKE_ALGAE_REEF_HIGH,
-            Robot.intakeAlgaeReq
-                .and(new Trigger(() -> Robot.getAlgaeIntakeTarget() == AlgaeIntakeTarget.HIGH))
-                .and(() -> !arm.hasPiece())); // TODO should probably do better checks for specific
+        SuperState.IDLE,
+        SuperState.INTAKE_ALGAE_REEF_HIGH,
+        Robot.intakeAlgaeReq
+            .and(new Trigger(() -> Robot.getAlgaeIntakeTarget() == AlgaeIntakeTarget.HIGH))
+            .and(() -> !arm.hasPiece())); // TODO should probably do better checks for specific
     // pieces (prob what the last intakereq was)
 
     bindTransition(
-            SuperState.INTAKE_ALGAE_REEF_HIGH,
-            SuperState.READY_ALGAE,
-            new Trigger(
-                this::atExtension).and(arm::hasPiece).and(() -> !Robot.intakeAlgaeReq.getAsBoolean()));
+        SuperState.INTAKE_ALGAE_REEF_HIGH,
+        SuperState.READY_ALGAE,
+        new Trigger(this::atExtension)
+            .and(arm::hasPiece)
+            .and(() -> !Robot.intakeAlgaeReq.getAsBoolean()));
 
     bindTransition(
-            SuperState.IDLE,
-            SuperState.INTAKE_ALGAE_REEF_LOW,
-            Robot.intakeAlgaeReq
-                .and(new Trigger(() -> Robot.getAlgaeIntakeTarget() == AlgaeIntakeTarget.LOW))
-                .and(() -> !arm.hasPiece())); // TODO should probably do better checks for specific
+        SuperState.IDLE,
+        SuperState.INTAKE_ALGAE_REEF_LOW,
+        Robot.intakeAlgaeReq
+            .and(new Trigger(() -> Robot.getAlgaeIntakeTarget() == AlgaeIntakeTarget.LOW))
+            .and(() -> !arm.hasPiece())); // TODO should probably do better checks for specific
     // pieces (prob what the last intakereq was)
 
     bindTransition(
-            SuperState.INTAKE_ALGAE_REEF_LOW,
-            SuperState.READY_ALGAE,
-            new Trigger(
-                this::atExtension).and(arm::hasPiece).and(() -> !Robot.intakeAlgaeReq.getAsBoolean()));
+        SuperState.INTAKE_ALGAE_REEF_LOW,
+        SuperState.READY_ALGAE,
+        new Trigger(this::atExtension)
+            .and(arm::hasPiece)
+            .and(() -> !Robot.intakeAlgaeReq.getAsBoolean()));
 
     bindTransition(
-            SuperState.IDLE,
-            SuperState.INTAKE_ALGAE_GROUND,
-            Robot.intakeAlgaeReq
-                .and(new Trigger(() -> Robot.getAlgaeIntakeTarget() == AlgaeIntakeTarget.GROUND))
-                .and(() -> !arm.hasPiece())); // TODO should probably do better checks for specific
+        SuperState.IDLE,
+        SuperState.INTAKE_ALGAE_GROUND,
+        Robot.intakeAlgaeReq
+            .and(new Trigger(() -> Robot.getAlgaeIntakeTarget() == AlgaeIntakeTarget.GROUND))
+            .and(() -> !arm.hasPiece())); // TODO should probably do better checks for specific
     // pieces (prob what the last intakereq was)
 
     bindTransition(
-            SuperState.INTAKE_ALGAE_GROUND,
-            SuperState.POST_INTAKE_ALGAE_GROUND,
-            new Trigger(arm::hasPiece).and(() -> !Robot.intakeAlgaeReq.getAsBoolean()));
+        SuperState.INTAKE_ALGAE_GROUND,
+        SuperState.POST_INTAKE_ALGAE_GROUND,
+        new Trigger(arm::hasPiece).and(() -> !Robot.intakeAlgaeReq.getAsBoolean()));
 
     bindTransition(
-            SuperState.POST_INTAKE_ALGAE_GROUND,
-            SuperState.READY_ALGAE,
-            new Trigger(this::atExtension));
+        SuperState.POST_INTAKE_ALGAE_GROUND,
+        SuperState.READY_ALGAE,
+        new Trigger(this::atExtension));
 
     // ---Score algae--
     bindTransition(
-            SuperState.READY_ALGAE,
-            SuperState.PRE_PROCESSOR,
-            new Trigger(() -> Robot.getAlgaeScoreTarget() == AlgaeScoreTarget.PROCESSOR)
-                .and(Robot.preScoreReq));
+        SuperState.READY_ALGAE,
+        SuperState.PRE_PROCESSOR,
+        new Trigger(() -> Robot.getAlgaeScoreTarget() == AlgaeScoreTarget.PROCESSOR)
+            .and(Robot.preScoreReq));
 
     bindTransition(
-            SuperState.PRE_PROCESSOR,
-            SuperState.PROCESSOR,
-            new Trigger(this::atExtension).and(Robot.scoreReq));
+        SuperState.PRE_PROCESSOR,
+        SuperState.PROCESSOR,
+        new Trigger(this::atExtension).and(Robot.scoreReq));
 
     bindTransition(
-            SuperState.PROCESSOR,
-            SuperState.IDLE,
-            new Trigger(() -> !Robot.scoreReq.getAsBoolean()).and(() -> !arm.hasPiece()));
+        SuperState.PROCESSOR,
+        SuperState.IDLE,
+        new Trigger(() -> !Robot.scoreReq.getAsBoolean()).and(() -> !arm.hasPiece()));
 
     // TODO this assumes, perhaps naively, that there's no intermediate barge extension!
     bindTransition(
-            SuperState.READY_ALGAE,
-            SuperState.PRE_BARGE,
-            new Trigger(() -> Robot.getAlgaeScoreTarget() == AlgaeScoreTarget.BARGE)
-                .and(Robot.preScoreReq));
+        SuperState.READY_ALGAE,
+        SuperState.PRE_BARGE,
+        new Trigger(() -> Robot.getAlgaeScoreTarget() == AlgaeScoreTarget.BARGE)
+            .and(Robot.preScoreReq));
 
     bindTransition(
-            SuperState.PRE_BARGE,
-            SuperState.BARGE,
-            new Trigger(this::atExtension).and(Robot.scoreReq));
+        SuperState.PRE_BARGE, SuperState.BARGE, new Trigger(this::atExtension).and(Robot.scoreReq));
 
     bindTransition(
-            SuperState.BARGE,
-            SuperState.IDLE,
-            new Trigger(() -> !Robot.scoreReq.getAsBoolean()).and(() -> !arm.hasPiece()));
+        SuperState.BARGE,
+        SuperState.IDLE,
+        new Trigger(() -> !Robot.scoreReq.getAsBoolean()).and(() -> !arm.hasPiece()));
 
     // ---Climb---
     // transitions.add(new Transition(SuperState.IDLE, SuperState.PRE_CLIMB, Robot.preClimbReq));
