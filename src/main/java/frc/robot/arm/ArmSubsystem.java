@@ -19,7 +19,7 @@ public class ArmSubsystem extends SubsystemBase {
   private ArmIO io;
   private ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
 
-  @AutoLogOutput(key = "Arm/State") // why do i need this
+  @AutoLogOutput(key = "Arm/State")
   private ArmState state = ArmState.IDLE;
 
   public ArmSubsystem(ArmIO io) {
@@ -75,10 +75,6 @@ public class ArmSubsystem extends SubsystemBase {
           if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("Arm", target.get());
           io.setMotorPosition(target.get());
         });
-  }
-
-  public void setRollerVoltage(double voltage) {
-    io.setRollerVoltage(voltage);
   }
 
   public void setArmState(ArmState state) {

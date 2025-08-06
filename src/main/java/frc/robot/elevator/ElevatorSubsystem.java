@@ -21,6 +21,7 @@ import frc.robot.Robot;
 import frc.robot.Robot.RobotType;
 import java.util.function.DoubleSupplier;
 import java.util.function.Function;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class ElevatorSubsystem extends SubsystemBase {
@@ -103,6 +104,7 @@ public class ElevatorSubsystem extends SubsystemBase {
             new Mechanism((volts) -> io.setCurrent(volts.in(Volts)), null, this));
   }
 
+  @AutoLogOutput(key = "Elevator/State")
   private ElevatorState state = ElevatorState.IDLE;
 
   @Override

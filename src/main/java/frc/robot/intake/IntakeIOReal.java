@@ -1,11 +1,10 @@
-package frc.robot.arm;
+package frc.robot.intake;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VoltageOut;
-import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -16,34 +15,29 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 
-public class ArmIOReal implements ArmIO {
+public class IntakeIOReal implements IntakeIO {
   private final TalonFX motor;
-  private final CANcoder cancoder;
 
   private final StatusSignal<AngularVelocity> angularVelocityRotsPerSec;
   private final StatusSignal<Current> supplyCurrentAmps;
   private final StatusSignal<Current> statorCurrentAmps;
   private final StatusSignal<Voltage> appliedVoltage;
   private final StatusSignal<Angle> motorPositionRotations;
-  private final StatusSignal<Angle> cancoderAbsolutePosition;
 
   private final VoltageOut voltageOut = new VoltageOut(0.0).withEnableFOC(true);
   private final MotionMagicTorqueCurrentFOC motionMagic = new MotionMagicTorqueCurrentFOC(0.0);
 
-  public ArmIOReal() {
+  public IntakeIOReal() {
     motor = new TalonFX(14, "*");
-    cancoder = new CANcoder(16, "*"); // put correct ID
 
     angularVelocityRotsPerSec = motor.getVelocity();
     supplyCurrentAmps = motor.getSupplyCurrent();
     statorCurrentAmps = motor.getStatorCurrent();
     appliedVoltage = motor.getMotorVoltage();
     motorPositionRotations = motor.getPosition();
-    cancoderAbsolutePosition = cancoder.getAbsolutePosition();
 
     // TODO PUT IN ACTUAL CONFIGS
     final var motorConfig = new TalonFXConfiguration();
-    final var rollerConfig = new TalonFXConfiguration();
 
     // config for arm/pivor motor
     motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
@@ -67,21 +61,19 @@ public class ArmIOReal implements ArmIO {
   }
 
   @Override
-  public void updateInputs(ArmIOInputs inputs) {
+  public void updateInputs(IntakeIOInputs inputs) {
     BaseStatusSignal.refreshAll(
         angularVelocityRotsPerSec,
         motorPositionRotations,
         supplyCurrentAmps,
         statorCurrentAmps,
-        appliedVoltage,
-        cancoderAbsolutePosition);
+        appliedVoltage);
 
     inputs.angularVelocityRotsPerSec = angularVelocityRotsPerSec.getValueAsDouble();
     inputs.position = Rotation2d.fromRotations(motorPositionRotations.getValueAsDouble());
     inputs.supplyCurrentAmps = supplyCurrentAmps.getValueAsDouble();
     inputs.statorCurrentAmps = statorCurrentAmps.getValueAsDouble();
     inputs.appliedVoltage = appliedVoltage.getValueAsDouble();
-    inputs.cancoderPosition = Rotation2d.fromRotations(cancoderAbsolutePosition.getValueAsDouble());
   }
 
   @Override

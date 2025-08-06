@@ -1,20 +1,19 @@
-package frc.robot.arm;
+package frc.robot.intake;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import org.littletonrobotics.junction.AutoLog;
 
-public interface ArmIO {
+public interface IntakeIO {
   @AutoLog
-  public static class ArmIOInputs {
+  public static class IntakeIOInputs {
     public double angularVelocityRotsPerSec = 0.0;
     public Rotation2d position = new Rotation2d();
-    public Rotation2d cancoderPosition = new Rotation2d();
     public double supplyCurrentAmps = 0.0;
     public double appliedVoltage = 0.0;
     public double statorCurrentAmps = 0.0;
   }
 
-  public void updateInputs(ArmIOInputs inputs);
+  public void updateInputs(IntakeIOInputs inputs);
 
   public void setMotorVoltage(double voltage);
 
