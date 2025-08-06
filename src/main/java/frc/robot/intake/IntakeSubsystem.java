@@ -6,34 +6,52 @@ package frc.robot.intake;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 public class IntakeSubsystem extends SubsystemBase {
+  private IntakeIO io;
+  private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
 
-  public enum IntakeState {
-    IDLE(new Rotation2d()); // this will not be the real number!! this is just a placeholder
+  @AutoLogOutput(key = "Intake/State")
+  private IntakeState state = IntakeState.IDLE;
 
-    private final Rotation2d angle;
-
-    private IntakeState(Rotation2d angle) {
-      this.angle = angle;
-    }
-
-    public Rotation2d getAngle() {
-      return angle;
-    }
+  public IntakeSubsystem(IntakeIO io) {
+    this.io = io;
   }
 
-  private IntakeState state = IntakeState.IDLE;
+  public enum IntakeState {
+    IDLE(0.0), // this will not be the real number!! this is just a placeholder
+    INTAKE_CORAL(10.0),
+    OUTTAKE_CORAL(-10.0),
+    INTAKE_ALGAE(12.0),
+    OUTTAKE_ALGAE(12.0);
+
+    public final double voltage;
+
+    IntakeState(double voltage) {
+      this.voltage = voltage;
+    }
+  }
 
   /** Creates a new IntakeSubsystem. */
   public IntakeSubsystem() {}
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    io.updateInputs(inputs);
+    Logger.processInputs("Arm", inputs);
   }
 
   public void setState(IntakeState state) {
     this.state = state;
+  }
+
+  public void setMotorVoltage(double voltage) {
+    io.setMotorVoltage(voltage);
+  }
+
+  public void setMotorPosition(Rotation2d targetPosition) {
+    io.setMotorPosition(targetPosition);
   }
 }
