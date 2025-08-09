@@ -4,6 +4,8 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -37,6 +39,9 @@ public class ModuleIOReal implements ModuleIO {
   // Control modes
   private final VoltageOut driveVoltage = new VoltageOut(0.0).withEnableFOC(true);
   private final VoltageOut turnVoltage = new VoltageOut(0.0).withEnableFOC(true);
+  private final VelocityTorqueCurrentFOC driveVelocityControl =
+      new VelocityTorqueCurrentFOC(0.0).withSlot(0);
+  private final MotionMagicVoltage turnPID = new MotionMagicVoltage(0.0);
 
   public ModuleIOReal(ModuleConstants moduleConstants) {
     this.constants = moduleConstants;
@@ -126,8 +131,7 @@ public class ModuleIOReal implements ModuleIO {
 
   @Override
   public void setDriveSetpoint(double setpointMetersPerSecond) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'setDriveSetpoint'");
+    driveTalon.setControl(driveVelocityControl.withVelocity(setpointMetersPerSecond));
   }
 
   @Override
@@ -137,7 +141,6 @@ public class ModuleIOReal implements ModuleIO {
 
   @Override
   public void setTurnSetpoint(Rotation2d setpoint) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'setTurnSetpoint'");
+    turnTalon.setControl(turnPID.withPosition(setpoint.getRotations()));
   }
 }
