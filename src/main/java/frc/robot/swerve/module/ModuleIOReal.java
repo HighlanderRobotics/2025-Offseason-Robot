@@ -8,7 +8,6 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import frc.robot.swerve.module.Module.ModuleConstants;
 
@@ -39,7 +38,6 @@ public class ModuleIOReal implements ModuleIO {
   private final VoltageOut driveVoltage = new VoltageOut(0.0).withEnableFOC(true);
   private final VoltageOut turnVoltage = new VoltageOut(0.0).withEnableFOC(true);
 
-
   public ModuleIOReal(ModuleConstants moduleConstants) {
     this.constants = moduleConstants;
 
@@ -65,8 +63,21 @@ public class ModuleIOReal implements ModuleIO {
     turnAppliedVolts = turnTalon.getMotorVoltage();
 
     // TODO: USE AN ODOMETRY THREAD FOR SOME OF THESE
-    BaseStatusSignal.setUpdateFrequencyForAll(50.0, drivePosition, driveVelocity, driveTemp, driveAppliedVolts, driveStatorCurrent, driveSupplyCurrent, cancoderAbsolutePosition, turnPosition, turnVelocity, turnAppliedVolts, turnStatorCurrent, turnSupplyCurrent);
-    
+    BaseStatusSignal.setUpdateFrequencyForAll(
+        50.0,
+        drivePosition,
+        driveVelocity,
+        driveTemp,
+        driveAppliedVolts,
+        driveStatorCurrent,
+        driveSupplyCurrent,
+        cancoderAbsolutePosition,
+        turnPosition,
+        turnVelocity,
+        turnAppliedVolts,
+        turnStatorCurrent,
+        turnSupplyCurrent);
+
     driveTalon.optimizeBusUtilization();
     turnTalon.optimizeBusUtilization();
     cancoder.optimizeBusUtilization();
@@ -88,7 +99,7 @@ public class ModuleIOReal implements ModuleIO {
         turnStatorCurrent,
         turnSupplyCurrent,
         turnTemp);
-    
+
     inputs.prefix = constants.prefix();
 
     inputs.drivePositionMeters = drivePosition.getValueAsDouble();
@@ -98,7 +109,8 @@ public class ModuleIOReal implements ModuleIO {
     inputs.driveStatorCurrentAmps = driveStatorCurrent.getValueAsDouble();
     inputs.driveSupplyCurrentAmps = driveSupplyCurrent.getValueAsDouble();
 
-    inputs.cancoderAbsolutePosition = Rotation2d.fromRotations(cancoderAbsolutePosition.getValueAsDouble());
+    inputs.cancoderAbsolutePosition =
+        Rotation2d.fromRotations(cancoderAbsolutePosition.getValueAsDouble());
     inputs.turnPosition = Rotation2d.fromRotations(turnPosition.getValueAsDouble());
     inputs.turnVelocityRadPerSec = turnVelocity.getValue().in(RadiansPerSecond);
     inputs.turnAppliedVolts = turnAppliedVolts.getValueAsDouble();
