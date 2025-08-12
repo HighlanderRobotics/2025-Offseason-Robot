@@ -18,6 +18,7 @@ import edu.wpi.first.units.measure.Voltage;
 
 public class ArmIOReal implements ArmIO {
   private final TalonFX motor;
+  private final TalonFX rollers;
   private final CANcoder cancoder;
 
   private final StatusSignal<AngularVelocity> angularVelocityRotsPerSec;
@@ -32,6 +33,7 @@ public class ArmIOReal implements ArmIO {
 
   public ArmIOReal() {
     motor = new TalonFX(14, "*");
+    rollers = new TalonFX(15, "*");
     cancoder = new CANcoder(16, "*"); // put correct ID
 
     angularVelocityRotsPerSec = motor.getVelocity();
@@ -64,6 +66,15 @@ public class ArmIOReal implements ArmIO {
 
     motor.getConfigurator().apply(motorConfig);
     motor.optimizeBusUtilization();
+
+     // config for roller motor
+     rollerConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+     rollerConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+     rollerConfig.CurrentLimits.SupplyCurrentLimit = 20.0;
+     rollerConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+ 
+     rollers.getConfigurator().apply(rollerConfig);
+     rollers.optimizeBusUtilization();
   }
 
   @Override
@@ -92,5 +103,10 @@ public class ArmIOReal implements ArmIO {
   @Override
   public void setMotorPosition(Rotation2d targetPosition) {
     motor.setControl(motionMagic.withPosition(targetPosition.getRotations()));
+  }
+
+  @Override
+  public void setRollerVoltage(double voltage) {
+    rollers.setControl(voltageOut.withOutput(voltage));
   }
 }

@@ -19,4 +19,6 @@ public interface ArmIO {
   public void setMotorVoltage(double voltage);
 
   public void setMotorPosition(Rotation2d targetPosition);
+
+  public void setRollerVoltage(double voltage);
 }

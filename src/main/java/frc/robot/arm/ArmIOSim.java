@@ -56,4 +56,9 @@ public class ArmIOSim implements ArmIO {
         pivotPid.calculate(armSim.getAngleRads(), targetPosition.getRadians())
             + pivotFf.calculate(pivotPid.getSetpoint().position, pivotPid.getSetpoint().velocity));
   }
+
+  @Override
+  public void setRollerVoltage(double voltage) {
+    // not gonna simulate the rollers
+  }
 }
