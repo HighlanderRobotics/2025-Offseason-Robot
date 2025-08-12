@@ -36,13 +36,9 @@ public class Superstructure {
     L4(ElevatorState.L4, ArmState.L4, IntakeState.INTAKE_CORAL),
     POST_L4(ElevatorState.POST_L4, ArmState.POST_L4, IntakeState.IDLE),
     INTAKE_ALGAE_REEF_HIGH(
-        ElevatorState.INTAKE_ALGAE_REEF_HIGH,
-        ArmState.INTAKE_ALGAE_REEF_HIGH,
-        IntakeState.IDLE),
+        ElevatorState.INTAKE_ALGAE_REEF_HIGH, ArmState.INTAKE_ALGAE_REEF_HIGH, IntakeState.IDLE),
     INTAKE_ALGAE_REEF_LOW(
-        ElevatorState.INTAKE_ALGAE_REEF_LOW,
-        ArmState.INTAKE_ALGAE_REEF_LOW,
-        IntakeState.IDLE),
+        ElevatorState.INTAKE_ALGAE_REEF_LOW, ArmState.INTAKE_ALGAE_REEF_LOW, IntakeState.IDLE),
     INTAKE_ALGAE_GROUND(
         ElevatorState.INTAKE_ALGAE_GROUND, ArmState.INTAKE_ALGAE_GROUND, IntakeState.IDLE),
     BARGE(ElevatorState.BARGE, ArmState.BARGE, IntakeState.IDLE),

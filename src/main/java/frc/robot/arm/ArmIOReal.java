@@ -67,14 +67,14 @@ public class ArmIOReal implements ArmIO {
     motor.getConfigurator().apply(motorConfig);
     motor.optimizeBusUtilization();
 
-     // config for roller motor
-     rollerConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-     rollerConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
-     rollerConfig.CurrentLimits.SupplyCurrentLimit = 20.0;
-     rollerConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
- 
-     rollers.getConfigurator().apply(rollerConfig);
-     rollers.optimizeBusUtilization();
+    // config for roller motor
+    rollerConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    rollerConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    rollerConfig.CurrentLimits.SupplyCurrentLimit = 20.0;
+    rollerConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+
+    rollers.getConfigurator().apply(rollerConfig);
+    rollers.optimizeBusUtilization();
   }
 
   @Override
