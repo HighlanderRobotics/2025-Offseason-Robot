@@ -38,16 +38,16 @@ public class Superstructure {
     INTAKE_ALGAE_REEF_HIGH(
         ElevatorState.INTAKE_ALGAE_REEF_HIGH,
         ArmState.INTAKE_ALGAE_REEF_HIGH,
-        IntakeState.INTAKE_ALGAE),
+        IntakeState.IDLE),
     INTAKE_ALGAE_REEF_LOW(
         ElevatorState.INTAKE_ALGAE_REEF_LOW,
         ArmState.INTAKE_ALGAE_REEF_LOW,
-        IntakeState.INTAKE_ALGAE),
+        IntakeState.IDLE),
     INTAKE_ALGAE_GROUND(
-        ElevatorState.INTAKE_ALGAE_GROUND, ArmState.INTAKE_ALGAE_GROUND, IntakeState.INTAKE_ALGAE),
-    BARGE(ElevatorState.BARGE, ArmState.BARGE, IntakeState.OUTTAKE_ALGAE),
+        ElevatorState.INTAKE_ALGAE_GROUND, ArmState.INTAKE_ALGAE_GROUND, IntakeState.IDLE),
+    BARGE(ElevatorState.BARGE, ArmState.BARGE, IntakeState.IDLE),
     READY_ALGAE(ElevatorState.READY_ALGAE, ArmState.READY_ALGAE, IntakeState.IDLE),
-    PROCESSOR(ElevatorState.PROCESSOR, ArmState.PROCESSOR, IntakeState.OUTTAKE_ALGAE),
+    PROCESSOR(ElevatorState.PROCESSOR, ArmState.PROCESSOR, IntakeState.IDLE),
     PRE_CLIMB(ElevatorState.PRE_CLIMB, ArmState.PRE_CLIMB, IntakeState.IDLE),
     CLIMB(ElevatorState.CLIMB, ArmState.CLIMB, IntakeState.IDLE);
 

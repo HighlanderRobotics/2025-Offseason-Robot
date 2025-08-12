@@ -23,9 +23,7 @@ public class IntakeSubsystem extends SubsystemBase {
   public enum IntakeState {
     IDLE(0.0), // this will not be the real number!! this is just a placeholder
     INTAKE_CORAL(10.0),
-    OUTTAKE_CORAL(-10.0),
-    INTAKE_ALGAE(12.0),
-    OUTTAKE_ALGAE(12.0);
+    OUTTAKE_CORAL(-10.0);
 
     public final double voltage;
 
