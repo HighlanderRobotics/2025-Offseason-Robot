@@ -28,34 +28,36 @@ public class ArmSubsystem extends SubsystemBase {
 
   // TODO : change these values to the real ones
   public enum ArmState {
-    IDLE(Rotation2d.fromDegrees(0)),
+    IDLE(Rotation2d.fromDegrees(0), 0.0),
     // coral
-    READY_CORAL(Rotation2d.fromDegrees(0)),
-    PRE_INTAKE_CORAL_GROUND(Rotation2d.fromDegrees(0)),
-    INTAKE_CORAL_GROUND(Rotation2d.fromDegrees(0)),
-    L1(Rotation2d.fromDegrees(0)),
-    PRE_L2(Rotation2d.fromDegrees(0)),
-    L2(Rotation2d.fromDegrees(0)),
-    PRE_L3(Rotation2d.fromDegrees(0)),
-    L3(Rotation2d.fromDegrees(0)),
-    PRE_L4(Rotation2d.fromDegrees(0)),
-    L4(Rotation2d.fromDegrees(0)),
-    POST_L4(Rotation2d.fromDegrees(0)),
+    READY_CORAL(Rotation2d.fromDegrees(0), 0.0),
+    PRE_INTAKE_CORAL_GROUND(Rotation2d.fromDegrees(0), 0.0),
+    INTAKE_CORAL_GROUND(Rotation2d.fromDegrees(0), 0.0),
+    L1(Rotation2d.fromDegrees(0), 10.0),
+    PRE_L2(Rotation2d.fromDegrees(0), 10.0),
+    L2(Rotation2d.fromDegrees(0), 10.0),
+    PRE_L3(Rotation2d.fromDegrees(0), 10.0),
+    L3(Rotation2d.fromDegrees(0), 10.0),
+    PRE_L4(Rotation2d.fromDegrees(0), 10.0),
+    L4(Rotation2d.fromDegrees(0), 10.0),
+    POST_L4(Rotation2d.fromDegrees(0), 0.0),
     // algae
-    INTAKE_ALGAE_REEF_HIGH(Rotation2d.fromDegrees(0)),
-    INTAKE_ALGAE_REEF_LOW(Rotation2d.fromDegrees(0)),
-    INTAKE_ALGAE_GROUND(Rotation2d.fromDegrees(0)),
-    BARGE(Rotation2d.fromDegrees(0)),
-    READY_ALGAE(Rotation2d.fromDegrees(0)),
-    PROCESSOR(Rotation2d.fromDegrees(0)),
+    INTAKE_ALGAE_REEF_HIGH(Rotation2d.fromDegrees(0), 0.0),
+    INTAKE_ALGAE_REEF_LOW(Rotation2d.fromDegrees(0), 0.0),
+    INTAKE_ALGAE_GROUND(Rotation2d.fromDegrees(0), 0.0),
+    BARGE(Rotation2d.fromDegrees(0), 0.0),
+    READY_ALGAE(Rotation2d.fromDegrees(0), 0.0),
+    PROCESSOR(Rotation2d.fromDegrees(0), 0.0),
     // climbing
-    PRE_CLIMB(Rotation2d.fromDegrees(0)),
-    CLIMB(Rotation2d.fromDegrees(0));
+    PRE_CLIMB(Rotation2d.fromDegrees(0), 0.0),
+    CLIMB(Rotation2d.fromDegrees(0), 0.0);
 
     public final Rotation2d position;
+    public final double volts;
 
-    ArmState(Rotation2d position) {
+    ArmState(Rotation2d position, double volts) {
       this.position = position;
+      this.volts = volts;
     }
   }
 
