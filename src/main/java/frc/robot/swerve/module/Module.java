@@ -2,6 +2,8 @@ package frc.robot.swerve.module;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import frc.robot.Robot;
+
 import org.littletonrobotics.junction.Logger;
 
 // A single module
@@ -32,18 +34,32 @@ public class Module {
     return state;
   }
 
-  // Runs open-loop
-  public SwerveModuleState runVoltageSetpoint(SwerveModuleState state, boolean focEnabled) {
-    // Optimize state based on current angle
+
+  // Runs drive motor using feedforward control only
+  // Returns optimized state
+  public SwerveModuleState runOpenLoop(SwerveModuleState state, boolean focEnabled) {
     state.optimize(getAngle());
 
-    io.setTurnSetpoint(state.angle);
-    io.setDriveVoltage(
-        state.speedMetersPerSecond
-            * Math.cos(state.angle.minus(inputs.turnPosition).getRadians()), // TODO: ask about this
-        focEnabled);
+    double volts = state.speedMetersPerSecond * 12 / 
+  }
+
+  // Runs open-loop
+  public SwerveModuleState runVoltageSetpoint(SwerveModuleState state, boolean focEnabled) {
+    state.optimize(getAngle());
+
+     // state.speedMetersPerSecond is NOT m/s, it's Volts the conversion happens in SwerveSubsystem
+      // TODO: MAKE THE WEIRD UNIT STUFF LESS CONFUSING
+    runVoltageSetpoint(state.speedMetersPerSecond, state.angle, focEnabled);
 
     return state;
+  }
+
+  private void runVoltageSetpoint(double volts, Rotation2d targetAngle, boolean focEnabled) {
+    io.setTurnSetpoint(targetAngle);
+    io.setDriveVoltage(
+        volts
+            * Math.cos(targetAngle.minus(inputs.turnPosition).getRadians()),
+        focEnabled);
   }
 
   public Rotation2d getAngle() {

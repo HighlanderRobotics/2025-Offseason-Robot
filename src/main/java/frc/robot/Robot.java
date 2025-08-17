@@ -10,15 +10,29 @@ import frc.robot.elevator.ElevatorIOSim;
 import frc.robot.elevator.ElevatorSubsystem;
 import frc.robot.intake.IntakeSubsystem;
 import frc.robot.shoulder.ShoulderSubsystem;
+import frc.robot.swerve.constants.KelpieSwerveConstants;
+import frc.robot.swerve.constants.SwerveConstants;
+
 import org.littletonrobotics.junction.LoggedRobot;
 
 public class Robot extends LoggedRobot {
   public static final RobotType ROBOT_TYPE = Robot.isReal() ? RobotType.REAL : RobotType.SIM;
+  public static final RobotHardware ROBOT_HARDWARE = RobotHardware.KELPIE;
 
   public enum RobotType {
     REAL,
     SIM,
     REPLAY
+  }
+
+  public enum RobotHardware {
+    KELPIE(new KelpieSwerveConstants());
+
+    SwerveConstants constants;
+
+    private RobotHardware(SwerveConstants constants) {
+      this.constants = constants;
+    }
   }
 
   private final ElevatorSubsystem elevator =
