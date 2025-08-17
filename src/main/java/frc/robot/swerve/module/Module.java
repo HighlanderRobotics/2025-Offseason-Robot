@@ -24,8 +24,8 @@ public class Module {
     Logger.processInputs("Swerve/" + inputs.prefix + " Module", inputs);
   }
 
-  // Runs closed-loop
-  public SwerveModuleState runVelocitySetpoint(SwerveModuleState state) {
+  // Use for automated driving (e.g. auto)
+  public SwerveModuleState runClosedLoop(SwerveModuleState state) {
     state.optimize(getAngle());
 
     io.setTurnSetpoint(state.angle);
@@ -36,11 +36,16 @@ public class Module {
 
 
   // Runs drive motor using feedforward control only
+  // For teleop
   // Returns optimized state
   public SwerveModuleState runOpenLoop(SwerveModuleState state, boolean focEnabled) {
     state.optimize(getAngle());
 
-    double volts = state.speedMetersPerSecond * 12 / 
+    double volts = state.speedMetersPerSecond * 12 / Robot.ROBOT_HARDWARE.getSwerveConstants().getMaxLinearSpeed();
+
+    runVoltageSetpoint(volts, state.angle, focEnabled);
+
+    return state;
   }
 
   // Runs open-loop

@@ -33,6 +33,10 @@ public class Robot extends LoggedRobot {
     private RobotHardware(SwerveConstants constants) {
       this.constants = constants;
     }
+
+    public SwerveConstants getSwerveConstants() {
+      return constants;
+    }
   }
 
   private final ElevatorSubsystem elevator =
