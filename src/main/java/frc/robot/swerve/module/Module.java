@@ -1,10 +1,13 @@
 package frc.robot.swerve.module;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import frc.robot.Robot;
 
 import org.littletonrobotics.junction.Logger;
+
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 
 // A single module
 public class Module {
@@ -67,7 +70,41 @@ public class Module {
         focEnabled);
   }
 
+  /** Returns the current turn angle of the module at normal sampling frequency. */
   public Rotation2d getAngle() {
     return inputs.turnPosition;
   }
+
+  /** Returns the current drive position of the module in meters at normal sampling frequency. */
+  public double getPositionMeters() {
+    return inputs.drivePositionMeters;
+  }
+
+  /** Returns this modules prefix ie "Back Left" */
+  public String getPrefix() {
+    return inputs.prefix;
+  }
+
+  /**
+   * Returns the current drive velocity of the module in meters per second withat normal sampling
+   * frequency.
+   */
+  public double getVelocityMetersPerSec() {
+    return inputs.driveVelocityMetersPerSec;
+  }
+
+  /** Returns the module position (turn angle and drive position) at normal sampling frequency. */
+  public SwerveModulePosition getPosition() {
+    return new SwerveModulePosition(getPositionMeters(), getAngle());
+  }
+
+  /** Returns the module state (turn angle and drive velocity) at normal sampling frequency. */
+  public SwerveModuleState getState() {
+    return new SwerveModuleState(getVelocityMetersPerSec(), getAngle());
+  }
+
+  public void setTurnSetpoint(Rotation2d rotation) {
+    io.setTurnSetpoint(rotation);
+  }
+  
 }
