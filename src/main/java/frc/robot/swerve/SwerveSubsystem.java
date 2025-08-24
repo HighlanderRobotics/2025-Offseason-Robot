@@ -1,7 +1,10 @@
 package frc.robot.swerve;
 
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -111,5 +114,55 @@ public class SwerveSubsystem extends SubsystemBase {
     lastGyroRotation = rawGyroRotation;
     // Update!
     estimator.update(rawGyroRotation, modulePositions);
+  }
+
+  @AutoLogOutput(key = "Odometry/Robot")
+  public Pose2d getPose() {
+    return estimator.getEstimatedPosition();
+  }
+
+  public Pose3d getPose3d() {
+    return new Pose3d(getPose());
+  }
+
+  /** Returns the pose estimator rotation, as returned by {@link #getPose()} */
+  public Rotation2d getRotation() {
+    return getPose().getRotation();
+  }
+
+  public Rotation3d getRotation3d() {
+    return new Rotation3d(
+      gyroInputs.roll.getRadians(),
+      gyroInputs.pitch.getRadians(),
+      gyroInputs.yaw.getRadians()
+    );
+  }
+
+  // TODO: RESET POSE IN SIM ONCE IMPLEMENTED
+  public void resetPose(Pose2d newPose) {
+    estimator.resetPose(newPose);
+  }
+
+  @AutoLogOutput(key = "Odometry/Velocity Robot Relative")
+  public ChassisSpeeds getVelocityRobotRelative() {
+    ChassisSpeeds speeds =
+        kinematics.toChassisSpeeds(
+            Arrays.stream(modules)
+                .map((module) -> module.getState())
+                .toArray(SwerveModuleState[]::new));
+    return speeds;
+  }
+
+  @AutoLogOutput(key = "Odometry/Velocity Field Relative")
+  public ChassisSpeeds getVelocityFieldRelative() {
+    return ChassisSpeeds.fromRobotRelativeSpeeds(getVelocityRobotRelative(), getRotation());
+  }
+
+  /** Returns the module states (turn angles and drive velocitoes) for all of the modules. */
+  @AutoLogOutput(key = "SwerveStates/Measured")
+  private SwerveModuleState[] getModuleStates() {
+    SwerveModuleState[] states =
+        Arrays.stream(modules).map(Module::getState).toArray(SwerveModuleState[]::new);
+    return states;
   }
 }
