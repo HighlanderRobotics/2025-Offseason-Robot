@@ -58,6 +58,8 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     gyroIO.updateInputs(gyroInputs);
+
+    updateOdometry();
   }
 
   private void drive(ChassisSpeeds speeds, boolean openLoop) {
