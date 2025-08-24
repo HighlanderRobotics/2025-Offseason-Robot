@@ -4,10 +4,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import frc.robot.Robot;
-
 import org.littletonrobotics.junction.Logger;
-
-import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 
 // A single module
 public class Module {
@@ -37,14 +34,16 @@ public class Module {
     return state;
   }
 
-
   // Runs drive motor using feedforward control only
   // For teleop
   // Returns optimized state
   public SwerveModuleState runOpenLoop(SwerveModuleState state, boolean focEnabled) {
     state.optimize(getAngle());
 
-    double volts = state.speedMetersPerSecond * 12 / Robot.ROBOT_HARDWARE.getSwerveConstants().getMaxLinearSpeed();
+    double volts =
+        state.speedMetersPerSecond
+            * 12
+            / Robot.ROBOT_HARDWARE.getSwerveConstants().getMaxLinearSpeed();
 
     runVoltageSetpoint(volts, state.angle, focEnabled);
 
@@ -55,8 +54,8 @@ public class Module {
   public SwerveModuleState runVoltageSetpoint(SwerveModuleState state, boolean focEnabled) {
     state.optimize(getAngle());
 
-     // state.speedMetersPerSecond is NOT m/s, it's Volts the conversion happens in SwerveSubsystem
-      // TODO: MAKE THE WEIRD UNIT STUFF LESS CONFUSING
+    // state.speedMetersPerSecond is NOT m/s, it's Volts the conversion happens in SwerveSubsystem
+    // TODO: MAKE THE WEIRD UNIT STUFF LESS CONFUSING
     runVoltageSetpoint(state.speedMetersPerSecond, state.angle, focEnabled);
 
     return state;
@@ -65,9 +64,7 @@ public class Module {
   private void runVoltageSetpoint(double volts, Rotation2d targetAngle, boolean focEnabled) {
     io.setTurnSetpoint(targetAngle);
     io.setDriveVoltage(
-        volts
-            * Math.cos(targetAngle.minus(inputs.turnPosition).getRadians()),
-        focEnabled);
+        volts * Math.cos(targetAngle.minus(inputs.turnPosition).getRadians()), focEnabled);
   }
 
   /** Returns the current turn angle of the module at normal sampling frequency. */
@@ -106,5 +103,4 @@ public class Module {
   public void setTurnSetpoint(Rotation2d rotation) {
     io.setTurnSetpoint(rotation);
   }
-  
 }

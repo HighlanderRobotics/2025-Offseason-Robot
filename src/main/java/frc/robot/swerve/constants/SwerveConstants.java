@@ -14,9 +14,8 @@ public abstract class SwerveConstants {
 
   public abstract double getMaxLinearAcceleration();
 
-
   public abstract double getDriveGearRatio();
-  
+
   public abstract double getTurnGearRatio();
 
   /** Defaults to inverted ie Mk4i, Mk4n. */

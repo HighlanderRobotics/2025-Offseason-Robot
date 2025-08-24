@@ -12,7 +12,6 @@ import frc.robot.intake.IntakeSubsystem;
 import frc.robot.shoulder.ShoulderSubsystem;
 import frc.robot.swerve.constants.KelpieSwerveConstants;
 import frc.robot.swerve.constants.SwerveConstants;
-
 import org.littletonrobotics.junction.LoggedRobot;
 
 public class Robot extends LoggedRobot {
