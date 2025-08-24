@@ -10,6 +10,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.swerve.constants.SwerveConstants;
 import frc.robot.swerve.gyro.GyroIO;
@@ -17,6 +18,8 @@ import frc.robot.swerve.gyro.GyroIOInputsAutoLogged;
 import frc.robot.swerve.module.Module;
 import frc.robot.swerve.module.ModuleIOReal;
 import java.util.Arrays;
+import java.util.function.Supplier;
+
 import org.littletonrobotics.junction.AutoLogOutput;
 
 public class SwerveSubsystem extends SubsystemBase {
@@ -160,11 +163,40 @@ public class SwerveSubsystem extends SubsystemBase {
     return ChassisSpeeds.fromRobotRelativeSpeeds(getVelocityRobotRelative(), getRotation());
   }
 
-  /** Returns the module states (turn angles and drive velocitoes) for all of the modules. */
+  /** Returns the module states (turn angles and drive velocities) for all of the modules. */
   @AutoLogOutput(key = "SwerveStates/Measured")
   private SwerveModuleState[] getModuleStates() {
     SwerveModuleState[] states =
         Arrays.stream(modules).map(Module::getState).toArray(SwerveModuleState[]::new);
     return states;
+  }
+
+  /**
+   * Drive closed-loop at robot relative speeds
+   * @param speeds robot relative speed setpoint
+   * @return a command driving to target speeds
+   */
+  public Command driveVelocity(Supplier<ChassisSpeeds> speeds) {
+    return this.run(() -> drive(getVelocityFieldRelative(), false));
+  }
+
+  /**
+   * Drive at a robot-relative speed open-loop.
+   *
+   * @param speeds the robot-relative speed setpoint.
+   * @return a Command driving to the target speeds.
+   */
+  public Command driveVoltage(Supplier<ChassisSpeeds> speeds) {
+    return this.run(() -> drive(speeds.get(), true));
+  }
+
+
+  /**
+   * Drive closed-loop at a field relative speed
+   * @param speeds the field-relative speed setpoint
+   * @return a Command driving to those speeds
+   */
+  public Command driveVelocityFieldRelative(Supplier<ChassisSpeeds> speeds) {
+    return driveVelocity(() -> ChassisSpeeds.fromFieldRelativeSpeeds(speeds.get(), getRotation()));
   }
 }
