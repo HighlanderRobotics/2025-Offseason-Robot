@@ -26,14 +26,14 @@ public class Superstructure {
     IDLE(ElevatorState.IDLE, ArmState.IDLE, IntakeState.IDLE),
     READY_CORAL(ElevatorState.READY_CORAL, ArmState.IDLE, IntakeState.IDLE),
     PRE_INTAKE_CORAL_GROUND(ElevatorState.PRE_INTAKE_CORAL_GROUND, ArmState.IDLE, IntakeState.IDLE),
-    INTAKE_CORAL_GROUND(ElevatorState.INTAKE_CORAL_GROUND, ArmState.IDLE, IntakeState.INTAKE_CORAL),
-    L1(ElevatorState.L1, ArmState.L1, IntakeState.INTAKE_CORAL),
+    INTAKE_CORAL_GROUND(ElevatorState.INTAKE_CORAL_GROUND, ArmState.IDLE, IntakeState.IDLE),
+    L1(ElevatorState.L1, ArmState.L1, IntakeState.IDLE),
     PRE_L2(ElevatorState.PRE_L2, ArmState.PRE_L2, IntakeState.IDLE),
-    L2(ElevatorState.L2, ArmState.L2, IntakeState.INTAKE_CORAL),
+    L2(ElevatorState.L2, ArmState.L2, IntakeState.IDLE),
     PRE_L3(ElevatorState.PRE_L3, ArmState.PRE_L3, IntakeState.IDLE),
-    L3(ElevatorState.L3, ArmState.L3, IntakeState.INTAKE_CORAL),
+    L3(ElevatorState.L3, ArmState.L3, IntakeState.IDLE),
     PRE_L4(ElevatorState.PRE_L4, ArmState.PRE_L4, IntakeState.IDLE),
-    L4(ElevatorState.L4, ArmState.L4, IntakeState.INTAKE_CORAL),
+    L4(ElevatorState.L4, ArmState.L4, IntakeState.IDLE),
     POST_L4(ElevatorState.POST_L4, ArmState.POST_L4, IntakeState.IDLE),
     INTAKE_ALGAE_REEF_HIGH(
         ElevatorState.INTAKE_ALGAE_REEF_HIGH, ArmState.INTAKE_ALGAE_REEF_HIGH, IntakeState.IDLE),
@@ -117,7 +117,7 @@ public class Superstructure {
 
   private void setSubstates() {
     elevator.setState(state.elevatorState);
-    arm.setArmState(state.armState);
+    arm.setState(state.armState);
     intake.setState(state.intakeState);
   }
 }

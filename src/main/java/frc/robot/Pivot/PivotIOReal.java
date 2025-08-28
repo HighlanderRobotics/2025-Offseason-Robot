@@ -1,4 +1,4 @@
-package frc.robot.arm;
+package frc.robot.Pivot;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
@@ -16,9 +16,8 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 
-public class ArmIOReal implements ArmIO {
+public class PivotIOReal implements PivotIO {
   private final TalonFX motor;
-  private final TalonFX rollers;
   private final CANcoder cancoder;
 
   private final StatusSignal<AngularVelocity> angularVelocityRotsPerSec;
@@ -31,9 +30,8 @@ public class ArmIOReal implements ArmIO {
   private final VoltageOut voltageOut = new VoltageOut(0.0).withEnableFOC(true);
   private final MotionMagicTorqueCurrentFOC motionMagic = new MotionMagicTorqueCurrentFOC(0.0);
 
-  public ArmIOReal() {
+  public PivotIOReal() {
     motor = new TalonFX(14, "*");
-    rollers = new TalonFX(15, "*");
     cancoder = new CANcoder(16, "*"); // put correct ID
 
     angularVelocityRotsPerSec = motor.getVelocity();
@@ -45,7 +43,6 @@ public class ArmIOReal implements ArmIO {
 
     // TODO PUT IN ACTUAL CONFIGS
     final var motorConfig = new TalonFXConfiguration();
-    final var rollerConfig = new TalonFXConfiguration();
 
     // config for arm/pivor motor
     motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
@@ -66,19 +63,10 @@ public class ArmIOReal implements ArmIO {
 
     motor.getConfigurator().apply(motorConfig);
     motor.optimizeBusUtilization();
-
-    // config for roller motor
-    rollerConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    rollerConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
-    rollerConfig.CurrentLimits.SupplyCurrentLimit = 20.0;
-    rollerConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-
-    rollers.getConfigurator().apply(rollerConfig);
-    rollers.optimizeBusUtilization();
   }
 
   @Override
-  public void updateInputs(ArmIOInputs inputs) {
+  public void updateInputs(PivotIOInputs inputs) {
     BaseStatusSignal.refreshAll(
         angularVelocityRotsPerSec,
         motorPositionRotations,
@@ -103,10 +91,5 @@ public class ArmIOReal implements ArmIO {
   @Override
   public void setMotorPosition(Rotation2d targetPosition) {
     motor.setControl(motionMagic.withPosition(targetPosition.getRotations()));
-  }
-
-  @Override
-  public void setRollerVoltage(double voltage) {
-    rollers.setControl(voltageOut.withOutput(voltage));
   }
 }

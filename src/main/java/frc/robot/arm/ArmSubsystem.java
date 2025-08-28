@@ -1,29 +1,26 @@
 package frc.robot.arm;
 
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Robot;
-import frc.robot.Robot.RobotType;
-import java.util.function.Supplier;
+import frc.robot.Pivot.PivotIO;
+import frc.robot.arm.ArmSubsystem.ArmState;
+import frc.robot.roller.RollerIO;
+import frc.robot.rollerAndPivot.rollerPivotSubsystem;
 import org.littletonrobotics.junction.AutoLogOutput;
-import org.littletonrobotics.junction.Logger;
 
-public class ArmSubsystem extends SubsystemBase {
-  // constants
-  // TODO: change to real values
+public class ArmSubsystem extends rollerPivotSubsystem {
   public static final double PIVOT_RATIO = (44.0 / 16.0) * 23;
   public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(180);
   public static final Rotation2d MIN_ANGLE = Rotation2d.fromDegrees(0);
 
-  private ArmIO io;
-  private ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
+  public ArmSubsystem(RollerIO rollers, PivotIO pivot, String name) {
+    super(rollers, pivot, name);
+  }
 
   @AutoLogOutput(key = "Arm/State")
   private ArmState state = ArmState.IDLE;
 
-  public ArmSubsystem(ArmIO io) {
-    this.io = io;
+  public void setState(ArmState state) {
+    this.state = state;
   }
 
   // TODO : change these values to the real ones
@@ -61,25 +58,11 @@ public class ArmSubsystem extends SubsystemBase {
     }
   }
 
-  @Override
-  public void periodic() {
-    io.updateInputs(inputs);
-    Logger.processInputs("Arm", inputs);
-  }
+  // public void setRollerVoltage(double volts) {
+  //   super.setRollerVoltage(volts);
+  // }
 
-  public Command setTargetAngle(Rotation2d target) {
-    return setTargetAngle(() -> target);
-  }
-
-  public Command setTargetAngle(Supplier<Rotation2d> target) {
-    return this.runOnce(
-        () -> {
-          if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("Arm", target.get());
-          io.setMotorPosition(target.get());
-        });
-  }
-
-  public void setArmState(ArmState state) {
-    this.state = state;
-  }
+  // public Command setTargetAngle(Rotation2d target) {
+  //   return super.setTargetAngle(target);
+  // }
 }

@@ -5,13 +5,18 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.arm.ArmIOReal;
-import frc.robot.arm.ArmIOSim;
+import frc.robot.Pivot.PivotIOReal;
+import frc.robot.Pivot.PivotIOSim;
 import frc.robot.arm.ArmSubsystem;
+import frc.robot.climber.ClimberSubsystem;
+// import frc.robot.arm.ArmSubsystem;
 import frc.robot.elevator.ElevatorIOReal;
 import frc.robot.elevator.ElevatorIOSim;
 import frc.robot.elevator.ElevatorSubsystem;
 import frc.robot.intake.IntakeSubsystem;
+import frc.robot.roller.RollerIOReal;
+import frc.robot.roller.RollerIOSim;
+import frc.robot.routing.RoutingSubsystem;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -33,34 +38,44 @@ public class Robot extends LoggedRobot {
           ROBOT_TYPE != RobotType.SIM ? new ElevatorIOReal() : new ElevatorIOSim());
 
   private final ArmSubsystem arm =
-      new ArmSubsystem(ROBOT_TYPE != RobotType.SIM ? new ArmIOReal() : new ArmIOSim());
+      new ArmSubsystem(
+          ROBOT_TYPE != RobotType.SIM ? new RollerIOReal() : new RollerIOSim(),
+          ROBOT_TYPE != RobotType.SIM ? new PivotIOReal() : new PivotIOSim(),
+          "Arm");
 
-  private final IntakeSubsystem intake = new IntakeSubsystem();
+  private final IntakeSubsystem intake =
+      new IntakeSubsystem(
+          ROBOT_TYPE != RobotType.SIM ? new RollerIOReal() : new RollerIOSim(),
+          ROBOT_TYPE != RobotType.SIM ? new PivotIOReal() : new PivotIOSim(),
+          "Intake");
+
+  private final ClimberSubsystem climber =
+      new ClimberSubsystem(
+          ROBOT_TYPE != RobotType.SIM ? new RollerIOReal() : new RollerIOSim(),
+          ROBOT_TYPE != RobotType.SIM ? new PivotIOReal() : new PivotIOSim(),
+          "climber");
+
+  private final RoutingSubsystem router =
+      new RoutingSubsystem(
+          ROBOT_TYPE != RobotType.SIM ? new RollerIOReal() : new RollerIOSim(), "router");
 
   private final Superstructure superstructure = new Superstructure(elevator, arm, intake);
 
   public Robot() {
     Logger.recordMetadata("ProjectName", "MyProject"); // Set a metadata value
 
-switch (ROBOT_TYPE) {
-      case REAL:
-        Logger.addDataReceiver(new WPILOGWriter("/U")); // Log to a USB stick
-        Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
-        new PowerDistribution(1, ModuleType.kRev); // Enables power distribution logging
-        break;
-      case REPLAY:
-        setUseTiming(false); // Run as fast as possible
-        String logPath =
-            LogFileUtil
-                .findReplayLog(); // Pull the replay log from AdvantageScope (or prompt the user)
-        Logger.setReplaySource(new WPILOGReader(logPath)); // Read replay log
-        Logger.addDataReceiver(
-            new WPILOGWriter(
-                LogFileUtil.addPathSuffix(logPath, "_sim"))); // Save outputs to a new log
-        break;
-      case SIM:
-        Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
-        break;
+    if (isReal()) {
+      Logger.addDataReceiver(new WPILOGWriter()); // Log to a USB stick ("/U/logs")
+      Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
+    } else {
+      setUseTiming(false); // Run as fast as possible
+      String logPath =
+          LogFileUtil
+              .findReplayLog(); // Pull the replay log from AdvantageScope (or prompt the user)
+      Logger.setReplaySource(new WPILOGReader(logPath)); // Read replay log
+      Logger.addDataReceiver(
+          new WPILOGWriter(
+              LogFileUtil.addPathSuffix(logPath, "_sim"))); // Save outputs to a new log
     }
     Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may
     // be added.
