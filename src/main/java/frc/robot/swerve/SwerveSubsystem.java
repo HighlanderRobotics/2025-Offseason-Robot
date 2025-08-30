@@ -19,7 +19,6 @@ import frc.robot.swerve.module.Module;
 import frc.robot.swerve.module.ModuleIOReal;
 import java.util.Arrays;
 import java.util.function.Supplier;
-
 import org.littletonrobotics.junction.AutoLogOutput;
 
 public class SwerveSubsystem extends SubsystemBase {
@@ -112,8 +111,6 @@ public class SwerveSubsystem extends SubsystemBase {
       rawGyroRotation = rawGyroRotation.plus(Rotation2d.fromRadians(twist.dtheta));
     } else {
       rawGyroRotation = gyroInputs.yaw;
-      // Update the twist with the gyro
-      twist = new Twist2d(twist.dx, twist.dy, rawGyroRotation.minus(lastGyroRotation).getRadians());
     }
 
     lastGyroRotation = rawGyroRotation;
@@ -137,10 +134,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public Rotation3d getRotation3d() {
     return new Rotation3d(
-      gyroInputs.roll.getRadians(),
-      gyroInputs.pitch.getRadians(),
-      gyroInputs.yaw.getRadians()
-    );
+        gyroInputs.roll.getRadians(), gyroInputs.pitch.getRadians(), gyroInputs.yaw.getRadians());
   }
 
   // TODO: RESET POSE IN SIM ONCE IMPLEMENTED
@@ -150,11 +144,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
   @AutoLogOutput(key = "Odometry/Velocity Robot Relative")
   public ChassisSpeeds getVelocityRobotRelative() {
-    ChassisSpeeds speeds =
-        kinematics.toChassisSpeeds(
-            Arrays.stream(modules)
-                .map((module) -> module.getState())
-                .toArray(SwerveModuleState[]::new));
+    ChassisSpeeds speeds = kinematics.toChassisSpeeds(getModuleStates());
     return speeds;
   }
 
@@ -173,6 +163,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
   /**
    * Drive closed-loop at robot relative speeds
+   *
    * @param speeds robot relative speed setpoint
    * @return a command driving to target speeds
    */
@@ -190,9 +181,9 @@ public class SwerveSubsystem extends SubsystemBase {
     return this.run(() -> drive(speeds.get(), true));
   }
 
-
   /**
    * Drive closed-loop at a field relative speed
+   *
    * @param speeds the field-relative speed setpoint
    * @return a Command driving to those speeds
    */
