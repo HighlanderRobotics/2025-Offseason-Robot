@@ -10,6 +10,14 @@ public abstract class SwerveConstants {
 
   public SwerveConstants() {}
 
+  public abstract double getTrackWidthX();
+
+  public abstract double getTrackWidthY();
+
+  public abstract double getBumperWidth();
+
+  public abstract double getBumperLength();
+
   public abstract double getMaxLinearSpeed();
 
   public abstract double getMaxLinearAcceleration();

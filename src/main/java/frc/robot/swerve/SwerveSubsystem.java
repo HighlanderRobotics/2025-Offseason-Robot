@@ -16,7 +16,6 @@ import frc.robot.swerve.constants.SwerveConstants;
 import frc.robot.swerve.gyro.GyroIO;
 import frc.robot.swerve.gyro.GyroIOInputsAutoLogged;
 import frc.robot.swerve.module.Module;
-import frc.robot.swerve.module.ModuleIOReal;
 import java.util.Arrays;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -36,15 +35,8 @@ public class SwerveSubsystem extends SubsystemBase {
   private Rotation2d rawGyroRotation;
   private Rotation2d lastGyroRotation;
 
-  public SwerveSubsystem(SwerveConstants swerveConstants, GyroIO gyroIO) {
-    // TODO: MAKE THESE WORK FOR SIM AS WELL
-    modules =
-        new Module[] {
-          new Module(new ModuleIOReal(swerveConstants.getFrontLeftModule())),
-          new Module(new ModuleIOReal(swerveConstants.getFrontRightModule())),
-          new Module(new ModuleIOReal(swerveConstants.getBackLeftModule())),
-          new Module(new ModuleIOReal(swerveConstants.getBackRightModule()))
-        };
+  public SwerveSubsystem(SwerveConstants swerveConstants, GyroIO gyroIO, Module[] modules) {
+    this.modules = modules;
 
     this.gyroIO = gyroIO;
 

@@ -4,6 +4,13 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.KilogramSquareMeters;
+import static edu.wpi.first.units.Units.Meter;
+import static edu.wpi.first.units.Units.Volts;
+
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.elevator.ElevatorIOReal;
 import frc.robot.elevator.ElevatorIOSim;
@@ -12,6 +19,12 @@ import frc.robot.intake.IntakeSubsystem;
 import frc.robot.shoulder.ShoulderSubsystem;
 import frc.robot.swerve.constants.KelpieSwerveConstants;
 import frc.robot.swerve.constants.SwerveConstants;
+import java.util.Optional;
+import org.ironmaple.simulation.SimulatedArena;
+import org.ironmaple.simulation.drivesims.COTS;
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
+import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
 import org.littletonrobotics.junction.LoggedRobot;
 
 public class Robot extends LoggedRobot {
@@ -46,11 +59,54 @@ public class Robot extends LoggedRobot {
 
   private final Superstructure superstructure = new Superstructure(elevator, shoulder, intake);
 
-  public Robot() {}
+  // Maple Sim Stuff
+  private final DriveTrainSimulationConfig driveTrainSimConfig =
+      DriveTrainSimulationConfig.Default()
+          .withGyro(COTS.ofPigeon2())
+          // TODO: MAKE SURE THIS MODULE IS CORRECT
+          .withSwerveModule(
+              new SwerveModuleSimulationConfig(
+                  DCMotor.getKrakenX60Foc(1),
+                  DCMotor.getKrakenX60Foc(1),
+                  ROBOT_HARDWARE.getSwerveConstants().getDriveGearRatio(),
+                  ROBOT_HARDWARE.getSwerveConstants().getTurnGearRatio(),
+                  // These friction voltages are copied from Reefscape repo
+                  Volts.of(0.1),
+                  Volts.of(0.2),
+                  Meter.of(ROBOT_HARDWARE.getSwerveConstants().getWheelRadiusMeters()),
+                  // Copied from Reefscape
+                  KilogramSquareMeters.of(0.03),
+                  // Copied from Reefscape
+                  1.5))
+          .withTrackLengthTrackWidth(
+              Meter.of(ROBOT_HARDWARE.getSwerveConstants().getTrackWidthX()),
+              Meter.of(ROBOT_HARDWARE.getSwerveConstants().getTrackWidthY()))
+          .withBumperSize(
+              Meter.of(ROBOT_HARDWARE.getSwerveConstants().getBumperWidth()),
+              Meter.of(ROBOT_HARDWARE.getSwerveConstants().getBumperLength()));
+
+  private final Optional<SwerveDriveSimulation> swerveSimulation;
+
+  public Robot() {
+    if (ROBOT_TYPE == RobotType.SIM) {
+      this.swerveSimulation =
+          Optional.of(
+              new SwerveDriveSimulation(driveTrainSimConfig, new Pose2d(3, 3, Rotation2d.kZero)));
+      SimulatedArena.getInstance().addDriveTrainSimulation(swerveSimulation.get());
+    } else {
+      this.swerveSimulation = Optional.empty();
+    }
+  }
 
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
+  }
+
+  @Override
+  public void simulationPeriodic() {
+    // Update maple simulation
+    SimulatedArena.getInstance().simulationPeriodic();
   }
 
   @Override

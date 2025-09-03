@@ -18,6 +18,26 @@ public class KelpieSwerveConstants extends SwerveConstants {
   }
 
   @Override
+  public double getTrackWidthX() {
+    return Units.inchesToMeters(23.75);
+  }
+
+  @Override
+  public double getTrackWidthY() {
+    return Units.inchesToMeters(23.75);
+  }
+
+  @Override
+  public double getBumperWidth() {
+    return Units.inchesToMeters(36.6);
+  }
+
+  @Override
+  public double getBumperLength() {
+    return Units.inchesToMeters(36.6);
+  }
+
+  @Override
   public ModuleConstants getBackLeftModule() {
     return new ModuleConstants(2, "Back Left", 4, 5, 2, Rotation2d.fromRotations(-0.276855));
   }
