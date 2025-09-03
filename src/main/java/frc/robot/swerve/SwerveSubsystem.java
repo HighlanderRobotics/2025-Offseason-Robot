@@ -10,6 +10,8 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
@@ -30,7 +32,7 @@ import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.AutoLogOutput;
 
 public class SwerveSubsystem extends SubsystemBase {
-  private SwerveConstants swerveConstants;
+  private final SwerveConstants swerveConstants;
 
   private final Module[] modules; // Front Left, Front Right, Back Left, Back Right
   private final GyroIO gyroIO;
@@ -47,6 +49,7 @@ public class SwerveSubsystem extends SubsystemBase {
   private final Optional<SwerveDriveSimulation> swerveSimulation;
 
   public SwerveSubsystem(SwerveConstants swerveConstants, GyroIO gyroIO, Optional<SwerveDriveSimulation> swerveSimulation) {
+    this.swerveConstants = swerveConstants;
     if (Robot.ROBOT_TYPE == RobotType.SIM && swerveSimulation.isPresent()) {
       // Add simulated modules
       modules = new Module[] {
@@ -191,7 +194,7 @@ public class SwerveSubsystem extends SubsystemBase {
    * @param speeds robot relative speed setpoint
    * @return a command driving to target speeds
    */
-  public Command driveVelocity(Supplier<ChassisSpeeds> speeds) {
+  public Command driveClosedLoop(Supplier<ChassisSpeeds> speeds) {
     return this.run(() -> drive(getVelocityFieldRelative(), false));
   }
 
@@ -201,7 +204,7 @@ public class SwerveSubsystem extends SubsystemBase {
    * @param speeds the robot-relative speed setpoint.
    * @return a Command driving to the target speeds.
    */
-  public Command driveVoltage(Supplier<ChassisSpeeds> speeds) {
+  public Command driveOpenLoop(Supplier<ChassisSpeeds> speeds) {
     return this.run(() -> drive(speeds.get(), true));
   }
 
@@ -212,6 +215,23 @@ public class SwerveSubsystem extends SubsystemBase {
    * @return a Command driving to those speeds
    */
   public Command driveVelocityFieldRelative(Supplier<ChassisSpeeds> speeds) {
-    return driveVelocity(() -> ChassisSpeeds.fromFieldRelativeSpeeds(speeds.get(), getRotation()));
+    return driveClosedLoop(() -> ChassisSpeeds.fromFieldRelativeSpeeds(speeds.get(), getRotation()));
+  }
+
+  /**
+   * Drives open-loop. Speeds field relative to driver.
+   * @param speeds the field-relative speeds to drive at
+   * @return a Command driving at those speeds
+   */
+  public Command driveTeleop(Supplier<ChassisSpeeds> speeds) {
+    return this.run(() -> {
+      ChassisSpeeds speedRobotRelative = ChassisSpeeds.fromFieldRelativeSpeeds(
+        speeds.get(), 
+        // Flip so that speeds passed in are always relative to driver
+      DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+                      ? getPose().getRotation()
+                      : getPose().getRotation().minus(Rotation2d.fromDegrees(180)));
+      this.drive(speedRobotRelative, true);
+    });
   }
 }
