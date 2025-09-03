@@ -19,6 +19,12 @@ import frc.robot.intake.IntakeSubsystem;
 import frc.robot.shoulder.ShoulderSubsystem;
 import frc.robot.swerve.constants.KelpieSwerveConstants;
 import frc.robot.swerve.constants.SwerveConstants;
+import frc.robot.swerve.gyro.GyroIOReal;
+import frc.robot.swerve.gyro.GyroIOSim;
+import frc.robot.swerve.module.Module;
+import frc.robot.swerve.module.ModuleIOReal;
+import frc.robot.swerve.module.ModuleIOSim;
+import frc.robot.swerve.SwerveSubsystem;
 import java.util.Optional;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.COTS;
@@ -85,16 +91,23 @@ public class Robot extends LoggedRobot {
               Meter.of(ROBOT_HARDWARE.getSwerveConstants().getBumperWidth()),
               Meter.of(ROBOT_HARDWARE.getSwerveConstants().getBumperLength()));
 
-  private final Optional<SwerveDriveSimulation> swerveSimulation;
+  private final Optional<SwerveDriveSimulation> swerveSimulation = 
+    ROBOT_TYPE == RobotType.SIM ? Optional.of(
+        new SwerveDriveSimulation(driveTrainSimConfig, new Pose2d(3, 3, Rotation2d.kZero))) :
+        Optional.empty();
+
+  // Subsystem initialization
+  private final SwerveSubsystem swerve = new SwerveSubsystem(
+    ROBOT_HARDWARE.getSwerveConstants(),
+    ROBOT_TYPE != ROBOT_TYPE.SIM ? new GyroIOReal(ROBOT_HARDWARE.getSwerveConstants().getGyroID()) : new GyroIOSim(swerveSimulation.get().getGyroSimulation()),
+    swerveSimulation
+  );
+
+
 
   public Robot() {
     if (ROBOT_TYPE == RobotType.SIM) {
-      this.swerveSimulation =
-          Optional.of(
-              new SwerveDriveSimulation(driveTrainSimConfig, new Pose2d(3, 3, Rotation2d.kZero)));
       SimulatedArena.getInstance().addDriveTrainSimulation(swerveSimulation.get());
-    } else {
-      this.swerveSimulation = Optional.empty();
     }
   }
 

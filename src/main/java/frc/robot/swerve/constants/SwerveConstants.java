@@ -48,6 +48,8 @@ public abstract class SwerveConstants {
 
   public abstract ModuleConstants getBackRightModule();
 
+  public abstract int getGyroID();
+
   // Hardware configurations
   public abstract TalonFXConfiguration getDriveConfiguration();
 

@@ -100,6 +100,11 @@ public class KelpieSwerveConstants extends SwerveConstants {
   }
 
   @Override
+  public int getGyroID() {
+      return 0;
+  }
+
+  @Override
   public double getMaxLinearSpeed() {
     // From https://www.swervedrivespecialties.com/products/mk4n-swerve-module, L2+ with KrakenX60
     // and FOC

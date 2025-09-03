@@ -12,12 +12,21 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
+import frc.robot.Robot.RobotType;
 import frc.robot.swerve.constants.SwerveConstants;
 import frc.robot.swerve.gyro.GyroIO;
 import frc.robot.swerve.gyro.GyroIOInputsAutoLogged;
 import frc.robot.swerve.module.Module;
+import frc.robot.swerve.module.ModuleIO;
+import frc.robot.swerve.module.ModuleIOReal;
+import frc.robot.swerve.module.ModuleIOSim;
+
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.function.Supplier;
+
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.AutoLogOutput;
 
 public class SwerveSubsystem extends SubsystemBase {
@@ -35,10 +44,30 @@ public class SwerveSubsystem extends SubsystemBase {
   private Rotation2d rawGyroRotation;
   private Rotation2d lastGyroRotation;
 
-  public SwerveSubsystem(SwerveConstants swerveConstants, GyroIO gyroIO, Module[] modules) {
-    this.modules = modules;
+  private final Optional<SwerveDriveSimulation> swerveSimulation;
+
+  public SwerveSubsystem(SwerveConstants swerveConstants, GyroIO gyroIO, Optional<SwerveDriveSimulation> swerveSimulation) {
+    if (Robot.ROBOT_TYPE == RobotType.SIM && swerveSimulation.isPresent()) {
+      // Add simulated modules
+      modules = new Module[] {
+        new Module(new ModuleIOSim(Robot.ROBOT_HARDWARE.getSwerveConstants().getFrontLeftModule(), swerveSimulation.get().getModules()[0])),
+        new Module(new ModuleIOSim(Robot.ROBOT_HARDWARE.getSwerveConstants().getFrontRightModule(), swerveSimulation.get().getModules()[1])),
+        new Module(new ModuleIOSim(Robot.ROBOT_HARDWARE.getSwerveConstants().getBackLeftModule(), swerveSimulation.get().getModules()[2])),
+        new Module(new ModuleIOSim(Robot.ROBOT_HARDWARE.getSwerveConstants().getBackRightModule(), swerveSimulation.get().getModules()[3]))
+      };
+    } else {
+      // Add real modules
+      modules = new Module[] {
+        new Module(new ModuleIOReal(Robot.ROBOT_HARDWARE.getSwerveConstants().getFrontLeftModule())),
+        new Module(new ModuleIOReal(Robot.ROBOT_HARDWARE.getSwerveConstants().getFrontRightModule())),
+        new Module(new ModuleIOReal(Robot.ROBOT_HARDWARE.getSwerveConstants().getBackLeftModule())),
+        new Module(new ModuleIOReal(Robot.ROBOT_HARDWARE.getSwerveConstants().getBackRightModule()))
+      };
+    }
 
     this.gyroIO = gyroIO;
+
+    this.swerveSimulation = swerveSimulation;
 
     lastModulePositions = new SwerveModulePosition[modules.length];
   }
@@ -129,9 +158,12 @@ public class SwerveSubsystem extends SubsystemBase {
         gyroInputs.roll.getRadians(), gyroInputs.pitch.getRadians(), gyroInputs.yaw.getRadians());
   }
 
-  // TODO: RESET POSE IN SIM ONCE IMPLEMENTED
   public void resetPose(Pose2d newPose) {
     estimator.resetPose(newPose);
+    if (swerveSimulation.isPresent()) {
+      swerveSimulation.get().setSimulationWorldPose(newPose);
+      swerveSimulation.get().setRobotSpeeds(new ChassisSpeeds());
+    }
   }
 
   @AutoLogOutput(key = "Odometry/Velocity Robot Relative")
