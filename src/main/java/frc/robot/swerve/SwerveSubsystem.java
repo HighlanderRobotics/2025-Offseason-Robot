@@ -50,18 +50,18 @@ public class SwerveSubsystem extends SubsystemBase {
     if (Robot.ROBOT_TYPE == RobotType.SIM && swerveSimulation.isPresent()) {
       // Add simulated modules
       modules = new Module[] {
-        new Module(new ModuleIOSim(Robot.ROBOT_HARDWARE.getSwerveConstants().getFrontLeftModule(), swerveSimulation.get().getModules()[0])),
-        new Module(new ModuleIOSim(Robot.ROBOT_HARDWARE.getSwerveConstants().getFrontRightModule(), swerveSimulation.get().getModules()[1])),
-        new Module(new ModuleIOSim(Robot.ROBOT_HARDWARE.getSwerveConstants().getBackLeftModule(), swerveSimulation.get().getModules()[2])),
-        new Module(new ModuleIOSim(Robot.ROBOT_HARDWARE.getSwerveConstants().getBackRightModule(), swerveSimulation.get().getModules()[3]))
+        new Module(new ModuleIOSim(swerveConstants.getFrontLeftModule(), swerveSimulation.get().getModules()[0])),
+        new Module(new ModuleIOSim(swerveConstants.getFrontRightModule(), swerveSimulation.get().getModules()[1])),
+        new Module(new ModuleIOSim(swerveConstants.getBackLeftModule(), swerveSimulation.get().getModules()[2])),
+        new Module(new ModuleIOSim(swerveConstants.getBackRightModule(), swerveSimulation.get().getModules()[3]))
       };
     } else {
       // Add real modules
       modules = new Module[] {
-        new Module(new ModuleIOReal(Robot.ROBOT_HARDWARE.getSwerveConstants().getFrontLeftModule())),
-        new Module(new ModuleIOReal(Robot.ROBOT_HARDWARE.getSwerveConstants().getFrontRightModule())),
-        new Module(new ModuleIOReal(Robot.ROBOT_HARDWARE.getSwerveConstants().getBackLeftModule())),
-        new Module(new ModuleIOReal(Robot.ROBOT_HARDWARE.getSwerveConstants().getBackRightModule()))
+        new Module(new ModuleIOReal(swerveConstants.getFrontLeftModule())),
+        new Module(new ModuleIOReal(swerveConstants.getFrontRightModule())),
+        new Module(new ModuleIOReal(swerveConstants.getBackLeftModule())),
+        new Module(new ModuleIOReal(swerveConstants.getBackRightModule()))
       };
     }
 
