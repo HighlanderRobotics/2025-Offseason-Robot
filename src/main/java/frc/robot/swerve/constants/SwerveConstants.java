@@ -18,6 +18,14 @@ public abstract class SwerveConstants {
 
   public abstract double getBumperLength();
 
+  public double getDriveBaseRadius() {
+    return Math.hypot(getTrackWidthX() / 2.0, getTrackWidthY() / 2.0);
+  }
+
+  public double getMaxAngularSpeed() {
+    return getMaxLinearSpeed() / getDriveBaseRadius();
+  }
+
   public abstract double getMaxLinearSpeed();
 
   public abstract double getMaxLinearAcceleration();

@@ -8,8 +8,10 @@ import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Meter;
 import static edu.wpi.first.units.Units.Volts;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.elevator.ElevatorIOReal;
@@ -24,6 +26,7 @@ import frc.robot.swerve.gyro.GyroIOSim;
 import frc.robot.swerve.module.Module;
 import frc.robot.swerve.module.ModuleIOReal;
 import frc.robot.swerve.module.ModuleIOSim;
+import frc.robot.util.CommandXBoxControllerSubsystem;
 import frc.robot.swerve.SwerveSubsystem;
 import java.util.Optional;
 import org.ironmaple.simulation.SimulatedArena;
@@ -103,12 +106,25 @@ public class Robot extends LoggedRobot {
     swerveSimulation
   );
 
-
+  private final CommandXBoxControllerSubsystem driver = new CommandXBoxControllerSubsystem(0);
+  private final CommandXBoxControllerSubsystem operator = new CommandXBoxControllerSubsystem(1);
 
   public Robot() {
     if (ROBOT_TYPE == RobotType.SIM) {
       SimulatedArena.getInstance().addDriveTrainSimulation(swerveSimulation.get());
     }
+
+
+    swerve.setDefaultCommand(swerve.driveTeleop(() -> new ChassisSpeeds(
+      modifyJoystick(driver.getLeftY()) * ROBOT_HARDWARE.getSwerveConstants().getMaxLinearSpeed(),
+      modifyJoystick(driver.getLeftX()) * ROBOT_HARDWARE.getSwerveConstants().getMaxLinearSpeed(),
+      modifyJoystick(driver.getRightX()) * ROBOT_HARDWARE.getSwerveConstants().getMaxAngularSpeed()
+    )));
+  }
+
+  /** Scales a joystick value for teleop driving */
+  private static double modifyJoystick(double val) {
+    return MathUtil.applyDeadband(Math.abs(Math.pow(val, 2)) * Math.signum(val), 0.02);
   }
 
   @Override
