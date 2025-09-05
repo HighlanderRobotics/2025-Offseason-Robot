@@ -3,6 +3,7 @@ package frc.robot.swerve.constants;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import frc.robot.swerve.module.Module.ModuleConstants;
 
@@ -33,6 +34,16 @@ public abstract class SwerveConstants {
   public abstract double getDriveGearRatio();
 
   public abstract double getTurnGearRatio();
+
+  /** Returns an array of module translations. */
+  public Translation2d[] getModuleTranslations() {
+    return new Translation2d[] {
+      new Translation2d(getTrackWidthX() / 2.0, getTrackWidthY() / 2.0),
+      new Translation2d(getTrackWidthX() / 2.0, -getTrackWidthY() / 2.0),
+      new Translation2d(-getTrackWidthX() / 2.0, getTrackWidthY() / 2.0),
+      new Translation2d(-getTrackWidthX() / 2.0, -getTrackWidthY() / 2.0)
+    };
+  }
 
   /** Defaults to inverted ie Mk4i, Mk4n. */
   public boolean getTurnMotorInverted() {

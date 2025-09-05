@@ -1,5 +1,6 @@
 package frc.robot.swerve;
 
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -20,14 +21,11 @@ import frc.robot.swerve.constants.SwerveConstants;
 import frc.robot.swerve.gyro.GyroIO;
 import frc.robot.swerve.gyro.GyroIOInputsAutoLogged;
 import frc.robot.swerve.module.Module;
-import frc.robot.swerve.module.ModuleIO;
 import frc.robot.swerve.module.ModuleIOReal;
 import frc.robot.swerve.module.ModuleIOSim;
-
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Supplier;
-
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.AutoLogOutput;
 
@@ -42,37 +40,65 @@ public class SwerveSubsystem extends SubsystemBase {
 
   private SwerveDrivePoseEstimator estimator;
 
-  private SwerveModulePosition[] lastModulePositions;
-  private Rotation2d rawGyroRotation;
-  private Rotation2d lastGyroRotation;
+  private SwerveModulePosition[] lastModulePositions =
+      new SwerveModulePosition[] {
+        new SwerveModulePosition(),
+        new SwerveModulePosition(),
+        new SwerveModulePosition(),
+        new SwerveModulePosition()
+      };
+  private Rotation2d rawGyroRotation = new Rotation2d();
+  private Rotation2d lastGyroRotation = new Rotation2d();
 
   private final Optional<SwerveDriveSimulation> swerveSimulation;
 
-  public SwerveSubsystem(SwerveConstants swerveConstants, GyroIO gyroIO, Optional<SwerveDriveSimulation> swerveSimulation) {
+  public SwerveSubsystem(
+      SwerveConstants swerveConstants,
+      GyroIO gyroIO,
+      Optional<SwerveDriveSimulation> swerveSimulation) {
     this.swerveConstants = swerveConstants;
     if (Robot.ROBOT_TYPE == RobotType.SIM && swerveSimulation.isPresent()) {
       // Add simulated modules
-      modules = new Module[] {
-        new Module(new ModuleIOSim(swerveConstants.getFrontLeftModule(), swerveSimulation.get().getModules()[0])),
-        new Module(new ModuleIOSim(swerveConstants.getFrontRightModule(), swerveSimulation.get().getModules()[1])),
-        new Module(new ModuleIOSim(swerveConstants.getBackLeftModule(), swerveSimulation.get().getModules()[2])),
-        new Module(new ModuleIOSim(swerveConstants.getBackRightModule(), swerveSimulation.get().getModules()[3]))
-      };
+      modules =
+          new Module[] {
+            new Module(
+                new ModuleIOSim(
+                    swerveConstants.getFrontLeftModule(), swerveSimulation.get().getModules()[0])),
+            new Module(
+                new ModuleIOSim(
+                    swerveConstants.getFrontRightModule(), swerveSimulation.get().getModules()[1])),
+            new Module(
+                new ModuleIOSim(
+                    swerveConstants.getBackLeftModule(), swerveSimulation.get().getModules()[2])),
+            new Module(
+                new ModuleIOSim(
+                    swerveConstants.getBackRightModule(), swerveSimulation.get().getModules()[3]))
+          };
     } else {
       // Add real modules
-      modules = new Module[] {
-        new Module(new ModuleIOReal(swerveConstants.getFrontLeftModule())),
-        new Module(new ModuleIOReal(swerveConstants.getFrontRightModule())),
-        new Module(new ModuleIOReal(swerveConstants.getBackLeftModule())),
-        new Module(new ModuleIOReal(swerveConstants.getBackRightModule()))
-      };
+      modules =
+          new Module[] {
+            new Module(new ModuleIOReal(swerveConstants.getFrontLeftModule())),
+            new Module(new ModuleIOReal(swerveConstants.getFrontRightModule())),
+            new Module(new ModuleIOReal(swerveConstants.getBackLeftModule())),
+            new Module(new ModuleIOReal(swerveConstants.getBackRightModule()))
+          };
     }
 
     this.gyroIO = gyroIO;
 
     this.swerveSimulation = swerveSimulation;
 
-    lastModulePositions = new SwerveModulePosition[modules.length];
+    this.kinematics = new SwerveDriveKinematics(swerveConstants.getModuleTranslations());
+    // Std devs copied from reefscape
+    this.estimator =
+        new SwerveDrivePoseEstimator(
+            kinematics,
+            rawGyroRotation,
+            lastModulePositions,
+            new Pose2d(),
+            VecBuilder.fill(0.6, 0.6, 0.07),
+            VecBuilder.fill(0.9, 0.9, 0.4));
   }
 
   @Override
@@ -215,23 +241,27 @@ public class SwerveSubsystem extends SubsystemBase {
    * @return a Command driving to those speeds
    */
   public Command driveVelocityFieldRelative(Supplier<ChassisSpeeds> speeds) {
-    return driveClosedLoop(() -> ChassisSpeeds.fromFieldRelativeSpeeds(speeds.get(), getRotation()));
+    return driveClosedLoop(
+        () -> ChassisSpeeds.fromFieldRelativeSpeeds(speeds.get(), getRotation()));
   }
 
   /**
    * Drives open-loop. Speeds field relative to driver.
+   *
    * @param speeds the field-relative speeds to drive at
    * @return a Command driving at those speeds
    */
   public Command driveTeleop(Supplier<ChassisSpeeds> speeds) {
-    return this.run(() -> {
-      ChassisSpeeds speedRobotRelative = ChassisSpeeds.fromFieldRelativeSpeeds(
-        speeds.get(), 
-        // Flip so that speeds passed in are always relative to driver
-      DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+    return this.run(
+        () -> {
+          ChassisSpeeds speedRobotRelative =
+              ChassisSpeeds.fromFieldRelativeSpeeds(
+                  speeds.get(),
+                  // Flip so that speeds passed in are always relative to driver
+                  DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
                       ? getPose().getRotation()
                       : getPose().getRotation().minus(Rotation2d.fromDegrees(180)));
-      this.drive(speedRobotRelative, true);
-    });
+          this.drive(speedRobotRelative, true);
+        });
   }
 }

@@ -13,28 +13,32 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.elevator.ElevatorIOReal;
 import frc.robot.elevator.ElevatorIOSim;
 import frc.robot.elevator.ElevatorSubsystem;
 import frc.robot.intake.IntakeSubsystem;
 import frc.robot.shoulder.ShoulderSubsystem;
+import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.swerve.constants.KelpieSwerveConstants;
 import frc.robot.swerve.constants.SwerveConstants;
 import frc.robot.swerve.gyro.GyroIOReal;
 import frc.robot.swerve.gyro.GyroIOSim;
-import frc.robot.swerve.module.Module;
-import frc.robot.swerve.module.ModuleIOReal;
-import frc.robot.swerve.module.ModuleIOSim;
 import frc.robot.util.CommandXBoxControllerSubsystem;
-import frc.robot.swerve.SwerveSubsystem;
 import java.util.Optional;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.COTS;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
+import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGReader;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 public class Robot extends LoggedRobot {
   public static final RobotType ROBOT_TYPE = Robot.isReal() ? RobotType.REAL : RobotType.SIM;
@@ -94,32 +98,70 @@ public class Robot extends LoggedRobot {
               Meter.of(ROBOT_HARDWARE.getSwerveConstants().getBumperWidth()),
               Meter.of(ROBOT_HARDWARE.getSwerveConstants().getBumperLength()));
 
-  private final Optional<SwerveDriveSimulation> swerveSimulation = 
-    ROBOT_TYPE == RobotType.SIM ? Optional.of(
-        new SwerveDriveSimulation(driveTrainSimConfig, new Pose2d(3, 3, Rotation2d.kZero))) :
-        Optional.empty();
+  private final Optional<SwerveDriveSimulation> swerveSimulation =
+      ROBOT_TYPE == RobotType.SIM
+          ? Optional.of(
+              new SwerveDriveSimulation(driveTrainSimConfig, new Pose2d(3, 3, Rotation2d.kZero)))
+          : Optional.empty();
 
   // Subsystem initialization
-  private final SwerveSubsystem swerve = new SwerveSubsystem(
-    ROBOT_HARDWARE.getSwerveConstants(),
-    ROBOT_TYPE != ROBOT_TYPE.SIM ? new GyroIOReal(ROBOT_HARDWARE.getSwerveConstants().getGyroID()) : new GyroIOSim(swerveSimulation.get().getGyroSimulation()),
-    swerveSimulation
-  );
+  private final SwerveSubsystem swerve =
+      new SwerveSubsystem(
+          ROBOT_HARDWARE.getSwerveConstants(),
+          ROBOT_TYPE != RobotType.SIM
+              ? new GyroIOReal(ROBOT_HARDWARE.getSwerveConstants().getGyroID())
+              : new GyroIOSim(swerveSimulation.get().getGyroSimulation()),
+          swerveSimulation);
 
   private final CommandXBoxControllerSubsystem driver = new CommandXBoxControllerSubsystem(0);
   private final CommandXBoxControllerSubsystem operator = new CommandXBoxControllerSubsystem(1);
 
   public Robot() {
+    // Init Logger
+    // Metadata about the current code running on the robot
+    Logger.recordMetadata("Codebase", "Comp2025");
+    Logger.recordMetadata("RuntimeType", getRuntimeType().toString());
+    Logger.recordMetadata("Robot Mode", ROBOT_TYPE.toString());
+    Logger.recordMetadata("Robot Hardware", ROBOT_HARDWARE.toString());
+
+    switch (ROBOT_TYPE) {
+      case REAL:
+        Logger.addDataReceiver(new WPILOGWriter("/U")); // Log to a USB stick
+        Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
+        new PowerDistribution(1, ModuleType.kRev); // Enables power distribution logging
+        break;
+      case REPLAY:
+        setUseTiming(false); // Run as fast as possible
+        String logPath =
+            LogFileUtil
+                .findReplayLog(); // Pull the replay log from AdvantageScope (or prompt the user)
+        Logger.setReplaySource(new WPILOGReader(logPath)); // Read replay log
+        Logger.addDataReceiver(
+            new WPILOGWriter(
+                LogFileUtil.addPathSuffix(logPath, "_sim"))); // Save outputs to a new log
+        break;
+      case SIM:
+        Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
+        break;
+    }
+
+    Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may
+    // be added.
+
     if (ROBOT_TYPE == RobotType.SIM) {
       SimulatedArena.getInstance().addDriveTrainSimulation(swerveSimulation.get());
     }
 
-
-    swerve.setDefaultCommand(swerve.driveTeleop(() -> new ChassisSpeeds(
-      modifyJoystick(driver.getLeftY()) * ROBOT_HARDWARE.getSwerveConstants().getMaxLinearSpeed(),
-      modifyJoystick(driver.getLeftX()) * ROBOT_HARDWARE.getSwerveConstants().getMaxLinearSpeed(),
-      modifyJoystick(driver.getRightX()) * ROBOT_HARDWARE.getSwerveConstants().getMaxAngularSpeed()
-    )));
+    swerve.setDefaultCommand(
+        swerve.driveTeleop(
+            () ->
+                new ChassisSpeeds(
+                    modifyJoystick(driver.getLeftY())
+                        * ROBOT_HARDWARE.getSwerveConstants().getMaxLinearSpeed(),
+                    modifyJoystick(driver.getLeftX())
+                        * ROBOT_HARDWARE.getSwerveConstants().getMaxLinearSpeed(),
+                    modifyJoystick(driver.getRightX())
+                        * ROBOT_HARDWARE.getSwerveConstants().getMaxAngularSpeed())));
   }
 
   /** Scales a joystick value for teleop driving */
