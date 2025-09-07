@@ -30,9 +30,9 @@ public class PivotIOReal implements PivotIO {
   private final VoltageOut voltageOut = new VoltageOut(0.0).withEnableFOC(true);
   private final MotionMagicTorqueCurrentFOC motionMagic = new MotionMagicTorqueCurrentFOC(0.0);
 
-  public PivotIOReal() {
-    motor = new TalonFX(14, "*");
-    cancoder = new CANcoder(16, "*"); // put correct ID
+  public PivotIOReal(int motorID, int cancoderID) {
+    motor = new TalonFX(motorID, "*");
+    cancoder = new CANcoder(cancoderID, "*"); // put correct ID
 
     angularVelocityRotsPerSec = motor.getVelocity();
     supplyCurrentAmps = motor.getSupplyCurrent();

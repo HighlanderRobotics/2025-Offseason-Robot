@@ -1,19 +1,34 @@
 package frc.robot.arm;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Pivot.PivotIO;
+import frc.robot.Pivot.PivotIOInputsAutoLogged;
+import frc.robot.Robot;
+import frc.robot.Robot.RobotType;
 import frc.robot.arm.ArmSubsystem.ArmState;
 import frc.robot.roller.RollerIO;
+import frc.robot.roller.RollerIOInputsAutoLogged;
 import frc.robot.rollerAndPivot.rollerPivotSubsystem;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 public class ArmSubsystem extends rollerPivotSubsystem {
   public static final double PIVOT_RATIO = (44.0 / 16.0) * 23;
   public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(180);
   public static final Rotation2d MIN_ANGLE = Rotation2d.fromDegrees(0);
+  private final RollerIOInputsAutoLogged rollerInputs = new RollerIOInputsAutoLogged();
+  private final PivotIOInputsAutoLogged pivotInputs = new PivotIOInputsAutoLogged();
+  private final String name;
+  private final RollerIO rollers;
+  private final PivotIO pivot;
 
   public ArmSubsystem(RollerIO rollers, PivotIO pivot, String name) {
     super(rollers, pivot, name);
+    this.name = name;
+    this.rollers = rollers;
+    this.pivot = pivot;
   }
 
   @AutoLogOutput(key = "Arm/State")
@@ -58,11 +73,27 @@ public class ArmSubsystem extends rollerPivotSubsystem {
     }
   }
 
-  // public void setRollerVoltage(double volts) {
-  //   super.setRollerVoltage(volts);
-  // }
+  @Override
+  public void periodic() {
+    pivot.updateInputs(pivotInputs);
+    Logger.processInputs(name + "/Pivot", pivotInputs);
+    rollers.updateInputs(rollerInputs);
+    Logger.processInputs(name + "/Roller", rollerInputs);
+  }
 
-  // public Command setTargetAngle(Rotation2d target) {
-  //   return super.setTargetAngle(target);
-  // }
+  public Command runRollerVoltage(double volts) {
+    return this.run(() -> rollers.setRollerVoltage(volts));
+  }
+
+  public Command setTargetAngle(Rotation2d target) {
+    return setTargetAngle(() -> target);
+  }
+
+  public Command setTargetAngle(Supplier<Rotation2d> target) {
+    return this.runOnce(
+        () -> {
+          if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("Arm", target.get());
+          pivot.setMotorPosition(target.get());
+        });
+  }
 }
