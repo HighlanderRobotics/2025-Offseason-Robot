@@ -162,7 +162,6 @@ public class SwerveSubsystem extends SubsystemBase {
     }
   }
 
-  // TODO: THIS WILL ALL NEED UPDATING AFTER ODO THREAD IMPL
   private void updateOdometry() {
 
     List<Samples> sampledStates = odometryThreadInputs.sampledStates;

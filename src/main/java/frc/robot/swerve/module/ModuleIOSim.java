@@ -74,7 +74,6 @@ public class ModuleIOSim implements ModuleIO {
     turnStatorCurrent = turnTalon.getStatorCurrent();
     turnAppliedVolts = turnTalon.getMotorVoltage();
 
-    // TODO: USE AN ODOMETRY THREAD FOR SOME OF THESE
     BaseStatusSignal.setUpdateFrequencyForAll(
         50.0,
         drivePosition,
