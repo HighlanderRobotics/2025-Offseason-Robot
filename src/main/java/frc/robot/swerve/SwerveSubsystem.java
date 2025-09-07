@@ -31,6 +31,7 @@ import frc.robot.swerve.odometry.PhoenixOdometryThread;
 import frc.robot.swerve.odometry.PhoenixOdometryThread.Samples;
 import frc.robot.swerve.odometry.PhoenixOdometryThread.SignalID;
 import frc.robot.swerve.odometry.PhoenixOdometryThread.SignalType;
+import frc.robot.util.Tracer;
 
 import java.util.Arrays;
 import java.util.List;
@@ -127,21 +128,23 @@ public class SwerveSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+    Tracer.trace("Swerve Periodic", () -> {
 
-    // Updates each module
-    for (Module module : modules) {
-      module.periodic();
-    }
+      Tracer.trace("Update odo thread inputs", () -> odometryThread.updateInputs(odometryThreadInputs, lastOdometryUpdateTimestamp));
+      Logger.processInputs("AsyncOdo", odometryThreadInputs);
+      if (!odometryThreadInputs.sampledStates.isEmpty()) {
+        lastOdometryUpdateTimestamp = odometryThreadInputs.sampledStates.get(odometryThreadInputs.sampledStates.size() - 1).timestamp();
+      }
 
-    odometryThread.updateInputs(odometryThreadInputs, lastOdometryUpdateTimestamp);
-    Logger.processInputs("Odometry/Async", odometryThreadInputs);
-    if (!odometryThreadInputs.sampledStates.isEmpty()) {
-      lastOdometryUpdateTimestamp = odometryThreadInputs.sampledStates.get(odometryThreadInputs.sampledStates.size() - 1).timestamp();
-    }
+      Tracer.trace("Update gyro inputs", () -> gyroIO.updateInputs(gyroInputs));
+      Logger.processInputs("Swerve/Gyro", gyroInputs);
+      
+      for (Module module : modules) {
+        Tracer.trace("Update module inputs for " + module.getPrefix(), module::periodic);
+      }
 
-    gyroIO.updateInputs(gyroInputs);
-
-    updateOdometry();
+      Tracer.trace("Update odometry", this::updateOdometry);
+    });
   }
 
   private void drive(ChassisSpeeds speeds, boolean openLoop) {
