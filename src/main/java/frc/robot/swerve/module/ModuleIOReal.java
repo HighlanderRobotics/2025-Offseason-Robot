@@ -2,6 +2,8 @@ package frc.robot.swerve.module;
 
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
+import java.util.Optional;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
@@ -9,9 +11,14 @@ import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.google.common.collect.ImmutableSet;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.AngularVelocity;
 import frc.robot.swerve.module.Module.ModuleConstants;
+import frc.robot.swerve.odometry.PhoenixOdometryThread;
+import frc.robot.swerve.odometry.PhoenixOdometryThread.Registration;
+import frc.robot.swerve.odometry.PhoenixOdometryThread.SignalType;
 
 public class ModuleIOReal implements ModuleIO {
   private final ModuleConstants constants;
@@ -67,21 +74,25 @@ public class ModuleIOReal implements ModuleIO {
     turnStatorCurrent = turnTalon.getStatorCurrent();
     turnAppliedVolts = turnTalon.getMotorVoltage();
 
-    // TODO: USE AN ODOMETRY THREAD FOR SOME OF THESE
+
     BaseStatusSignal.setUpdateFrequencyForAll(
         50.0,
-        drivePosition,
         driveVelocity,
         driveTemp,
         driveAppliedVolts,
         driveStatorCurrent,
         driveSupplyCurrent,
         cancoderAbsolutePosition,
-        turnPosition,
         turnVelocity,
         turnAppliedVolts,
         turnStatorCurrent,
         turnSupplyCurrent);
+    // Register the signals to the odo thread
+    PhoenixOdometryThread.getInstance().registerSignals(
+      new Registration(driveTalon, Optional.of(moduleConstants), SignalType.DRIVE, ImmutableSet.of(drivePosition)),
+      new Registration(turnTalon, Optional.of(moduleConstants), SignalType.STEER, ImmutableSet.of(turnPosition))
+    );
+    BaseStatusSignal.setUpdateFrequencyForAll(PhoenixOdometryThread.ODOMETRY_FREQUENCY_HZ, drivePosition, turnPosition);
 
     driveTalon.optimizeBusUtilization();
     turnTalon.optimizeBusUtilization();

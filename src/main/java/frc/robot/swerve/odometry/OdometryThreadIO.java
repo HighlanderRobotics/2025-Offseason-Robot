@@ -14,7 +14,7 @@ public interface OdometryThreadIO {
   public static final int GYRO_MODULE_ID = -1;
 
   public class OdometryThreadIOInputs implements LoggableInputs {
-    List<Samples> sampledStates = List.of();
+    public List<Samples> sampledStates = List.of();
 
     @Override
     public void toLog(LogTable table) {

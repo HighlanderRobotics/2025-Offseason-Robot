@@ -1,13 +1,21 @@
 package frc.robot.swerve.gyro;
 
+import java.util.Optional;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.hardware.Pigeon2;
+import com.fasterxml.jackson.databind.JsonSerializable.Base;
+import com.google.common.collect.ImmutableSet;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import frc.robot.swerve.odometry.PhoenixOdometryThread;
+import frc.robot.swerve.odometry.PhoenixOdometryThread.Registration;
+import frc.robot.swerve.odometry.PhoenixOdometryThread.SignalType;
 
 public class GyroIOReal implements GyroIO {
 
@@ -26,8 +34,11 @@ public class GyroIOReal implements GyroIO {
     roll = pigeon.getRoll();
     yawVelocity = pigeon.getAngularVelocityZWorld();
 
-    // TODO: UPDATE YAW AND YAW VELOCITY IN AN ODO THREAD
-    BaseStatusSignal.setUpdateFrequencyForAll(50.0, yaw, pitch, roll, yawVelocity);
+    
+    BaseStatusSignal.setUpdateFrequencyForAll(50.0,  pitch, roll);
+    BaseStatusSignal.setUpdateFrequencyForAll(PhoenixOdometryThread.ODOMETRY_FREQUENCY_HZ, yaw, yawVelocity);
+    // TODO: ASK IF yawVelocity SHOULD BE REGISTERED TOO
+    PhoenixOdometryThread.getInstance().registerSignals(new Registration(pigeon, Optional.empty(), SignalType.GYRO, ImmutableSet.of(yaw)));
 
     pigeon.optimizeBusUtilization();
   }

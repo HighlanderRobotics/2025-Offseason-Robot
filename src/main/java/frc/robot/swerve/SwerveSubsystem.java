@@ -11,7 +11,9 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -23,11 +25,21 @@ import frc.robot.swerve.gyro.GyroIOInputsAutoLogged;
 import frc.robot.swerve.module.Module;
 import frc.robot.swerve.module.ModuleIOReal;
 import frc.robot.swerve.module.ModuleIOSim;
+import frc.robot.swerve.odometry.OdometryThreadIO;
+import frc.robot.swerve.odometry.OdometryThreadIO.OdometryThreadIOInputs;
+import frc.robot.swerve.odometry.PhoenixOdometryThread;
+import frc.robot.swerve.odometry.PhoenixOdometryThread.Samples;
+import frc.robot.swerve.odometry.PhoenixOdometryThread.SignalID;
+import frc.robot.swerve.odometry.PhoenixOdometryThread.SignalType;
+
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 public class SwerveSubsystem extends SubsystemBase {
   private final SwerveConstants swerveConstants;
@@ -35,6 +47,9 @@ public class SwerveSubsystem extends SubsystemBase {
   private final Module[] modules; // Front Left, Front Right, Back Left, Back Right
   private final GyroIO gyroIO;
   private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
+  private final OdometryThreadIO odometryThread;
+  private final OdometryThreadIOInputs odometryThreadInputs = new OdometryThreadIOInputs();
+  private double lastOdometryUpdateTimestamp = 0.0;
 
   private SwerveDriveKinematics kinematics;
 
@@ -48,14 +63,18 @@ public class SwerveSubsystem extends SubsystemBase {
         new SwerveModulePosition()
       };
   private Rotation2d rawGyroRotation = new Rotation2d();
-  private Rotation2d lastGyroRotation = new Rotation2d();
 
   private final Optional<SwerveDriveSimulation> swerveSimulation;
+
+  private Alert usingSyncOdoAlert = new Alert("Using Sync Odometry", AlertType.kInfo);
+  private Alert missingModuleData = new Alert("Missing Module Data", AlertType.kError);
+  private Alert missingGyroData = new Alert("Missing Gyro Data", AlertType.kWarning);
 
   public SwerveSubsystem(
       SwerveConstants swerveConstants,
       GyroIO gyroIO,
-      Optional<SwerveDriveSimulation> swerveSimulation) {
+      Optional<SwerveDriveSimulation> swerveSimulation,
+      OdometryThreadIO odometryThread) {
     this.swerveConstants = swerveConstants;
     if (Robot.ROBOT_TYPE == RobotType.SIM && swerveSimulation.isPresent()) {
       // Add simulated modules
@@ -99,6 +118,11 @@ public class SwerveSubsystem extends SubsystemBase {
             new Pose2d(),
             VecBuilder.fill(0.6, 0.6, 0.07),
             VecBuilder.fill(0.9, 0.9, 0.4));
+    this.odometryThread = odometryThread;
+  }
+
+  public void startOdoThread() {
+    odometryThread.start();
   }
 
   @Override
@@ -107,6 +131,12 @@ public class SwerveSubsystem extends SubsystemBase {
     // Updates each module
     for (Module module : modules) {
       module.periodic();
+    }
+
+    odometryThread.updateInputs(odometryThreadInputs, lastOdometryUpdateTimestamp);
+    Logger.processInputs("Odometry/Async", odometryThreadInputs);
+    if (!odometryThreadInputs.sampledStates.isEmpty()) {
+      lastOdometryUpdateTimestamp = odometryThreadInputs.sampledStates.get(odometryThreadInputs.sampledStates.size() - 1).timestamp();
     }
 
     gyroIO.updateInputs(gyroInputs);
@@ -135,37 +165,95 @@ public class SwerveSubsystem extends SubsystemBase {
   // TODO: THIS WILL ALL NEED UPDATING AFTER ODO THREAD IMPL
   private void updateOdometry() {
 
-    SwerveModulePosition[] modulePositions = new SwerveModulePosition[modules.length];
-    SwerveModulePosition[] moduleDeltas = new SwerveModulePosition[modules.length];
-
-    for (int moduleIndex = 0; moduleIndex < modules.length; moduleIndex++) {
-      double dist = modules[moduleIndex].getPositionMeters();
-      Rotation2d rot = modules[moduleIndex].getAngle();
-
-      modulePositions[moduleIndex] = new SwerveModulePosition(dist, rot);
-
-      moduleDeltas[moduleIndex] =
-          new SwerveModulePosition(
-              dist - lastModulePositions[moduleIndex].distanceMeters,
-              rot.minus(lastModulePositions[moduleIndex].angle));
-      lastModulePositions[moduleIndex] = modulePositions[moduleIndex];
-    }
-
-    // Expresses the movement of the robot since last update in x, y, and theta
-    // Doesn't use gyro data
-    Twist2d twist = kinematics.toTwist2d(moduleDeltas);
-
-    // No gyro data
-    if (!gyroInputs.isConnected) {
-      // If the gyro doesn't update, use module positions
-      rawGyroRotation = rawGyroRotation.plus(Rotation2d.fromRadians(twist.dtheta));
+    List<Samples> sampledStates = odometryThreadInputs.sampledStates;
+    // Use sync samples if there aren't any async ones
+    if (sampledStates.size() == 0) {
+      usingSyncOdoAlert.set(true);
+      sampledStates = getSyncSamples();
     } else {
-      rawGyroRotation = gyroInputs.yaw;
+      usingSyncOdoAlert.set(false);
     }
 
-    lastGyroRotation = rawGyroRotation;
-    // Update!
-    estimator.update(rawGyroRotation, modulePositions);
+    for (Samples sample : sampledStates) {
+      SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
+      SwerveModulePosition[] moduleDeltas = new SwerveModulePosition[4];
+      boolean hasNullModulePosition = false;
+
+      for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
+        Double dist = sample.values().get(new SignalID(SignalType.DRIVE, moduleIndex));
+        if (dist == null) {
+          // No value at timestamp
+          hasNullModulePosition = true;
+          break;
+        }
+
+        Double rot = sample.values().get(new SignalID(SignalType.STEER, moduleIndex));
+        if (rot == null) {
+          hasNullModulePosition = true;
+          break;
+        }
+
+        // All data exists at this timestamp
+        modulePositions[moduleIndex] = new SwerveModulePosition(dist, Rotation2d.fromRotations(rot)); // Values from thread
+
+        moduleDeltas[moduleIndex] = new SwerveModulePosition(modulePositions[moduleIndex].distanceMeters - lastModulePositions[moduleIndex].distanceMeters, modulePositions[moduleIndex].angle.minus(lastModulePositions[moduleIndex].angle));
+
+        lastModulePositions[moduleIndex] = modulePositions[moduleIndex];
+      }
+
+      if (hasNullModulePosition) {
+        missingModuleData.set(true);
+        if (!gyroInputs.isConnected || sample.values().get(new SignalID(SignalType.GYRO, PhoenixOdometryThread.GYRO_MODULE_ID)) == null) {
+            missingGyroData.set(true);
+        } else {
+          missingGyroData.set(false);
+          rawGyroRotation = Rotation2d.fromDegrees(sample.values().get(new SignalID(SignalType.GYRO, PhoenixOdometryThread.GYRO_MODULE_ID)));
+          // If we're missing data, just update with the gyro and the previous module positions
+          estimator.updateWithTime(sample.timestamp(), rawGyroRotation, lastModulePositions);
+        }
+        continue;
+      }
+
+      // We have all our module data
+      missingModuleData.set(false);
+
+      // The twist represents the motion of the robot based ONLY on the module deltas, no gyro.
+      Twist2d twist = kinematics.toTwist2d(moduleDeltas);
+      if (!gyroInputs.isConnected || sample.values().get(new SignalID(SignalType.GYRO, PhoenixOdometryThread.GYRO_MODULE_ID)) == null) {
+        // No gyro data
+        missingGyroData.set(true);
+        // Use the Twist's rotation change to update gyro bc theres no gyro data
+        rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
+      } else {
+        missingGyroData.set(false);
+        rawGyroRotation = Rotation2d.fromDegrees(sample.values().get(new SignalID(SignalType.GYRO, PhoenixOdometryThread.GYRO_MODULE_ID)));
+      }
+
+      // Apply update
+      estimator.updateWithTime(sample.timestamp(), rawGyroRotation, modulePositions);
+    }
+
+  }
+
+  /**
+   * Generates a set of samples without using the async thread. Makes lots of Objects, so be careful
+   * when using it irl!
+   */
+  private List<Samples> getSyncSamples() {
+    return List.of(
+        new Samples(
+            Logger.getTimestamp() / 1.0e6,
+            Map.of(
+                new SignalID(SignalType.DRIVE, 0), modules[0].getPosition().distanceMeters,
+                new SignalID(SignalType.STEER, 0), modules[0].getPosition().angle.getRotations(),
+                new SignalID(SignalType.DRIVE, 1), modules[1].getPosition().distanceMeters,
+                new SignalID(SignalType.STEER, 1), modules[1].getPosition().angle.getRotations(),
+                new SignalID(SignalType.DRIVE, 2), modules[2].getPosition().distanceMeters,
+                new SignalID(SignalType.STEER, 2), modules[2].getPosition().angle.getRotations(),
+                new SignalID(SignalType.DRIVE, 3), modules[3].getPosition().distanceMeters,
+                new SignalID(SignalType.STEER, 3), modules[3].getPosition().angle.getRotations(),
+                new SignalID(SignalType.GYRO, PhoenixOdometryThread.GYRO_MODULE_ID),
+                    gyroInputs.yaw.getDegrees())));
   }
 
   @AutoLogOutput(key = "Odometry/Robot")
