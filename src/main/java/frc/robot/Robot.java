@@ -26,6 +26,7 @@ import frc.robot.swerve.constants.KelpieSwerveConstants;
 import frc.robot.swerve.constants.SwerveConstants;
 import frc.robot.swerve.gyro.GyroIOReal;
 import frc.robot.swerve.gyro.GyroIOSim;
+import frc.robot.swerve.odometry.PhoenixOdometryThread;
 import frc.robot.util.CommandXBoxControllerSubsystem;
 import java.util.Optional;
 import org.ironmaple.simulation.SimulatedArena;
@@ -111,7 +112,8 @@ public class Robot extends LoggedRobot {
           ROBOT_TYPE != RobotType.SIM
               ? new GyroIOReal(ROBOT_HARDWARE.getSwerveConstants().getGyroID())
               : new GyroIOSim(swerveSimulation.get().getGyroSimulation()),
-          swerveSimulation);
+          swerveSimulation,
+          PhoenixOdometryThread.getInstance());
 
   private final CommandXBoxControllerSubsystem driver = new CommandXBoxControllerSubsystem(0);
   private final CommandXBoxControllerSubsystem operator = new CommandXBoxControllerSubsystem(1);
