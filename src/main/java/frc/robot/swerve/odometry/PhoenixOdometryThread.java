@@ -7,7 +7,6 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.google.common.collect.EvictingQueue;
 import com.google.common.collect.Sets;
-
 import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.swerve.module.Module.ModuleConstants;
 import frc.robot.util.Tracer;
