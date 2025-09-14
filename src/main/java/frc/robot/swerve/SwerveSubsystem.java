@@ -159,6 +159,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
     // Convert drivetrain setpoint into individual module setpoints
     final SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
+    if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("SwerveStates/Setpoints", states);
 
     SwerveModuleState[] optimizedStates = new SwerveModuleState[modules.length];
 
