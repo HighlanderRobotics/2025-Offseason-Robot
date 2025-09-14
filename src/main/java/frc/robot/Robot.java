@@ -178,10 +178,16 @@ public class Robot extends LoggedRobot {
   }
 
   @Override
+  public void simulationInit() {
+    // Sets the odometry pose to start at the same place as maple sim pose
+    swerve.resetPose(swerveSimulation.get().getSimulatedDriveTrainPose());
+  }
+
+  @Override
   public void simulationPeriodic() {
     // Update maple simulation
     SimulatedArena.getInstance().simulationPeriodic();
-
+    // Log simulated pose
     Logger.recordOutput("MapleSim/Pose", swerveSimulation.get().getSimulatedDriveTrainPose());
   }
 
