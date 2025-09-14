@@ -58,6 +58,12 @@ public class ModuleIOSim implements ModuleIO {
     turnTalon = new TalonFX(constants.turnID(), "*");
     cancoder = new CANcoder(constants.cancoderID(), "*");
 
+    // Configure hardware
+    driveTalon.getConfigurator().apply(Robot.ROBOT_HARDWARE.getSwerveConstants().getDriveConfiguration());
+    turnTalon.getConfigurator().apply(Robot.ROBOT_HARDWARE.getSwerveConstants().getTurnConfiguration(constants.cancoderID()));
+
+    cancoder.getConfigurator().apply(Robot.ROBOT_HARDWARE.getSwerveConstants().getCancoderConfiguration(constants.cancoderOffset()));
+
     // Initialize status signals
     drivePosition = driveTalon.getPosition();
     driveVelocity = driveTalon.getVelocity();

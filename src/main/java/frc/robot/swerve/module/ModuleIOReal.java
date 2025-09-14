@@ -12,6 +12,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.google.common.collect.ImmutableSet;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.AngularVelocity;
+import frc.robot.Robot;
 import frc.robot.swerve.module.Module.ModuleConstants;
 import frc.robot.swerve.odometry.PhoenixOdometryThread;
 import frc.robot.swerve.odometry.PhoenixOdometryThread.Registration;
@@ -55,6 +56,12 @@ public class ModuleIOReal implements ModuleIO {
     driveTalon = new TalonFX(constants.driveID(), "*");
     turnTalon = new TalonFX(constants.turnID(), "*");
     cancoder = new CANcoder(constants.cancoderID(), "*");
+
+    // Configure hardware
+    driveTalon.getConfigurator().apply(Robot.ROBOT_HARDWARE.getSwerveConstants().getDriveConfiguration());
+    turnTalon.getConfigurator().apply(Robot.ROBOT_HARDWARE.getSwerveConstants().getTurnConfiguration(constants.cancoderID()));
+
+    cancoder.getConfigurator().apply(Robot.ROBOT_HARDWARE.getSwerveConstants().getCancoderConfiguration(constants.cancoderOffset()));
 
     // Initialize status signals
     drivePosition = driveTalon.getPosition();
