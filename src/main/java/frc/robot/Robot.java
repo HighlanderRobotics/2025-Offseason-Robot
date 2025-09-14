@@ -181,6 +181,8 @@ public class Robot extends LoggedRobot {
   public void simulationPeriodic() {
     // Update maple simulation
     SimulatedArena.getInstance().simulationPeriodic();
+
+    Logger.recordOutput("MapleSim/Pose", swerveSimulation.get().getSimulatedDriveTrainPose());
   }
 
   @Override
