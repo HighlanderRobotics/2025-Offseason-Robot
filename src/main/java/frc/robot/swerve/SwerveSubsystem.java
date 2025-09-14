@@ -159,7 +159,12 @@ public class SwerveSubsystem extends SubsystemBase {
 
     // Convert drivetrain setpoint into individual module setpoints
     final SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
+    // Makes sure each wheel isn't asked to go above its max. Recalcs the states if needed
+    SwerveDriveKinematics.desaturateWheelSpeeds(states, swerveConstants.getMaxLinearSpeed());
     if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("SwerveStates/Setpoints", states);
+
+
+    if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("Swerve/Target Speeds", speeds);
 
     SwerveModuleState[] optimizedStates = new SwerveModuleState[modules.length];
 
@@ -170,6 +175,9 @@ public class SwerveSubsystem extends SubsystemBase {
         optimizedStates[i] = modules[i].runClosedLoop(states[i]);
       }
     }
+
+    if (Robot.ROBOT_TYPE != RobotType.REAL)
+      Logger.recordOutput("SwerveStates/SetpointsOptimized", optimizedStates);
   }
 
   private void updateOdometry() {
