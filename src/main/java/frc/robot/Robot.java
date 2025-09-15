@@ -97,7 +97,8 @@ public class Robot extends LoggedRobot {
                   new ProfiledPIDController(
                       0.5, 0.0, 0.0, new TrapezoidProfile.Constraints(15, 1))),
           ROBOT_TYPE != RobotType.SIM
-              ? new PivotWithCANcoderIOReal(15, 16, pivotConfig(20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0))
+              ? new PivotWithCANcoderIOReal(
+                  15, 16, pivotConfig(20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0))
               : new PivotIOSim((44.0 / 16.0) * 23, 0.0, 180.0, 23.0),
           "Arm");
 
