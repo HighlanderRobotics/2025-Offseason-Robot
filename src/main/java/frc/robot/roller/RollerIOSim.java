@@ -38,7 +38,7 @@ public class RollerIOSim implements RollerIO {
   @Override
   public void setRollerVoltage(double voltage) {
     appliedVolts = voltage;
-    motorSim.setInputVoltage(MathUtil.clamp(voltage, -5, 5));
+    motorSim.setInputVoltage(MathUtil.clamp(voltage, -12, 12));
   }
 
   @Override

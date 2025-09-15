@@ -1,4 +1,4 @@
-package frc.robot.Pivot;
+package frc.robot.pivot;
 
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
@@ -16,15 +16,15 @@ public class PivotIOSim implements PivotIO {
 
   // TODO: change to actual values
   public PivotIOSim(
-      double PIVOT_RATIO, double MIN_ANGLE_RADIANS, double MAX_ANGLE_RADIANS, double length) {
+      double PivotRatio, double MinAngleRadians, double MaxAngleRadians, double length) {
     pivotSim =
         new SingleJointedArmSim(
             DCMotor.getKrakenX60Foc(1),
-            PIVOT_RATIO,
+            PivotRatio,
             0.1,
             length,
-            MIN_ANGLE_RADIANS, // min angle
-            MAX_ANGLE_RADIANS, // max angle
+            MinAngleRadians, // min angle
+            MaxAngleRadians, // max angle
             true,
             0.0);
   }
@@ -51,7 +51,7 @@ public class PivotIOSim implements PivotIO {
   @Override
   public void setMotorVoltage(double voltage) {
     appliedVoltage = voltage;
-    pivotSim.setInputVoltage(MathUtil.clamp(voltage, -20, 20));
+    pivotSim.setInputVoltage(MathUtil.clamp(voltage, -12, 12));
   }
 
   @Override

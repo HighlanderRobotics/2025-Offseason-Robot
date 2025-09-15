@@ -6,8 +6,6 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
@@ -24,24 +22,15 @@ public class RollerIOReal implements RollerIO {
 
   private final VoltageOut voltageOut = new VoltageOut(0.0).withEnableFOC(true);
 
-  // private final MotionMagicTorqueCurrentFOC motionMagic = new MotionMagicTorqueCurrentFOC(0.0);
-
-  public RollerIOReal(int motorID) {
-    rollerMotor = new TalonFX(motorID, "*"); // Replace with actual ID
+  public RollerIOReal(int motorID, TalonFXConfiguration config) {
+    rollerMotor = new TalonFX(motorID, "*");
 
     velocityRotsPerSec = rollerMotor.getVelocity();
     supplyCurrentAmps = rollerMotor.getSupplyCurrent();
     appliedVoltage = rollerMotor.getMotorVoltage();
     statorCurrentAmps = rollerMotor.getStatorCurrent();
 
-    final var rollerMotorConfig = new TalonFXConfiguration();
-
-    rollerMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    rollerMotorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
-    rollerMotorConfig.CurrentLimits.SupplyCurrentLimit = 20.0;
-    rollerMotorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-
-    rollerMotor.getConfigurator().apply(rollerMotorConfig);
+    rollerMotor.getConfigurator().apply(config);
     rollerMotor.optimizeBusUtilization();
   }
 

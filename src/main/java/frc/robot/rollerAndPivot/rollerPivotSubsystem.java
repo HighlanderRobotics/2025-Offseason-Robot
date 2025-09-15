@@ -3,34 +3,44 @@ package frc.robot.rollerAndPivot;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Pivot.PivotIO;
+import frc.robot.Robot;
+import frc.robot.Robot.RobotType;
+import frc.robot.pivot.PivotIO;
+import frc.robot.pivot.PivotIOInputsAutoLogged;
 import frc.robot.roller.RollerIO;
-import java.util.function.Supplier;
+import frc.robot.roller.RollerIOInputsAutoLogged;
+import org.littletonrobotics.junction.Logger;
 
-public class rollerPivotSubsystem extends SubsystemBase {
-  private final RollerIO rollers;
-  private final PivotIO pivot;
+public class RollerPivotSubsystem extends SubsystemBase {
+  private final RollerIOInputsAutoLogged rollerInputs = new RollerIOInputsAutoLogged();
+  private final PivotIOInputsAutoLogged pivotInputs = new PivotIOInputsAutoLogged();
+  private final RollerIO rollerIO;
+  private final PivotIO pivotIO;
   private final String name;
 
-  public rollerPivotSubsystem(RollerIO rollers, PivotIO pivot, String name) {
-    this.rollers = rollers;
-    this.pivot = pivot;
+  public RollerPivotSubsystem(RollerIO rollerIO, PivotIO pivotIO, String name) {
+    this.rollerIO = rollerIO;
+    this.pivotIO = pivotIO;
     this.name = name;
   }
 
   public Command runRollerVoltage(double volts) {
-    return this.run(() -> rollers.setRollerVoltage(volts));
+    return this.run(() -> rollerIO.setRollerVoltage(volts));
   }
 
-  public Command setRollerVoltage(double volts) {
-    return setRollerVoltage(volts);
+  public Command setPivotAngle(Rotation2d target) {
+    return this.runOnce(
+        () -> {
+          if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("/Pivot Setpoint", target);
+          pivotIO.setMotorPosition(target);
+        });
   }
 
-  public Command setTargetAngle(Rotation2d target) {
-    return setTargetAngle(() -> target);
-  }
-
-  public Command setTargetAngle(Supplier<Rotation2d> target) {
-    return setTargetAngle(target);
+  @Override
+  public void periodic() {
+    pivotIO.updateInputs(pivotInputs);
+    Logger.processInputs(name + "/Pivot", pivotInputs);
+    rollerIO.updateInputs(rollerInputs);
+    Logger.processInputs(name + "/Roller", rollerInputs);
   }
 }

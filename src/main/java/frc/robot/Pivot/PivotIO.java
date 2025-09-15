@@ -1,4 +1,4 @@
-package frc.robot.Pivot;
+package frc.robot.pivot;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import org.littletonrobotics.junction.AutoLog;

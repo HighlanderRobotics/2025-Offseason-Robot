@@ -26,7 +26,8 @@ public class Superstructure {
     IDLE(ElevatorState.IDLE, ArmState.IDLE, IntakeState.IDLE),
     READY_CORAL(ElevatorState.READY_CORAL, ArmState.IDLE, IntakeState.IDLE),
     PRE_INTAKE_CORAL_GROUND(ElevatorState.PRE_INTAKE_CORAL_GROUND, ArmState.IDLE, IntakeState.IDLE),
-    INTAKE_CORAL_GROUND(ElevatorState.INTAKE_CORAL_GROUND, ArmState.IDLE, IntakeState.IDLE),
+    INTAKE_CORAL_GROUND(
+        ElevatorState.INTAKE_CORAL_GROUND, ArmState.IDLE, IntakeState.INTAKE_CORAL_GROUND),
     L1(ElevatorState.L1, ArmState.L1, IntakeState.IDLE),
     PRE_L2(ElevatorState.PRE_L2, ArmState.PRE_L2, IntakeState.IDLE),
     L2(ElevatorState.L2, ArmState.L2, IntakeState.IDLE),

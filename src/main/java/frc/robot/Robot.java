@@ -4,22 +4,25 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.signals.GravityTypeValue;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.Pivot.PivotIOReal;
-import frc.robot.Pivot.PivotIOSim;
 import frc.robot.arm.ArmSubsystem;
-import frc.robot.beambreak.BeamBreakIOReal;
 import frc.robot.climber.ClimberSubsystem;
 import frc.robot.elevator.ElevatorIOReal;
 import frc.robot.elevator.ElevatorIOSim;
 import frc.robot.elevator.ElevatorSubsystem;
 import frc.robot.intake.IntakeSubsystem;
+import frc.robot.pivot.PivotIOReal;
+import frc.robot.pivot.PivotIOSim;
+import frc.robot.pivot.PivotWithCANcoderIOReal;
 import frc.robot.roller.RollerIOReal;
 import frc.robot.roller.RollerIOSim;
-import frc.robot.routing.RoutingSubsystem;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -41,23 +44,52 @@ public class Robot extends LoggedRobot {
           ROBOT_TYPE != RobotType.SIM ? new ElevatorIOReal() : new ElevatorIOSim());
 
   // TODO: fill in correct values for these subsystems
-  private final RoutingSubsystem router =
-      new RoutingSubsystem(
-          ROBOT_TYPE != RobotType.SIM
-              ? new RollerIOReal(13)
-              : new RollerIOSim(
-                  0.01,
-                  1.0,
-                  new SimpleMotorFeedforward(0.0, 0.24),
-                  new ProfiledPIDController(
-                      0.5, 0.0, 0.0, new TrapezoidProfile.Constraints(15, 1))),
-          new BeamBreakIOReal(),
-          "router");
+
+  private TalonFXConfiguration rollerConfig(double currentLimit) {
+    TalonFXConfiguration config = new TalonFXConfiguration();
+
+    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    config.CurrentLimits.SupplyCurrentLimit = currentLimit;
+    config.CurrentLimits.SupplyCurrentLimitEnable = true;
+
+    return config;
+  }
+
+  private TalonFXConfiguration pivotConfig(
+      double currentLimit,
+      double sensorToMechRatio,
+      double kV,
+      double kG,
+      double kS,
+      double kP,
+      double kI,
+      double kD) {
+    TalonFXConfiguration config = new TalonFXConfiguration();
+
+    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    config.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
+
+    config.Slot0.kV = kV;
+    config.Slot0.kG = kG;
+    config.Slot0.kS = kS;
+    config.Slot0.kP = kP;
+    config.Slot0.kI = kI;
+    config.Slot0.kD = kD;
+
+    config.CurrentLimits.SupplyCurrentLimit = currentLimit;
+    config.CurrentLimits.SupplyCurrentLimitEnable = true;
+
+    config.Feedback.SensorToMechanismRatio = sensorToMechRatio;
+
+    return config;
+  }
 
   private final ArmSubsystem arm =
       new ArmSubsystem(
           ROBOT_TYPE != RobotType.SIM
-              ? new RollerIOReal(14)
+              ? new RollerIOReal(14, rollerConfig(20.0))
               : new RollerIOSim(
                   0.01,
                   1.0,
@@ -65,14 +97,14 @@ public class Robot extends LoggedRobot {
                   new ProfiledPIDController(
                       0.5, 0.0, 0.0, new TrapezoidProfile.Constraints(15, 1))),
           ROBOT_TYPE != RobotType.SIM
-              ? new PivotIOReal(15, 16)
+              ? new PivotWithCANcoderIOReal(15, 16, pivotConfig(20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0))
               : new PivotIOSim((44.0 / 16.0) * 23, 0.0, 180.0, 23.0),
           "Arm");
 
   private final IntakeSubsystem intake =
       new IntakeSubsystem(
           ROBOT_TYPE != RobotType.SIM
-              ? new RollerIOReal(17)
+              ? new RollerIOReal(17, rollerConfig(20.0))
               : new RollerIOSim(
                   0.01,
                   1.0,
@@ -80,14 +112,14 @@ public class Robot extends LoggedRobot {
                   new ProfiledPIDController(
                       0.5, 0.0, 0.0, new TrapezoidProfile.Constraints(15, 1))),
           ROBOT_TYPE != RobotType.SIM
-              ? new PivotIOReal(18, 19)
+              ? new PivotIOReal(18, pivotConfig(20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0))
               : new PivotIOSim((44.0 / 16.0) * 23, 0.0, 90.0, 15),
           "Intake");
 
   private final ClimberSubsystem climber =
       new ClimberSubsystem(
           ROBOT_TYPE != RobotType.SIM
-              ? new RollerIOReal(20)
+              ? new RollerIOReal(20, rollerConfig(20.0))
               : new RollerIOSim(
                   0.01,
                   1.0,
@@ -95,9 +127,9 @@ public class Robot extends LoggedRobot {
                   new ProfiledPIDController(
                       0.5, 0.0, 0.0, new TrapezoidProfile.Constraints(15, 1))),
           ROBOT_TYPE != RobotType.SIM
-              ? new PivotIOReal(21, 22)
+              ? new PivotIOReal(21, pivotConfig(20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0))
               : new PivotIOSim((44.0 / 16.0) * 23, 0.0, 90.0, 9.25),
-          "climber");
+          "Climber");
 
   private final Superstructure superstructure = new Superstructure(elevator, arm, intake);
 
