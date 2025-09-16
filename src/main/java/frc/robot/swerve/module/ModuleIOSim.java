@@ -109,6 +109,8 @@ public class ModuleIOSim implements ModuleIO {
     turnTalon.optimizeBusUtilization();
     cancoder.optimizeBusUtilization();
 
+    // Setup this modules simulation (lowk the only difference between Sim and Real except for not
+    // using Async odo)
     this.simulation = simulation;
     this.simulation.useDriveMotorController(
         new MaplePhoenixUtil.TalonFXMotorControllerSim(driveTalon, true));

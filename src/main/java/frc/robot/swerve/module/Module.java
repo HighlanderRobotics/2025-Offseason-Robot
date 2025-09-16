@@ -8,6 +8,7 @@ import org.littletonrobotics.junction.Logger;
 
 // A single module
 public class Module {
+  // Represents module specific constants
   public record ModuleConstants(
       int id, String prefix, int driveID, int turnID, int cancoderID, Rotation2d cancoderOffset) {}
 
@@ -19,12 +20,18 @@ public class Module {
   }
 
   // Updates and logs the IO layer inputs
+  // This class isn't a Subsystem, so periodic() needs to be called in a subsystem periodic to run
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Swerve/" + inputs.prefix + " Module", inputs);
   }
 
-  // Use for automated driving (e.g. auto)
+  /**
+   * Runs closed-loop to the specified state. Used for automated actions, i.e. auto, autoalign etc.
+   *
+   * @param state setpoint state
+   * @return the optimized state
+   */
   public SwerveModuleState runClosedLoop(SwerveModuleState state) {
     state.optimize(getAngle());
 
@@ -34,12 +41,21 @@ public class Module {
     return state;
   }
 
-  // Runs drive motor using feedforward control only
-  // For teleop
-  // Returns optimized state
+  /**
+   * Runs open loop to the specified state, i.e. for teleop
+   *
+   * @param state the setpoint
+   * @param focEnabled
+   * @return the optimized state
+   */
   public SwerveModuleState runOpenLoop(SwerveModuleState state, boolean focEnabled) {
     state.optimize(getAngle());
 
+    // Converts speed to voltage
+    // Essentially, finds what proportion of the maximum speed the setpoint is, then, applies that
+    // same proportion of the max supply voltage (12) to the motor
+    // i.e. if the max speed is 10 m/s, and we want to go 5 m/s, that's 1/2 of the max speed. So we
+    // apply 1/2 of the max supply voltage to the motor: 6V
     double volts =
         state.speedMetersPerSecond
             * 12
@@ -50,20 +66,11 @@ public class Module {
     return state;
   }
 
-  // Runs open-loop
-  public SwerveModuleState runVoltageSetpoint(SwerveModuleState state, boolean focEnabled) {
-    state.optimize(getAngle());
-
-    // state.speedMetersPerSecond is NOT m/s, it's Volts the conversion happens in SwerveSubsystem
-    // TODO: MAKE THE WEIRD UNIT STUFF LESS CONFUSING
-    runVoltageSetpoint(state.speedMetersPerSecond, state.angle, focEnabled);
-
-    return state;
-  }
-
   private void runVoltageSetpoint(double volts, Rotation2d targetAngle, boolean focEnabled) {
     io.setTurnSetpoint(targetAngle);
     io.setDriveVoltage(
+        // I think this is supposed avoid moving the drive too much when the turn motor is out of
+        // position
         volts * Math.cos(targetAngle.minus(inputs.turnPosition).getRadians()), focEnabled);
   }
 
@@ -83,7 +90,7 @@ public class Module {
   }
 
   /**
-   * Returns the current drive velocity of the module in meters per second withat normal sampling
+   * Returns the current drive velocity of the module in meters per second at normal sampling
    * frequency.
    */
   public double getVelocityMetersPerSec() {

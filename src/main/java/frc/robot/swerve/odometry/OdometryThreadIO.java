@@ -13,6 +13,7 @@ import org.littletonrobotics.junction.inputs.LoggableInputs;
 public interface OdometryThreadIO {
   public static final int GYRO_MODULE_ID = -1;
 
+  // Allows logging of Samples
   public class OdometryThreadIOInputs implements LoggableInputs {
     public List<Samples> sampledStates = List.of();
 
@@ -49,8 +50,8 @@ public interface OdometryThreadIO {
                 new SignalID(SignalType.DRIVE, (int) id),
                 table.get("Data/" + i + " " + SignalType.DRIVE + " " + id).getDouble());
             values.put(
-                new SignalID(SignalType.STEER, (int) id),
-                table.get("Data/" + i + " " + SignalType.STEER + " " + id).getDouble());
+                new SignalID(SignalType.TURN, (int) id),
+                table.get("Data/" + i + " " + SignalType.TURN + " " + id).getDouble());
           }
           try {
             values.put(

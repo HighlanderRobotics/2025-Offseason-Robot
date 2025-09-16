@@ -163,7 +163,6 @@ public class SwerveSubsystem extends SubsystemBase {
     SwerveDriveKinematics.desaturateWheelSpeeds(states, swerveConstants.getMaxLinearSpeed());
     if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("SwerveStates/Setpoints", states);
 
-
     if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("Swerve/Target Speeds", speeds);
 
     SwerveModuleState[] optimizedStates = new SwerveModuleState[modules.length];
@@ -204,7 +203,7 @@ public class SwerveSubsystem extends SubsystemBase {
           break;
         }
 
-        Double rot = sample.values().get(new SignalID(SignalType.STEER, moduleIndex));
+        Double rot = sample.values().get(new SignalID(SignalType.TURN, moduleIndex));
         if (rot == null) {
           hasNullModulePosition = true;
           break;
@@ -282,13 +281,13 @@ public class SwerveSubsystem extends SubsystemBase {
             Logger.getTimestamp() / 1.0e6,
             Map.of(
                 new SignalID(SignalType.DRIVE, 0), modules[0].getPosition().distanceMeters,
-                new SignalID(SignalType.STEER, 0), modules[0].getPosition().angle.getRotations(),
+                new SignalID(SignalType.TURN, 0), modules[0].getPosition().angle.getRotations(),
                 new SignalID(SignalType.DRIVE, 1), modules[1].getPosition().distanceMeters,
-                new SignalID(SignalType.STEER, 1), modules[1].getPosition().angle.getRotations(),
+                new SignalID(SignalType.TURN, 1), modules[1].getPosition().angle.getRotations(),
                 new SignalID(SignalType.DRIVE, 2), modules[2].getPosition().distanceMeters,
-                new SignalID(SignalType.STEER, 2), modules[2].getPosition().angle.getRotations(),
+                new SignalID(SignalType.TURN, 2), modules[2].getPosition().angle.getRotations(),
                 new SignalID(SignalType.DRIVE, 3), modules[3].getPosition().distanceMeters,
-                new SignalID(SignalType.STEER, 3), modules[3].getPosition().angle.getRotations(),
+                new SignalID(SignalType.TURN, 3), modules[3].getPosition().angle.getRotations(),
                 new SignalID(SignalType.GYRO, PhoenixOdometryThread.GYRO_MODULE_ID),
                     gyroInputs.yaw.getDegrees())));
   }

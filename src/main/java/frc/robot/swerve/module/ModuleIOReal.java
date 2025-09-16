@@ -22,11 +22,13 @@ import java.util.Optional;
 public class ModuleIOReal implements ModuleIO {
   private final ModuleConstants constants;
 
+  // Hardware
   private final TalonFX driveTalon;
   private final TalonFX turnTalon;
   private final CANcoder cancoder;
 
   // Status signals
+  // For drive
   private final BaseStatusSignal drivePosition;
   private final BaseStatusSignal driveVelocity;
   private final BaseStatusSignal driveTemp;
@@ -34,6 +36,7 @@ public class ModuleIOReal implements ModuleIO {
   private final BaseStatusSignal driveStatorCurrent;
   private final BaseStatusSignal driveAppliedVolts;
 
+  // For turn
   private final BaseStatusSignal cancoderAbsolutePosition;
   private final BaseStatusSignal turnPosition;
   private final StatusSignal<AngularVelocity> turnVelocity;
@@ -89,6 +92,7 @@ public class ModuleIOReal implements ModuleIO {
     turnStatorCurrent = turnTalon.getStatorCurrent();
     turnAppliedVolts = turnTalon.getMotorVoltage();
 
+    // Update the signals not updated by the odo thread at 50 hz
     BaseStatusSignal.setUpdateFrequencyForAll(
         50.0,
         driveVelocity,
@@ -112,8 +116,10 @@ public class ModuleIOReal implements ModuleIO {
             new Registration(
                 turnTalon,
                 Optional.of(moduleConstants),
-                SignalType.STEER,
+                SignalType.TURN,
                 ImmutableSet.of(turnPosition)));
+    // Still need to tell the motors to update these faster, even though we've registered them as
+    // signals
     BaseStatusSignal.setUpdateFrequencyForAll(
         PhoenixOdometryThread.ODOMETRY_FREQUENCY_HZ, drivePosition, turnPosition);
 

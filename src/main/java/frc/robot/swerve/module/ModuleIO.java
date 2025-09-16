@@ -10,6 +10,8 @@ public interface ModuleIO {
     String prefix = "";
 
     // For the drive motor
+    // The conversions from rotations to meters are done in the SensorToMechanismRatio config for
+    // the motors
     public double driveVelocityMetersPerSec = 0.0;
     public double drivePositionMeters = 0.0;
     public double driveAppliedVolts = 0.0;
