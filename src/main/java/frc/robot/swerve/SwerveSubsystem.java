@@ -189,12 +189,12 @@ public class SwerveSubsystem extends SubsystemBase {
     } else {
       usingSyncOdoAlert.set(false);
     }
-
+    // Update for each set of samples
     for (Samples sample : sampledStates) {
       SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
       SwerveModulePosition[] moduleDeltas = new SwerveModulePosition[4];
       boolean hasNullModulePosition = false;
-
+      // Get the positions and deltas for each module
       for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
         Double dist = sample.values().get(new SignalID(SignalType.DRIVE, moduleIndex));
         if (dist == null) {
@@ -212,7 +212,7 @@ public class SwerveSubsystem extends SubsystemBase {
         // All data exists at this timestamp
         modulePositions[moduleIndex] =
             new SwerveModulePosition(dist, Rotation2d.fromRotations(rot)); // Values from thread
-
+        // Change since last sample
         moduleDeltas[moduleIndex] =
             new SwerveModulePosition(
                 modulePositions[moduleIndex].distanceMeters
@@ -230,6 +230,7 @@ public class SwerveSubsystem extends SubsystemBase {
                     .get(new SignalID(SignalType.GYRO, PhoenixOdometryThread.GYRO_MODULE_ID))
                 == null) {
           missingGyroData.set(true);
+          // No module odo or gyro so can't do much else here
         } else {
           missingGyroData.set(false);
           rawGyroRotation =

@@ -120,9 +120,11 @@ public class PhoenixOdometryThread extends Thread implements OdometryThreadIO {
       writeLock.unlock();
     }
   }
+
   /**
    * Shows all the samples collected since the passed-in timestamp
-   * @param timestamp 
+   *
+   * @param timestamp
    * @return all the Samples since that timestamp
    */
   public List<Samples> samplesSince(double timestamp) {
@@ -162,7 +164,9 @@ public class PhoenixOdometryThread extends Thread implements OdometryThreadIO {
               // Filteres out all the signals that didn't give data
               Set<RegisteredSignal> filteredSignals =
                   registeredSignals.stream()
-                      .filter(registeredSignal -> registeredSignal.signal().getStatus().equals(StatusCode.OK))
+                      .filter(
+                          registeredSignal ->
+                              registeredSignal.signal().getStatus().equals(StatusCode.OK))
                       .collect(Collectors.toSet());
               // Adds the samples from all the filteredSignals to the Queue
               journal.add(
@@ -179,7 +183,9 @@ public class PhoenixOdometryThread extends Thread implements OdometryThreadIO {
           });
     }
   }
-  // Averages out the latency from each signal to give a timestamp around when each signal was collected
+
+  // Averages out the latency from each signal to give a timestamp around when each signal was
+  // collected
   private double timestampFor(Set<RegisteredSignal> signals) {
     double timestamp = RobotController.getFPGATime() / 1e6;
 
