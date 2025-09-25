@@ -18,9 +18,9 @@ import frc.robot.elevator.ElevatorIOReal;
 import frc.robot.elevator.ElevatorIOSim;
 import frc.robot.elevator.ElevatorSubsystem;
 import frc.robot.intake.IntakeSubsystem;
+import frc.robot.pivot.PivotCANcoderIOReal;
 import frc.robot.pivot.PivotIOReal;
 import frc.robot.pivot.PivotIOSim;
-import frc.robot.pivot.PivotCANcoderIOReal;
 import frc.robot.roller.RollerIOReal;
 import frc.robot.roller.RollerIOSim;
 import org.littletonrobotics.junction.LogFileUtil;
@@ -97,8 +97,7 @@ public class Robot extends LoggedRobot {
                   new ProfiledPIDController(
                       0.5, 0.0, 0.0, new TrapezoidProfile.Constraints(15, 1))),
           ROBOT_TYPE != RobotType.SIM
-              ? new PivotCANcoderIOReal(
-                  15, 16, pivotConfig(20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0))
+              ? new PivotCANcoderIOReal(15, 16, pivotConfig(20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0))
               : new PivotIOSim((44.0 / 16.0) * 23, 0.0, 180.0, 23.0),
           "Arm");
 
