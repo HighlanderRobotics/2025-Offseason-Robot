@@ -13,7 +13,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 
-public class PivotWithCANcoderIOReal implements PivotIO {
+public class PivotCANcoderIOReal implements PivotIO {
   private final TalonFX motor;
   private final CANcoder cancoder;
 
@@ -27,7 +27,7 @@ public class PivotWithCANcoderIOReal implements PivotIO {
   private final VoltageOut voltageOut = new VoltageOut(0.0).withEnableFOC(true);
   private final MotionMagicTorqueCurrentFOC motionMagic = new MotionMagicTorqueCurrentFOC(0.0);
 
-  public PivotWithCANcoderIOReal(int motorID, int cancoderID, TalonFXConfiguration config) {
+  public PivotCANcoderIOReal(int motorID, int cancoderID, TalonFXConfiguration config) {
     motor = new TalonFX(motorID, "*");
     cancoder = new CANcoder(cancoderID, "*"); // put correct ID
 
