@@ -1,6 +1,8 @@
 package frc.robot.climber;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.arm.ArmSubsystem.ArmState;
 import frc.robot.pivot.PivotIO;
 import frc.robot.pivot.PivotIOInputsAutoLogged;
 import frc.robot.roller.RollerIO;
@@ -66,5 +68,13 @@ public class ClimberSubsystem extends RollerPivotSubsystem {
   @Override
   public void periodic() {
     super.periodic();
+  }
+
+  public Command setStateAngleAndVoltage(ArmState state) {
+    return this.runOnce(
+        () -> {
+          setPivotAngle(state.position);
+          runRollerVoltage(state.volts);
+        });
   }
 }

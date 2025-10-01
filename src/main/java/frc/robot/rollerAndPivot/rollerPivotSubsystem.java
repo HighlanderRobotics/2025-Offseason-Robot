@@ -36,14 +36,6 @@ public class RollerPivotSubsystem extends SubsystemBase {
         });
   }
 
-  public Command setStateAngleAndVoltage(Rotation2d target) {
-    return this.runOnce(
-        () -> {
-          if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("/Pivot Setpoint", target);
-          pivotIO.setMotorPosition(target);
-        });
-  }
-
   @Override
   public void periodic() {
     pivotIO.updateInputs(pivotInputs);
