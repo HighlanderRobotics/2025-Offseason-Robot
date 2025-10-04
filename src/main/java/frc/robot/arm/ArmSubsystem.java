@@ -102,7 +102,7 @@ public class ArmSubsystem extends SubsystemBase {
     return MathUtil.isNear(target.getDegrees(), inputs.position.getDegrees(), 10.0);
   }
 
-  //TODO
+  // TODO
   public Command setStateAngleVoltage() {
     return Commands.none();
   }

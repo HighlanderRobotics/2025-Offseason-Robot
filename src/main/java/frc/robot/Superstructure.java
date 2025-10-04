@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -16,7 +17,10 @@ import frc.robot.elevator.ElevatorSubsystem;
 import frc.robot.elevator.ElevatorSubsystem.ElevatorState;
 import frc.robot.intake.IntakeSubsystem;
 import frc.robot.intake.IntakeSubsystem.IntakeState;
+import frc.robot.swerve.SwerveSubsystem;
+import frc.robot.utils.CommandXboxControllerSubsystem;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Superstructure {
@@ -128,19 +132,74 @@ public class Superstructure {
   private final ArmSubsystem arm;
   private final IntakeSubsystem intake;
   private final ClimberSubsystem climber;
+  private final SwerveSubsystem swerve;
+  private final CommandXboxControllerSubsystem driver;
+  private final CommandXboxControllerSubsystem operator;
+
+  // Declare triggers
+  @AutoLogOutput(key = "Superstructure/Pre Score Request")
+  public Trigger preScoreReq;
+
+  @AutoLogOutput(key = "Superstructure/Score Request")
+  public Trigger scoreReq;
+
+  @AutoLogOutput(key = "Superstructure/Coral Intake Request")
+  public Trigger intakeCoralReq;
+
+  @AutoLogOutput(key = "Superstructure/Algae Intake Request")
+  public Trigger intakeAlgaeReq;
+
+  @AutoLogOutput(key = "Superstructure/Pre Climb Request")
+  public Trigger preClimbReq;
+
+  @AutoLogOutput(key = "Superstructure/Climb Confirm Request")
+  public Trigger climbConfReq;
 
   /** Creates a new Superstructure. */
   public Superstructure(
       ElevatorSubsystem elevator,
       ArmSubsystem arm,
       IntakeSubsystem intake,
-      ClimberSubsystem climber) {
+      ClimberSubsystem climber,
+      SwerveSubsystem swerve,
+      CommandXboxControllerSubsystem driver,
+      CommandXboxControllerSubsystem operator) {
     this.elevator = elevator;
     this.arm = arm;
     this.intake = intake;
     this.climber = climber;
+    this.swerve = swerve;
+    this.driver = driver;
+    this.operator = operator;
 
+    addTriggers();
     addTransitions();
+  }
+
+  private void addTriggers() {
+    preScoreReq =
+        driver.rightTrigger()
+            .or(Autos.autoPreScoreReq.and(DriverStation::isAutonomous));
+
+    scoreReq =
+      driver.rightTrigger().negate()
+        .or(Autos.autoScoreReq.and(DriverStation::isAutonomous));
+
+    intakeCoralReq = 
+      driver.leftTrigger()
+        .or(Autos.autoIntakeCoralReq.and(DriverStation::isAutonomous));
+
+    intakeAlgaeReq = 
+      driver.leftBumper()
+        .or(Autos.autoIntakeAlgaeReq.and(DriverStation::isAutonomous));
+    
+    //TODO seems sus
+    preClimbReq = 
+      driver.x().and(driver.pov(-1).negate())
+      .debounce(0.25)
+      .or(operator.x().and(operator.pov(-1).negate()).debounce(0.5));
+
+    climbConfReq = driver.rightTrigger();
   }
 
   public void periodic() {

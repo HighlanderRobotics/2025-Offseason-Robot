@@ -18,8 +18,8 @@ import frc.robot.elevator.ElevatorIOReal;
 import frc.robot.elevator.ElevatorIOSim;
 import frc.robot.elevator.ElevatorSubsystem;
 import frc.robot.intake.IntakeSubsystem;
+import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.utils.CommandXboxControllerSubsystem;
-
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -72,15 +72,13 @@ public class Robot extends LoggedRobot {
 
   private final IntakeSubsystem intake = new IntakeSubsystem();
   private final ClimberSubsystem climber = new ClimberSubsystem();
+  private final SwerveSubsystem swerve = new SwerveSubsystem();
 
-  private final Superstructure superstructure = new Superstructure(elevator, arm, intake, climber);
+  private final CommandXboxControllerSubsystem driver = new CommandXboxControllerSubsystem(0);
+  private final CommandXboxControllerSubsystem operator = new CommandXboxControllerSubsystem(1);
 
-  private static final CommandXboxControllerSubsystem driver =
-  new CommandXboxControllerSubsystem(0);
-private static final CommandXboxControllerSubsystem operator =
-  new CommandXboxControllerSubsystem(1);
-
-  // Declare triggers
+  private final Superstructure superstructure =
+      new Superstructure(elevator, arm, intake, climber, swerve, driver, operator);
 
   @SuppressWarnings("resource")
   public Robot() {
@@ -141,9 +139,7 @@ private static final CommandXboxControllerSubsystem operator =
     addControllerBindings();
   }
 
-  private void addControllerBindings() {
-
-  }
+  private void addControllerBindings() {}
 
   @Override
   public void robotPeriodic() {
