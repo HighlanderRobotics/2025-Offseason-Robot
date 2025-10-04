@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.arm.ArmSubsystem;
 import frc.robot.arm.ArmSubsystem.ArmState;
+import frc.robot.climber.ClimberSubsystem.ClimberState;
 import frc.robot.elevator.ElevatorSubsystem;
 import frc.robot.elevator.ElevatorSubsystem.ElevatorState;
 import frc.robot.intake.IntakeSubsystem;
@@ -24,37 +25,61 @@ public class Superstructure {
    */
   public enum SuperState {
     IDLE(ElevatorState.IDLE, ArmState.IDLE, IntakeState.IDLE),
-    READY_CORAL(ElevatorState.READY_CORAL, ArmState.IDLE, IntakeState.IDLE),
-    PRE_INTAKE_CORAL_GROUND(ElevatorState.PRE_INTAKE_CORAL_GROUND, ArmState.IDLE, IntakeState.IDLE),
-    INTAKE_CORAL_GROUND(ElevatorState.INTAKE_CORAL_GROUND, ArmState.IDLE, IntakeState.INTAKE_CORAL),
-    L1(ElevatorState.L1, ArmState.L1, IntakeState.INTAKE_CORAL),
+    
+    INTAKE_CORAL_GROUND(ElevatorState.IDLE, ArmState.IDLE, IntakeState.INTAKE_CORAL),
+
+    PRE_HANDOFF(ElevatorState.IDLE, ArmState.IDLE, IntakeState.PRE_HANDOFF),
+    HANDOFF(ElevatorState.IDLE, ArmState.HANDOFF, IntakeState.HANDOFF),
+
+    INTAKE_CORAL_STACK(ElevatorState.INTAKE_CORAL_STACK, ArmState.INTAKE_CORAL_STACK, IntakeState.CLIMB),
+
+    READY_CORAL(ElevatorState.IDLE, ArmState.READY_CORAL, IntakeState.IDLE),
+    
+    PRE_L1(ElevatorState.IDLE, ArmState.IDLE, IntakeState.PRE_L1),
+    L1(ElevatorState.IDLE, ArmState.IDLE, IntakeState.SCORE_L1),
     PRE_L2(ElevatorState.PRE_L2, ArmState.PRE_L2, IntakeState.IDLE),
-    L2(ElevatorState.L2, ArmState.L2, IntakeState.INTAKE_CORAL),
+    SCORE_L2(ElevatorState.L2, ArmState.SCORE_L2, IntakeState.IDLE),
     PRE_L3(ElevatorState.PRE_L3, ArmState.PRE_L3, IntakeState.IDLE),
-    L3(ElevatorState.L3, ArmState.L3, IntakeState.INTAKE_CORAL),
+    SCORE_L3(ElevatorState.L3, ArmState.SCORE_L3, IntakeState.IDLE),
     PRE_L4(ElevatorState.PRE_L4, ArmState.PRE_L4, IntakeState.IDLE),
-    L4(ElevatorState.L4, ArmState.L4, IntakeState.INTAKE_CORAL),
-    POST_L4(ElevatorState.POST_L4, ArmState.POST_L4, IntakeState.IDLE),
+    SCORE_L4(ElevatorState.L4, ArmState.SCORE_L4, IntakeState.IDLE),
+
     INTAKE_ALGAE_REEF_HIGH(
-        ElevatorState.INTAKE_ALGAE_REEF_HIGH, ArmState.INTAKE_ALGAE_REEF_HIGH, IntakeState.IDLE),
+        ElevatorState.INTAKE_ALGAE_REEF_HIGH, ArmState.INTAKE_ALGAE_REEF, IntakeState.IDLE),
     INTAKE_ALGAE_REEF_LOW(
-        ElevatorState.INTAKE_ALGAE_REEF_LOW, ArmState.INTAKE_ALGAE_REEF_LOW, IntakeState.IDLE),
+        ElevatorState.INTAKE_ALGAE_REEF_LOW, ArmState.INTAKE_ALGAE_REEF, IntakeState.IDLE),
+    INTAKE_ALGAE_STACK(ElevatorState.INTAKE_ALGAE_STACK, ArmState.INTAKE_ALGAE_STACK, IntakeState.IDLE),
     INTAKE_ALGAE_GROUND(
         ElevatorState.INTAKE_ALGAE_GROUND, ArmState.INTAKE_ALGAE_GROUND, IntakeState.IDLE),
-    BARGE(ElevatorState.BARGE, ArmState.BARGE, IntakeState.IDLE),
+
     READY_ALGAE(ElevatorState.READY_ALGAE, ArmState.READY_ALGAE, IntakeState.IDLE),
-    PROCESSOR(ElevatorState.PROCESSOR, ArmState.PROCESSOR, IntakeState.IDLE),
-    PRE_CLIMB(ElevatorState.PRE_CLIMB, ArmState.PRE_CLIMB, IntakeState.IDLE),
-    CLIMB(ElevatorState.CLIMB, ArmState.CLIMB, IntakeState.IDLE);
+    
+    PRE_BARGE(ElevatorState.BARGE, ArmState.PRE_BARGE, IntakeState.IDLE),
+    SCORE_BARGE(ElevatorState.BARGE, ArmState.SCORE_BARGE, IntakeState.IDLE),
+    
+    PRE_PROCESSOR(ElevatorState.PROCESSOR, ArmState.PRE_PROCESSOR, IntakeState.IDLE),
+    SCORE_PROCESSOR(ElevatorState.PROCESSOR, ArmState.SCORE_PROCESSOR, IntakeState.IDLE),
+    
+    PRE_CLIMB(ElevatorState.PRE_CLIMB, ArmState.PRE_CLIMB, IntakeState.CLIMB),
+    CLIMB(ElevatorState.CLIMB, ArmState.CLIMB, IntakeState.CLIMB);
 
     public final ElevatorState elevatorState;
     public final ArmState armState;
     public final IntakeState intakeState;
+    public final ClimberState climberState;
+
+    private SuperState(ElevatorState elevatorState, ArmState armState, IntakeState intakeState, ClimberState climberState) {
+      this.elevatorState = elevatorState;
+      this.armState = armState;
+      this.intakeState = intakeState;
+      this.climberState = climberState;
+    }
 
     private SuperState(ElevatorState elevatorState, ArmState armState, IntakeState intakeState) {
       this.elevatorState = elevatorState;
       this.armState = armState;
       this.intakeState = intakeState;
+      this.climberState = ClimberState.IDLE;
     }
   }
 

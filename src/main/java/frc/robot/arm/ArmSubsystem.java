@@ -28,34 +28,39 @@ public class ArmSubsystem extends SubsystemBase {
 
   // TODO : change these values to the real ones
   public enum ArmState {
+    //TODO
+    // 0 for position is horizontal pointed right. positive is counterclockwise
+    // positive voltage is intaking, negative is outtaking
     IDLE(Rotation2d.fromDegrees(0), 0.0),
     // coral
-    READY_CORAL(Rotation2d.fromDegrees(180), 0.0),
-    PRE_INTAKE_CORAL_GROUND(Rotation2d.fromDegrees(180), 0.0),
-    INTAKE_CORAL_GROUND(Rotation2d.fromDegrees(180), 0.0),
-    L1(Rotation2d.fromDegrees(100), 10.0),
-    PRE_L2(Rotation2d.fromDegrees(45), 10.0),
-    L2(Rotation2d.fromDegrees(60), 10.0),
-    PRE_L3(Rotation2d.fromDegrees(45), 10.0),
-    L3(Rotation2d.fromDegrees(70), 10.0),
-    PRE_L4(Rotation2d.fromDegrees(60), 10.0),
-    L4(Rotation2d.fromDegrees(90), 10.0),
-    POST_L4(Rotation2d.fromDegrees(90), 0.0),
+    HANDOFF(Rotation2d.fromDegrees(0), 5.0),
+    READY_CORAL(Rotation2d.fromDegrees(0), 1.0),
+    INTAKE_CORAL_STACK(Rotation2d.fromDegrees(190), 5.0),
+  
+    PRE_L2(Rotation2d.fromDegrees(45), 0.0),
+    SCORE_L2(Rotation2d.fromDegrees(0), -10.0),
+    PRE_L3(Rotation2d.fromDegrees(45), 0.0),
+    SCORE_L3(Rotation2d.fromDegrees(0), -10.0),
+    PRE_L4(Rotation2d.fromDegrees(20), 0.0),
+    SCORE_L4(Rotation2d.fromDegrees(0), -10.0),
     // algae
-    INTAKE_ALGAE_REEF_HIGH(Rotation2d.fromDegrees(90), 0.0),
-    INTAKE_ALGAE_REEF_LOW(Rotation2d.fromDegrees(90), 0.0),
-    INTAKE_ALGAE_GROUND(Rotation2d.fromDegrees(135), 0.0),
-    BARGE(Rotation2d.fromDegrees(30), 0.0),
-    READY_ALGAE(Rotation2d.fromDegrees(0), 0.0),
-    PROCESSOR(Rotation2d.fromDegrees(90), 0.0),
+    INTAKE_ALGAE_REEF(Rotation2d.fromDegrees(0), 10.0),
+    INTAKE_ALGAE_GROUND(Rotation2d.fromDegrees(215), 15.0),
+    INTAKE_ALGAE_STACK(Rotation2d.fromDegrees(180), 10.0),
+    READY_ALGAE(Rotation2d.fromDegrees(90), 2.0),
+
+    PRE_BARGE(Rotation2d.fromDegrees(110), 4.0),
+    SCORE_BARGE(Rotation2d.fromDegrees(110), -10.0),
+    PRE_PROCESSOR(Rotation2d.fromDegrees(180), 0.0),
+    SCORE_PROCESSOR(Rotation2d.fromDegrees(180), -10.0),
     // climbing
-    PRE_CLIMB(Rotation2d.fromDegrees(0), 0.0),
-    CLIMB(Rotation2d.fromDegrees(20), 0.0);
+    PRE_CLIMB(Rotation2d.fromDegrees(180), 0.0),
+    CLIMB(Rotation2d.fromDegrees(180), 0.0);
 
     public final Rotation2d position;
     public final double volts;
 
-    ArmState(Rotation2d position, double volts) {
+    private ArmState(Rotation2d position, double volts) {
       this.position = position;
       this.volts = volts;
     }

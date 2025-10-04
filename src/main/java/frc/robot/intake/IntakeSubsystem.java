@@ -10,6 +10,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class IntakeSubsystem extends SubsystemBase {
+  //TODO incorporate roller pivot stuff
   private IntakeIO io;
   private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
 
@@ -21,14 +22,23 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public enum IntakeState {
-    IDLE(0.0), // this will not be the real number!! this is just a placeholder
-    INTAKE_CORAL(10.0),
-    OUTTAKE_CORAL(-10.0);
+    // 0 for position is horizontal against bumper
+    // positive voltage is intaking, negative is outtaking TBD?
+    IDLE(Rotation2d.fromDegrees(110), 0.0), // this will not be the real number!! this is just a placeholder
+    INTAKE_CORAL(Rotation2d.fromDegrees(0),10.0),
+    PRE_HANDOFF(Rotation2d.fromDegrees(110), 1.0),
+    HANDOFF(Rotation2d.fromDegrees(110), -5.0),
+    PRE_L1(Rotation2d.fromDegrees(90), 1.0),
+    SCORE_L1(Rotation2d.fromDegrees(90), -5.0),
+    CLIMB(Rotation2d.fromDegrees(0), 0.0);
 
-    public final double voltage;
 
-    IntakeState(double voltage) {
-      this.voltage = voltage;
+    public final Rotation2d position;
+    public final double volts;
+
+    private IntakeState(Rotation2d position, double volts) {
+      this.position = position;
+      this.volts = volts;
     }
   }
 

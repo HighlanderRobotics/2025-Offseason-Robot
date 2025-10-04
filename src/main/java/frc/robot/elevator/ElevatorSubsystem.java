@@ -47,29 +47,27 @@ public class ElevatorSubsystem extends SubsystemBase {
   private final SysIdRoutine currentSysid;
 
   public enum ElevatorState {
-    IDLE(Units.inchesToMeters(6)),
+    IDLE(Units.inchesToMeters(37.841)),
+    INTAKE_CORAL_STACK(Units.inchesToMeters(0)),
     // coral
-    READY_CORAL(Units.inchesToMeters(6)),
-    PRE_INTAKE_CORAL_GROUND(Units.inchesToMeters(36)),
-    INTAKE_CORAL_GROUND(Units.inchesToMeters(28)),
-    L1(Units.inchesToMeters(25)),
-    PRE_L2(Units.inchesToMeters(22)),
-    L2(Units.inchesToMeters(22)),
-    PRE_L3(Units.inchesToMeters(36)),
-    L3(Units.inchesToMeters(36)),
-    PRE_L4(Units.inchesToMeters(68.50)),
-    L4(Units.inchesToMeters(61.5)),
-    POST_L4(Units.inchesToMeters(61.5)),
+    PRE_L2(Units.inchesToMeters(0)),
+    L2(Units.inchesToMeters(15)),
+    PRE_L3(Units.inchesToMeters(25)),
+    L3(Units.inchesToMeters(29)),
+    PRE_L4(Units.inchesToMeters(59)),
+    L4(Units.inchesToMeters(52)),
     // algae
-    INTAKE_ALGAE_REEF_HIGH(Units.inchesToMeters(53)),
-    INTAKE_ALGAE_REEF_LOW(Units.inchesToMeters(36)),
+    INTAKE_ALGAE_REEF_HIGH(Units.inchesToMeters(43)),
+    INTAKE_ALGAE_REEF_LOW(Units.inchesToMeters(26)),
+    INTAKE_ALGAE_STACK(Units.inchesToMeters(10)),
     INTAKE_ALGAE_GROUND(Units.inchesToMeters(25)),
-    BARGE(Units.inchesToMeters(61.5)),
-    READY_ALGAE(Units.inchesToMeters(6)),
-    PROCESSOR(Units.inchesToMeters(14)),
+    READY_ALGAE(Units.inchesToMeters(0)),
+
+    BARGE(Units.inchesToMeters(59)),
+    PROCESSOR(Units.inchesToMeters(4)),
     // climbing
-    PRE_CLIMB(Units.inchesToMeters(6)),
-    CLIMB(Units.inchesToMeters(6));
+    PRE_CLIMB(Units.inchesToMeters(0)),
+    CLIMB(Units.inchesToMeters(0));
 
     private final double extensionMeters;
 
