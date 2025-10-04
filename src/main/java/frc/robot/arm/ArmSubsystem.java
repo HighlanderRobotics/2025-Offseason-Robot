@@ -30,7 +30,7 @@ public class ArmSubsystem extends SubsystemBase {
 
   // TODO : change these values to the real ones
   public enum ArmState {
-    // TODO
+    // TODO check positive direction
     // 0 for position is horizontal pointed right. positive is counterclockwise
     // positive voltage is intaking, negative is outtaking
     IDLE(Rotation2d.fromDegrees(0), 0.0),
@@ -102,8 +102,21 @@ public class ArmSubsystem extends SubsystemBase {
     return MathUtil.isNear(target.getDegrees(), inputs.position.getDegrees(), 10.0);
   }
 
-  // TODO
+  // TODO setStateAngleVoltage
   public Command setStateAngleVoltage() {
     return Commands.none();
+  }
+
+  //TODO hasCoral
+  // current spike
+  public boolean hasCoral() {
+    return true;
+  }
+
+  //TODO hasAlgae
+  // current spike
+  // Unclear if this will be distinct from the coral current spike?
+  public boolean hasAlgae() {
+    return true;
   }
 }

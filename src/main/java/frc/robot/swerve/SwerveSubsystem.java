@@ -4,11 +4,14 @@
 
 package frc.robot.swerve;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.utils.AutoAim;
+import frc.robot.utils.FieldUtils.L1Targets;
+
 import org.littletonrobotics.junction.AutoLogOutput;
 
 public class SwerveSubsystem extends SubsystemBase {
@@ -43,5 +46,26 @@ public class SwerveSubsystem extends SubsystemBase {
                     : AutoAim.RED_REEF_CENTER)
             .getNorm()
         < 3.25;
+  }
+
+  public boolean isNearL1Reef() { //TODO ??
+    return L1Targets.getNearestLine(getPose())
+            .getDistance(getPose().getTranslation())
+        > 0.3;
+  }
+
+  public boolean isNearProcessor() {
+    return MathUtil.isNear(
+        getPose().getX(),
+        DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+            ? AutoAim.BLUE_PROCESSOR_POS.getX()
+            : AutoAim.RED_PROCESSOR_POS.getX(),
+        2)
+    || MathUtil.isNear(
+        getPose().getY(),
+        DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+            ? AutoAim.BLUE_PROCESSOR_POS.getY()
+            : AutoAim.RED_PROCESSOR_POS.getY(),
+        2);
   }
 }

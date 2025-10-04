@@ -46,6 +46,11 @@ public class Robot extends LoggedRobot {
     L4;
   }
 
+  public static enum CoralIntakeTarget {
+    GROUND,
+    STACK
+  }
+
   public static enum AlgaeIntakeTarget {
     LOW,
     HIGH,
@@ -58,7 +63,8 @@ public class Robot extends LoggedRobot {
     PROCESSOR
   }
 
-  @AutoLogOutput private static CoralScoreTarget coralTarget = CoralScoreTarget.L4;
+  @AutoLogOutput private static CoralScoreTarget coralScoreTarget = CoralScoreTarget.L4;
+  @AutoLogOutput private static CoralIntakeTarget coralIntakeTarget = CoralIntakeTarget.GROUND;
   @AutoLogOutput private static AlgaeIntakeTarget algaeIntakeTarget = AlgaeIntakeTarget.STACK;
   @AutoLogOutput private static AlgaeScoreTarget algaeScoreTarget = AlgaeScoreTarget.BARGE;
 
@@ -184,4 +190,36 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void testExit() {}
+
+  public static void setCoralScoreTarget(CoralScoreTarget target) {
+    coralScoreTarget = target;
+  }
+
+  public static CoralScoreTarget getCoralScoreTarget() {
+    return coralScoreTarget;
+  }
+
+  public static void setCoralIntakeTarget(CoralIntakeTarget target) {
+    coralIntakeTarget = target;
+  }
+
+  public static CoralIntakeTarget getCoralIntakeTarget() {
+    return coralIntakeTarget;
+  }
+
+  public static void setAlgaeIntakeTarget(AlgaeIntakeTarget target) {
+    algaeIntakeTarget = target;
+  }
+
+  public static AlgaeIntakeTarget getAlgaeIntakeTarget() {
+    return algaeIntakeTarget;
+  }
+
+  public static void setAlgaeScoreTarget(AlgaeScoreTarget target) {
+    algaeScoreTarget = target;
+  }
+
+  public static AlgaeScoreTarget getAlgaeScoreTarget() {
+    return algaeScoreTarget;
+  }
 }

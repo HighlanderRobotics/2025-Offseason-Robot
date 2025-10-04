@@ -43,8 +43,13 @@ public class ClimberSubsystem extends SubsystemBase {
     // This method will be called once per scheduler run
   }
 
-  // TODO
+  // TODO setStateAngleVoltage
   public Command setStateAngleVoltage() {
     return Commands.none();
+  }
+
+  //TODO atExtension
+  public boolean atExtension() {
+    return true;
   }
 }

@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 
 public class ElevatorIOSim implements ElevatorIO {
   private final ElevatorSim sim =
-      // TODO
+      // TODO elevator sim
       new ElevatorSim(
           DCMotor.getKrakenX60Foc(1),
           ElevatorSubsystem.GEAR_RATIO,

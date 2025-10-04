@@ -79,8 +79,12 @@ public class IntakeSubsystem extends SubsystemBase {
     return MathUtil.isNear(target.getDegrees(), inputs.position.getDegrees(), 10.0);
   }
 
-  // TODO
+  // TODO setStateAngleVoltage
   public Command setStateAngleVoltage() {
     return Commands.none();
+  }
+  //TODO hasCoral
+  public boolean hasCoral() {
+    return true;
   }
 }
