@@ -4,8 +4,11 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.SignalLogger;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.arm.ArmIOReal;
 import frc.robot.arm.ArmIOSim;
@@ -15,6 +18,7 @@ import frc.robot.elevator.ElevatorIOReal;
 import frc.robot.elevator.ElevatorIOSim;
 import frc.robot.elevator.ElevatorSubsystem;
 import frc.robot.intake.IntakeSubsystem;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -31,6 +35,32 @@ public class Robot extends LoggedRobot {
     REPLAY
   }
 
+  // TODO add tuning mode switch
+
+  public static enum CoralScoreTarget {
+    L1,
+    L2,
+    L3,
+    L4;
+  }
+
+  public static enum AlgaeIntakeTarget {
+    LOW,
+    HIGH,
+    STACK,
+    GROUND
+  }
+
+  public static enum AlgaeScoreTarget {
+    BARGE,
+    PROCESSOR
+  }
+
+  @AutoLogOutput private static CoralScoreTarget coralTarget = CoralScoreTarget.L4;
+  @AutoLogOutput private static AlgaeIntakeTarget algaeIntakeTarget = AlgaeIntakeTarget.STACK;
+  @AutoLogOutput private static AlgaeScoreTarget algaeScoreTarget = AlgaeScoreTarget.BARGE;
+
+  // Instantiate subsystems
   private final ElevatorSubsystem elevator =
       new ElevatorSubsystem(
           ROBOT_TYPE != RobotType.SIM ? new ElevatorIOReal() : new ElevatorIOSim());
@@ -43,14 +73,37 @@ public class Robot extends LoggedRobot {
 
   private final Superstructure superstructure = new Superstructure(elevator, arm, intake, climber);
 
+  // Declare triggers
+
+  @SuppressWarnings("resource")
   public Robot() {
-    Logger.recordMetadata("ProjectName", "MyProject"); // Set a metadata value
+    DriverStation.silenceJoystickConnectionWarning(true);
+    SignalLogger.enableAutoLogging(false);
+    RobotController.setBrownoutVoltage(6.0);
+    // Metadata about the current code running on the robot
+    Logger.recordMetadata("Codebase", "2025 Offseason");
+    Logger.recordMetadata("RuntimeType", getRuntimeType().toString());
+    Logger.recordMetadata("Robot Mode", ROBOT_TYPE.toString());
+    Logger.recordMetadata("GitSHA", BuildConstants.GIT_SHA);
+    Logger.recordMetadata("GitDate", BuildConstants.GIT_DATE);
+    Logger.recordMetadata("GitBranch", BuildConstants.GIT_BRANCH);
+    switch (BuildConstants.DIRTY) {
+      case 0:
+        Logger.recordMetadata("GitDirty", "All changes committed");
+        break;
+      case 1:
+        Logger.recordMetadata("GitDirty", "Uncommitted changes");
+        break;
+      default:
+        Logger.recordMetadata("GitDirty", "Unknown");
+        break;
+    }
 
     switch (ROBOT_TYPE) {
       case REAL:
         Logger.addDataReceiver(new WPILOGWriter("/U")); // Log to a USB stick
         Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
-        new PowerDistribution(1, ModuleType.kRev); // Enables power distribution logging
+        new PowerDistribution(1, ModuleType.kCTRE); // Enables power distribution logging
         break;
       case REPLAY:
         setUseTiming(false); // Run as fast as possible
@@ -68,6 +121,8 @@ public class Robot extends LoggedRobot {
     }
     Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may
     // be added.
+
+    // Set default commands
   }
 
   @Override
