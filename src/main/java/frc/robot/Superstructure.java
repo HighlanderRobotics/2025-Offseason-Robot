@@ -485,4 +485,29 @@ public class Superstructure {
   public SuperState getState() {
     return state;
   }
+
+  public boolean stateIsCoral() {
+    return state.isCoral();
+  }
+
+  public boolean stateIsIntakeAlgaeReef() {
+    return state == SuperState.INTAKE_ALGAE_HIGH
+    || state == SuperState.INTAKE_ALGAE_LOW;
+  }
+
+  public boolean stateIsIdle() {
+    return state == SuperState.IDLE;
+  }
+
+  public boolean stateIsProcessor() {
+    return state == SuperState.READY_ALGAE 
+    || state == SuperState.PRE_PROCESSOR 
+    || state == SuperState.SCORE_PROCESSOR;
+  }
+
+  public boolean stateIsBarge() {
+    return state == SuperState.READY_ALGAE 
+    || state == SuperState.PRE_BARGE 
+    || state == SuperState.SCORE_BARGE;
+  }
 }

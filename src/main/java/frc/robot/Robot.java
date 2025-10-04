@@ -4,12 +4,24 @@
 
 package frc.robot;
 
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.LogFileUtil;
+import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGReader;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+
 import com.ctre.phoenix6.SignalLogger;
+
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Superstructure.SuperState;
 import frc.robot.arm.ArmIOReal;
 import frc.robot.arm.ArmIOSim;
 import frc.robot.arm.ArmSubsystem;
@@ -20,13 +32,7 @@ import frc.robot.elevator.ElevatorSubsystem;
 import frc.robot.intake.IntakeSubsystem;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.utils.CommandXboxControllerSubsystem;
-import org.littletonrobotics.junction.AutoLogOutput;
-import org.littletonrobotics.junction.LogFileUtil;
-import org.littletonrobotics.junction.LoggedRobot;
-import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.NT4Publisher;
-import org.littletonrobotics.junction.wpilog.WPILOGReader;
-import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+import frc.robot.utils.FieldUtils.AlgaeIntakeTargets;
 
 public class Robot extends LoggedRobot {
   public static final RobotType ROBOT_TYPE = Robot.isReal() ? RobotType.REAL : RobotType.SIM;
@@ -82,6 +88,11 @@ public class Robot extends LoggedRobot {
 
   private final CommandXboxControllerSubsystem driver = new CommandXboxControllerSubsystem(0);
   private final CommandXboxControllerSubsystem operator = new CommandXboxControllerSubsystem(1);
+
+  @AutoLogOutput(key = "Superstructure/Autoaim Request")
+  private Trigger autoAimReq = driver.rightBumper()
+        .or(driver.leftBumper());
+  //TODO impl autoaiming left vs right
 
   private final Superstructure superstructure =
       new Superstructure(elevator, arm, intake, climber, swerve, driver, operator);
@@ -145,7 +156,138 @@ public class Robot extends LoggedRobot {
     addControllerBindings();
   }
 
-  private void addControllerBindings() {}
+  private void addControllerBindings() {
+    // Autoaim to L1
+    autoAimReq
+        .and(superstructure::stateIsCoral)
+        .and(() -> coralScoreTarget == CoralScoreTarget.L1)
+        .whileTrue(
+          Commands.parallel(
+                swerve.autoAimToL1(),
+                Commands.waitUntil(swerve::nearL1)
+                    .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy()))
+        );
+    
+    // Autoaim to L2/3
+    autoAimReq
+        .and(superstructure::stateIsCoral)
+        .and(() -> coralScoreTarget == CoralScoreTarget.L2 || coralScoreTarget == CoralScoreTarget.L3)
+        .whileTrue(
+            Commands.parallel(
+                swerve.autoAimToL23(),
+                Commands.waitUntil(swerve::nearL23)
+                    .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy())));
+
+    // Autoaim to L4
+    autoAimReq
+        .and(superstructure::stateIsCoral)
+        .and(() -> coralScoreTarget == CoralScoreTarget.L4)
+        .whileTrue(
+            Commands.parallel(
+                swerve.autoAimToL4(),
+                Commands.waitUntil(swerve::nearL4)
+                    .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy())));
+
+    // Autoaim to intake algae (high, low)
+    autoAimReq
+      .and(superstructure::stateIsIntakeAlgaeReef)
+      .or(superstructure::stateIsIdle)
+      .whileTrue(
+        Commands.parallel(
+                Commands.sequence(
+                    Commands.runOnce(() -> Robot.setAlgaeIntakeTarget(AlgaeIntakeTargets.getClosestTarget(swerve.getPose()).height)),
+                    swerve.autoAimToOffsetAlgae()
+                        .until(new Trigger(swerve::nearIntakeAlgaeOffsetPose)
+                        //TODO figure out trigger order of operations? also this is just bad
+                          .and(() -> superstructure.atExtension(SuperState.INTAKE_ALGAE_HIGH))
+                          .or(() -> superstructure.atExtension(SuperState.INTAKE_ALGAE_LOW))),
+                    swerve.approachAlgae()),
+                Commands.waitUntil(
+                        new Trigger(swerve::nearAlgaeIntakePose)
+                                .and(swerve::isNotMoving)
+                            .debounce(0.08))
+                            // .and(swerve::hasFrontTags)
+                    .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy())));
+
+    // Autoaim to processor
+    autoAimReq
+      .and(superstructure::stateIsProcessor)
+      .and(() -> algaeScoreTarget == AlgaeScoreTarget.PROCESSOR)
+      .whileTrue(
+        Commands.parallel(
+                swerve.autoAimToProcessor(),
+                Commands.waitUntil(swerve::nearProcessor)
+                    .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy())));
+
+    // Autoaim to barge
+    autoAimReq
+    .and(superstructure::stateIsBarge)
+    .and(() -> algaeScoreTarget == AlgaeScoreTarget.BARGE)
+    .whileTrue(
+            Commands.parallel(
+                swerve.autoAimToBarge(),
+                Commands.waitUntil(swerve::isNearBarge)
+                    .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy())));
+
+    // Operator - Set scoring/intaking levels
+    operator
+        .a()
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  coralScoreTarget = CoralScoreTarget.L1;
+                  algaeIntakeTarget = AlgaeIntakeTarget.GROUND;
+                }));
+    operator
+        .x()
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  coralScoreTarget = CoralScoreTarget.L2;
+                  algaeIntakeTarget = AlgaeIntakeTarget.STACK;
+                }));
+    operator
+        .b()
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  coralScoreTarget = CoralScoreTarget.L3;
+                  algaeIntakeTarget = AlgaeIntakeTarget.LOW;
+                }));
+    operator
+        .y()
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  coralScoreTarget = CoralScoreTarget.L4;
+                  algaeIntakeTarget = AlgaeIntakeTarget.HIGH;
+                }));
+
+    operator
+        .leftTrigger()
+        .onTrue(Commands.runOnce(() -> algaeScoreTarget = AlgaeScoreTarget.BARGE));
+
+    operator
+        .rightTrigger()
+        .onTrue(Commands.runOnce(() -> algaeScoreTarget = AlgaeScoreTarget.PROCESSOR));
+
+    // Enable/disable left handed auto align
+    // TODO isn't this already accounted for by the autoaim method?
+    // operator.povLeft().onTrue(Commands.runOnce(() -> leftHandedTarget = true));
+    // operator.povRight().onTrue(Commands.runOnce(() -> leftHandedTarget = false));
+
+    // heading reset
+    // driver
+    //     .leftStick()
+    //     .and(driver.rightStick())
+    //     .onTrue(
+    //         Commands.runOnce(
+    //             () ->
+    //                 swerve.setYaw(
+    //                     DriverStation.getAlliance().equals(Alliance.Blue)
+    //                         ? Rotation2d.kZero
+    //                         : Rotation2d.k180deg)));
+  }
 
   @Override
   public void robotPeriodic() {
