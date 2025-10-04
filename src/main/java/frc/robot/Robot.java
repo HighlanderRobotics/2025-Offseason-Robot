@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.arm.ArmIOReal;
 import frc.robot.arm.ArmIOSim;
 import frc.robot.arm.ArmSubsystem;
+import frc.robot.climber.ClimberSubsystem;
 import frc.robot.elevator.ElevatorIOReal;
 import frc.robot.elevator.ElevatorIOSim;
 import frc.robot.elevator.ElevatorSubsystem;
@@ -38,13 +39,14 @@ public class Robot extends LoggedRobot {
       new ArmSubsystem(ROBOT_TYPE != RobotType.SIM ? new ArmIOReal() : new ArmIOSim());
 
   private final IntakeSubsystem intake = new IntakeSubsystem();
+  private final ClimberSubsystem climber = new ClimberSubsystem();
 
-  private final Superstructure superstructure = new Superstructure(elevator, arm, intake);
+  private final Superstructure superstructure = new Superstructure(elevator, arm, intake, climber);
 
   public Robot() {
     Logger.recordMetadata("ProjectName", "MyProject"); // Set a metadata value
 
-switch (ROBOT_TYPE) {
+    switch (ROBOT_TYPE) {
       case REAL:
         Logger.addDataReceiver(new WPILOGWriter("/U")); // Log to a USB stick
         Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables

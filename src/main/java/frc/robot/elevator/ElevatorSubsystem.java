@@ -31,7 +31,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   public static final double DRUM_RADIUS_METERS = Units.inchesToMeters(1.751 / 2.0);
   public static final Rotation2d ELEVATOR_ANGLE = Rotation2d.fromDegrees(90.0);
 
-  public static final double MAX_EXTENSION_METERS = Units.inchesToMeters(68.50);
+  public static final double MAX_EXTENSION_METERS = Units.inchesToMeters(58.75);
 
   private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
   private final ElevatorIO io;
@@ -54,7 +54,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     L2(Units.inchesToMeters(15)),
     PRE_L3(Units.inchesToMeters(25)),
     L3(Units.inchesToMeters(29)),
-    PRE_L4(Units.inchesToMeters(59)),
+    PRE_L4(Units.inchesToMeters(58.75)),
     L4(Units.inchesToMeters(52)),
     // algae
     INTAKE_ALGAE_REEF_HIGH(Units.inchesToMeters(43)),
@@ -63,7 +63,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     INTAKE_ALGAE_GROUND(Units.inchesToMeters(25)),
     READY_ALGAE(Units.inchesToMeters(0)),
 
-    BARGE(Units.inchesToMeters(59)),
+    BARGE(Units.inchesToMeters(58.75)),
     PROCESSOR(Units.inchesToMeters(4)),
     // climbing
     PRE_CLIMB(Units.inchesToMeters(0)),
@@ -203,5 +203,13 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   public double getExtensionMeters() {
     return inputs.positionMeters;
+  }
+
+  public boolean atExtension(double expected) {
+    return MathUtil.isNear(expected, inputs.positionMeters, 0.05);
+  }
+
+  public boolean atExtension() {
+    return atExtension(setpoint);
   }
 }

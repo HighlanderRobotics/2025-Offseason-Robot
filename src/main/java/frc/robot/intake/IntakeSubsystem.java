@@ -4,13 +4,14 @@
 
 package frc.robot.intake;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class IntakeSubsystem extends SubsystemBase {
-  //TODO incorporate roller pivot stuff
+  // TODO incorporate roller pivot stuff
   private IntakeIO io;
   private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
 
@@ -24,14 +25,15 @@ public class IntakeSubsystem extends SubsystemBase {
   public enum IntakeState {
     // 0 for position is horizontal against bumper
     // positive voltage is intaking, negative is outtaking TBD?
-    IDLE(Rotation2d.fromDegrees(110), 0.0), // this will not be the real number!! this is just a placeholder
-    INTAKE_CORAL(Rotation2d.fromDegrees(0),10.0),
+    IDLE(
+        Rotation2d.fromDegrees(110),
+        0.0), // this will not be the real number!! this is just a placeholder
+    INTAKE_CORAL(Rotation2d.fromDegrees(0), 10.0),
     PRE_HANDOFF(Rotation2d.fromDegrees(110), 1.0),
     HANDOFF(Rotation2d.fromDegrees(110), -5.0),
     PRE_L1(Rotation2d.fromDegrees(90), 1.0),
     SCORE_L1(Rotation2d.fromDegrees(90), -5.0),
     CLIMB(Rotation2d.fromDegrees(0), 0.0);
-
 
     public final Rotation2d position;
     public final double volts;
@@ -39,6 +41,14 @@ public class IntakeSubsystem extends SubsystemBase {
     private IntakeState(Rotation2d position, double volts) {
       this.position = position;
       this.volts = volts;
+    }
+
+    public Rotation2d getAngle() {
+      return position;
+    }
+
+    public double getVolts() {
+      return volts;
     }
   }
 
@@ -61,5 +71,9 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public void setMotorPosition(Rotation2d targetPosition) {
     io.setMotorPosition(targetPosition);
+  }
+
+  public boolean isNearAngle(Rotation2d target) {
+    return MathUtil.isNear(target.getDegrees(), inputs.position.getDegrees(), 10.0);
   }
 }

@@ -1,5 +1,6 @@
 package frc.robot.arm;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -28,7 +29,7 @@ public class ArmSubsystem extends SubsystemBase {
 
   // TODO : change these values to the real ones
   public enum ArmState {
-    //TODO
+    // TODO
     // 0 for position is horizontal pointed right. positive is counterclockwise
     // positive voltage is intaking, negative is outtaking
     IDLE(Rotation2d.fromDegrees(0), 0.0),
@@ -36,7 +37,7 @@ public class ArmSubsystem extends SubsystemBase {
     HANDOFF(Rotation2d.fromDegrees(0), 5.0),
     READY_CORAL(Rotation2d.fromDegrees(0), 1.0),
     INTAKE_CORAL_STACK(Rotation2d.fromDegrees(190), 5.0),
-  
+
     PRE_L2(Rotation2d.fromDegrees(45), 0.0),
     SCORE_L2(Rotation2d.fromDegrees(0), -10.0),
     PRE_L3(Rotation2d.fromDegrees(45), 0.0),
@@ -64,6 +65,14 @@ public class ArmSubsystem extends SubsystemBase {
       this.position = position;
       this.volts = volts;
     }
+
+    public Rotation2d getAngle() {
+      return position;
+    }
+
+    public double getVolts() {
+      return volts;
+    }
   }
 
   @Override
@@ -84,7 +93,11 @@ public class ArmSubsystem extends SubsystemBase {
         });
   }
 
-  public void setArmState(ArmState state) {
+  public void setState(ArmState state) {
     this.state = state;
+  }
+
+  public boolean isNearAngle(Rotation2d target) {
+    return MathUtil.isNear(target.getDegrees(), inputs.position.getDegrees(), 10.0);
   }
 }
