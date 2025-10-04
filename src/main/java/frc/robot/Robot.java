@@ -4,16 +4,7 @@
 
 package frc.robot;
 
-import org.littletonrobotics.junction.AutoLogOutput;
-import org.littletonrobotics.junction.LogFileUtil;
-import org.littletonrobotics.junction.LoggedRobot;
-import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.NT4Publisher;
-import org.littletonrobotics.junction.wpilog.WPILOGReader;
-import org.littletonrobotics.junction.wpilog.WPILOGWriter;
-
 import com.ctre.phoenix6.SignalLogger;
-
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
@@ -33,6 +24,13 @@ import frc.robot.intake.IntakeSubsystem;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.utils.CommandXboxControllerSubsystem;
 import frc.robot.utils.FieldUtils.AlgaeIntakeTargets;
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.LogFileUtil;
+import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGReader;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 public class Robot extends LoggedRobot {
   public static final RobotType ROBOT_TYPE = Robot.isReal() ? RobotType.REAL : RobotType.SIM;
@@ -90,9 +88,9 @@ public class Robot extends LoggedRobot {
   private final CommandXboxControllerSubsystem operator = new CommandXboxControllerSubsystem(1);
 
   @AutoLogOutput(key = "Superstructure/Autoaim Request")
-  private Trigger autoAimReq = driver.rightBumper()
-        .or(driver.leftBumper());
-  //TODO impl autoaiming left vs right
+  private Trigger autoAimReq = driver.rightBumper().or(driver.leftBumper());
+
+  // TODO impl autoaiming left vs right
 
   private final Superstructure superstructure =
       new Superstructure(elevator, arm, intake, climber, swerve, driver, operator);
@@ -162,16 +160,17 @@ public class Robot extends LoggedRobot {
         .and(superstructure::stateIsCoral)
         .and(() -> coralScoreTarget == CoralScoreTarget.L1)
         .whileTrue(
-          Commands.parallel(
+            Commands.parallel(
                 swerve.autoAimToL1(),
                 Commands.waitUntil(swerve::nearL1)
-                    .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy()))
-        );
-    
+                    .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy())));
+
     // Autoaim to L2/3
     autoAimReq
         .and(superstructure::stateIsCoral)
-        .and(() -> coralScoreTarget == CoralScoreTarget.L2 || coralScoreTarget == CoralScoreTarget.L3)
+        .and(
+            () ->
+                coralScoreTarget == CoralScoreTarget.L2 || coralScoreTarget == CoralScoreTarget.L3)
         .whileTrue(
             Commands.parallel(
                 swerve.autoAimToL23(),
@@ -190,40 +189,46 @@ public class Robot extends LoggedRobot {
 
     // Autoaim to intake algae (high, low)
     autoAimReq
-      .and(superstructure::stateIsIntakeAlgaeReef)
-      .or(superstructure::stateIsIdle)
-      .whileTrue(
-        Commands.parallel(
+        .and(superstructure::stateIsIntakeAlgaeReef)
+        .or(superstructure::stateIsIdle)
+        .whileTrue(
+            Commands.parallel(
                 Commands.sequence(
-                    Commands.runOnce(() -> Robot.setAlgaeIntakeTarget(AlgaeIntakeTargets.getClosestTarget(swerve.getPose()).height)),
-                    swerve.autoAimToOffsetAlgae()
-                        .until(new Trigger(swerve::nearIntakeAlgaeOffsetPose)
-                        //TODO figure out trigger order of operations? also this is just bad
-                          .and(() -> superstructure.atExtension(SuperState.INTAKE_ALGAE_HIGH))
-                          .or(() -> superstructure.atExtension(SuperState.INTAKE_ALGAE_LOW))),
+                    Commands.runOnce(
+                        () ->
+                            Robot.setAlgaeIntakeTarget(
+                                AlgaeIntakeTargets.getClosestTarget(swerve.getPose()).height)),
+                    swerve
+                        .autoAimToOffsetAlgae()
+                        .until(
+                            new Trigger(swerve::nearIntakeAlgaeOffsetPose)
+                                // TODO figure out trigger order of operations? also this is just
+                                // bad
+                                .and(() -> superstructure.atExtension(SuperState.INTAKE_ALGAE_HIGH))
+                                .or(() -> superstructure.atExtension(SuperState.INTAKE_ALGAE_LOW))),
                     swerve.approachAlgae()),
                 Commands.waitUntil(
                         new Trigger(swerve::nearAlgaeIntakePose)
-                                .and(swerve::isNotMoving)
+                            .and(swerve::isNotMoving)
                             .debounce(0.08))
-                            // .and(swerve::hasFrontTags)
+                    // .and(swerve::hasFrontTags)
                     .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy())));
 
     // Autoaim to processor
     autoAimReq
-      .and(superstructure::stateIsProcessor)
-      .and(() -> algaeScoreTarget == AlgaeScoreTarget.PROCESSOR)
-      .whileTrue(
-        Commands.parallel(
+        .and(superstructure::stateIsProcessor)
+        .and(() -> algaeScoreTarget == AlgaeScoreTarget.PROCESSOR)
+        .whileTrue(
+            Commands.parallel(
                 swerve.autoAimToProcessor(),
                 Commands.waitUntil(swerve::nearProcessor)
                     .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy())));
 
     // Autoaim to barge
     autoAimReq
-    .and(superstructure::stateIsBarge)
-    .and(() -> algaeScoreTarget == AlgaeScoreTarget.BARGE)
-    .whileTrue(
+        .and(superstructure::stateIsBarge)
+        .and(() -> algaeScoreTarget == AlgaeScoreTarget.BARGE)
+        .whileTrue(
             Commands.parallel(
                 swerve.autoAimToBarge(),
                 Commands.waitUntil(swerve::isNearBarge)

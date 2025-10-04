@@ -107,13 +107,13 @@ public class ArmSubsystem extends SubsystemBase {
     return Commands.none();
   }
 
-  //TODO hasCoral
+  // TODO hasCoral
   // current spike
   public boolean hasCoral() {
     return true;
   }
 
-  //TODO hasAlgae
+  // TODO hasAlgae
   // current spike
   // Unclear if this will be distinct from the coral current spike?
   public boolean hasAlgae() {

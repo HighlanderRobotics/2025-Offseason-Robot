@@ -16,9 +16,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.utils.AutoAim;
 import frc.robot.utils.FieldUtils.AlgaeIntakeTargets;
-import frc.robot.utils.FieldUtils.CoralTargets;
 import frc.robot.utils.FieldUtils.L1Targets;
-
 import org.littletonrobotics.junction.AutoLogOutput;
 
 public class SwerveSubsystem extends SubsystemBase {
@@ -55,28 +53,26 @@ public class SwerveSubsystem extends SubsystemBase {
         < 3.25;
   }
 
-  public boolean isNearL1Reef() { //TODO ??
-    return L1Targets.getNearestLine(getPose())
-            .getDistance(getPose().getTranslation())
-        > 0.3;
+  public boolean isNearL1Reef() { // TODO ??
+    return L1Targets.getNearestLine(getPose()).getDistance(getPose().getTranslation()) > 0.3;
   }
 
   public boolean isNearProcessor() {
     return MathUtil.isNear(
-        getPose().getX(),
-        DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
-            ? AutoAim.BLUE_PROCESSOR_POS.getX()
-            : AutoAim.RED_PROCESSOR_POS.getX(),
-        2)
-    || MathUtil.isNear(
-        getPose().getY(),
-        DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
-            ? AutoAim.BLUE_PROCESSOR_POS.getY()
-            : AutoAim.RED_PROCESSOR_POS.getY(),
-        2);
+            getPose().getX(),
+            DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+                ? AutoAim.BLUE_PROCESSOR_POS.getX()
+                : AutoAim.RED_PROCESSOR_POS.getX(),
+            2)
+        || MathUtil.isNear(
+            getPose().getY(),
+            DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+                ? AutoAim.BLUE_PROCESSOR_POS.getY()
+                : AutoAim.RED_PROCESSOR_POS.getY(),
+            2);
   }
 
-  //TODO autoAimL23
+  // TODO autoAimL23
   // my naming skills leave much to be desired
   public Command autoAimToL23() {
     // return AutoAim.autoAimWithIntermediatePose(
@@ -101,7 +97,7 @@ public class SwerveSubsystem extends SubsystemBase {
     return AutoAim.isInToleranceCoral(getPose());
   }
 
-    //TODO autoAimL1
+  // TODO autoAimL1
   public Command autoAimToL1() {
     // return AutoAim.alignToLine(
     //                 this,
@@ -117,19 +113,18 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public boolean nearL1() {
     return AutoAim.isInTolerance(
-      getPose(),
-      new Pose2d(
-          L1Targets.getNearestLine(getPose())
-              .nearest(getPose().getTranslation()),
-          L1Targets.getNearestLine(getPose()).getRotation()));
+        getPose(),
+        new Pose2d(
+            L1Targets.getNearestLine(getPose()).nearest(getPose().getTranslation()),
+            L1Targets.getNearestLine(getPose()).getRotation()));
   }
 
-  //TODO autoAimL4
+  // TODO autoAimL4
   public Command autoAimToL4() {
     return Commands.none();
   }
 
-  //TODO isInToleranceL4
+  // TODO isInToleranceL4
   public boolean nearL4() {
     return true;
   }
@@ -167,7 +162,7 @@ public class SwerveSubsystem extends SubsystemBase {
     return AutoAim.isInToleranceAlgaeIntake(getPose());
   }
 
-  //TODO rename this lmao
+  // TODO rename this lmao
   public boolean isNotMoving() {
     // return MathUtil.isNear(
     //   0,
@@ -196,16 +191,13 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public boolean nearProcessor() {
     return AutoAim.isInTolerance(
-      getPose()
-          .nearest(AutoAim.PROCESSOR_POSES)
-          // Moves the target pose inside the field, with the bumpers
-          // aligned with the wall
-          .transformBy(
-              new Transform2d(
-                  -(constants.getBumperLength() / 2),
-                  0.0,
-                  Rotation2d.kZero)),
-      getPose());
+        getPose()
+            .nearest(AutoAim.PROCESSOR_POSES)
+            // Moves the target pose inside the field, with the bumpers
+            // aligned with the wall
+            .transformBy(
+                new Transform2d(-(constants.getBumperLength() / 2), 0.0, Rotation2d.kZero)),
+        getPose());
   }
 
   public Command autoAimToBarge() {
@@ -227,13 +219,12 @@ public class SwerveSubsystem extends SubsystemBase {
     //                         .plus(Rotation2d.fromDegrees(20.0)));
     return Commands.none();
   }
-//TODO so this is not correct LMAO
+
+  // TODO so this is not correct LMAO
   public boolean isNearBarge() {
-      final var diff =
-          getPose()
-              .minus(AlgaeIntakeTargets.getClosestTargetPose(getPose()));
-      return MathUtil.isNear(0.0, diff.getX(), Units.inchesToMeters(1.0))
-          && MathUtil.isNear(0.0, diff.getY(), Units.inchesToMeters(1.0))
-          && MathUtil.isNear(0.0, diff.getRotation().getDegrees(), 2.0);
+    final var diff = getPose().minus(AlgaeIntakeTargets.getClosestTargetPose(getPose()));
+    return MathUtil.isNear(0.0, diff.getX(), Units.inchesToMeters(1.0))
+        && MathUtil.isNear(0.0, diff.getY(), Units.inchesToMeters(1.0))
+        && MathUtil.isNear(0.0, diff.getRotation().getDegrees(), 2.0);
   }
 }

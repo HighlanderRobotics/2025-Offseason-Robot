@@ -4,14 +4,13 @@
 
 package frc.robot;
 
-import org.littletonrobotics.junction.AutoLogOutput;
-
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import org.littletonrobotics.junction.AutoLogOutput;
 
 /** Add your docs here. */
 public class Autos {
 
-      // Declare triggers
+  // Declare triggers
   @AutoLogOutput(key = "Superstructure/Auto Pre Score Request")
   public static Trigger autoPreScoreReq;
 

@@ -2,29 +2,14 @@ package frc.robot.utils;
 
 import choreo.util.ChoreoAllianceFlipUtil;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rectangle2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.Robot;
-import frc.robot.Robot.RobotType;
-import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.utils.FieldUtils.AlgaeIntakeTargets;
 import frc.robot.utils.FieldUtils.CoralTargets;
-
 import java.util.List;
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
-import org.littletonrobotics.junction.Logger;
 
 public class AutoAim {
   static final double MAX_ANGULAR_SPEED = 10.0;
@@ -349,7 +334,8 @@ public class AutoAim {
   //                   Logger.recordOutput("AutoAim/Target Pose", target.get());
   //                 if (Robot.ROBOT_TYPE != RobotType.REAL)
   //                   Logger.recordOutput("AutoAim/Target Speeds", speeds);
-  //                 if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("AutoAim/Diff", diff);
+  //                 if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("AutoAim/Diff",
+  // diff);
   //                 return speeds;
   //               }));
   // }

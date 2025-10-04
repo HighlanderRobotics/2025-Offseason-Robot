@@ -12,10 +12,8 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import frc.robot.Robot;
 import frc.robot.Robot.AlgaeIntakeTarget;
 import frc.robot.swerve.SwerveSubsystem;
-import frc.robot.utils.AutoAim;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -63,9 +61,7 @@ public class FieldUtils {
     public static Pose2d getRobotTargetLocation(Pose2d original) {
       return original.transformBy(
           new Transform2d(
-              (SwerveSubsystem.constants.getBumperLength() / 2),
-              0,
-              Rotation2d.fromDegrees(180.0)));
+              (SwerveSubsystem.constants.getBumperLength() / 2), 0, Rotation2d.fromDegrees(180.0)));
     }
 
     public static Pose2d getOffsetLocation(Pose2d original) {
@@ -144,17 +140,13 @@ public class FieldUtils {
     public static Pose2d getCloseRobotTargetLocation(Pose2d pose) {
       return pose.transformBy(
           new Transform2d(
-              (SwerveSubsystem.constants.getBumperLength() / 2) + 0.087,
-              0,
-              Rotation2d.kZero));
+              (SwerveSubsystem.constants.getBumperLength() / 2) + 0.087, 0, Rotation2d.kZero));
     }
 
     public static Pose2d getFarRobotTargetLocation(Pose2d pose) {
       return pose.transformBy(
           new Transform2d(
-              -(SwerveSubsystem.constants.getBumperLength() / 2) - 0.087,
-              0,
-              Rotation2d.k180deg));
+              -(SwerveSubsystem.constants.getBumperLength() / 2) - 0.087, 0, Rotation2d.k180deg));
     }
 
     public Pose2d getLocation() {
@@ -366,9 +358,7 @@ public class FieldUtils {
     public static Rectangle2d getRobotTargetLine(Rectangle2d original) {
       return original.transformBy(
           new Transform2d(
-              SwerveSubsystem.constants.getBumperLength() / 2,
-              0,
-              Rotation2d.fromDegrees(180.0)));
+              SwerveSubsystem.constants.getBumperLength() / 2, 0, Rotation2d.fromDegrees(180.0)));
     }
 
     public static Rectangle2d getNearestLine(Pose2d pose) {

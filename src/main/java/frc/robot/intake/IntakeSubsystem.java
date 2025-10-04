@@ -83,7 +83,8 @@ public class IntakeSubsystem extends SubsystemBase {
   public Command setStateAngleVoltage() {
     return Commands.none();
   }
-  //TODO hasCoral
+
+  // TODO hasCoral
   public boolean hasCoral() {
     return true;
   }

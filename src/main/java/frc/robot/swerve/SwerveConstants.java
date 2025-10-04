@@ -9,7 +9,7 @@ import edu.wpi.first.math.util.Units;
 /** Add your docs here. */
 public class SwerveConstants {
 
-    public double getBumperLength() {
-        return Units.inchesToMeters(36.6);
-    }
+  public double getBumperLength() {
+    return Units.inchesToMeters(36.6);
+  }
 }

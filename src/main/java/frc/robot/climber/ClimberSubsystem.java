@@ -48,7 +48,7 @@ public class ClimberSubsystem extends SubsystemBase {
     return Commands.none();
   }
 
-  //TODO atExtension
+  // TODO atExtension
   public boolean atExtension() {
     return true;
   }
