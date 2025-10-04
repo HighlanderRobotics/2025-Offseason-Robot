@@ -3,6 +3,7 @@ package frc.robot.arm;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.Robot.RobotType;
@@ -99,5 +100,10 @@ public class ArmSubsystem extends SubsystemBase {
 
   public boolean isNearAngle(Rotation2d target) {
     return MathUtil.isNear(target.getDegrees(), inputs.position.getDegrees(), 10.0);
+  }
+
+  //TODO
+  public Command setStateAngleVoltage() {
+    return Commands.none();
   }
 }

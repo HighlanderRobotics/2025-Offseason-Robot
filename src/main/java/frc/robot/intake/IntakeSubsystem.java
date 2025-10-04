@@ -6,6 +6,8 @@ package frc.robot.intake;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -75,5 +77,10 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public boolean isNearAngle(Rotation2d target) {
     return MathUtil.isNear(target.getDegrees(), inputs.position.getDegrees(), 10.0);
+  }
+
+  //TODO
+  public Command setStateAngleVoltage() {
+    return Commands.none();
   }
 }

@@ -18,6 +18,8 @@ import frc.robot.elevator.ElevatorIOReal;
 import frc.robot.elevator.ElevatorIOSim;
 import frc.robot.elevator.ElevatorSubsystem;
 import frc.robot.intake.IntakeSubsystem;
+import frc.robot.utils.CommandXboxControllerSubsystem;
+
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -73,6 +75,11 @@ public class Robot extends LoggedRobot {
 
   private final Superstructure superstructure = new Superstructure(elevator, arm, intake, climber);
 
+  private static final CommandXboxControllerSubsystem driver =
+  new CommandXboxControllerSubsystem(0);
+private static final CommandXboxControllerSubsystem operator =
+  new CommandXboxControllerSubsystem(1);
+
   // Declare triggers
 
   @SuppressWarnings("resource")
@@ -123,6 +130,19 @@ public class Robot extends LoggedRobot {
     // be added.
 
     // Set default commands
+    elevator.setDefaultCommand(elevator.setStateExtension());
+    arm.setDefaultCommand(arm.setStateAngleVoltage());
+    intake.setDefaultCommand(intake.setStateAngleVoltage());
+    climber.setDefaultCommand(climber.setStateAngleVoltage());
+
+    driver.setDefaultCommand(driver.rumbleCmd(0.0, 0.0));
+    operator.setDefaultCommand(operator.rumbleCmd(0.0, 0.0));
+
+    addControllerBindings();
+  }
+
+  private void addControllerBindings() {
+
   }
 
   @Override

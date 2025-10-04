@@ -212,4 +212,8 @@ public class ElevatorSubsystem extends SubsystemBase {
   public boolean atExtension() {
     return atExtension(setpoint);
   }
+
+  public Command setStateExtension() {
+    return setExtension(() -> state.getExtensionMeters());
+  }
 }
