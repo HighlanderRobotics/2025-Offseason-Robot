@@ -72,8 +72,8 @@ public class Superstructure {
     PRE_PROCESSOR(ElevatorState.PROCESSOR, ArmState.PRE_PROCESSOR, IntakeState.IDLE),
     SCORE_PROCESSOR(ElevatorState.PROCESSOR, ArmState.SCORE_PROCESSOR, IntakeState.IDLE),
 
-    PRE_CLIMB(ElevatorState.PRE_CLIMB, ArmState.PRE_CLIMB, IntakeState.CLIMB),
-    CLIMB(ElevatorState.CLIMB, ArmState.CLIMB, IntakeState.CLIMB);
+    PRE_CLIMB(ElevatorState.PRE_CLIMB, ArmState.PRE_CLIMB, IntakeState.CLIMB, ClimberState.PRE_CLIMB),
+    CLIMB(ElevatorState.CLIMB, ArmState.CLIMB, IntakeState.CLIMB, ClimberState.CLIMB);
 
     public final ElevatorState elevatorState;
     public final ArmState armState;
