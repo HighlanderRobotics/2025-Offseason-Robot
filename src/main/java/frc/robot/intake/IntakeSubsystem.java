@@ -7,7 +7,7 @@ import frc.robot.pivot.PivotIO;
 import frc.robot.pivot.PivotIOInputsAutoLogged;
 import frc.robot.roller.RollerIO;
 import frc.robot.roller.RollerIOInputsAutoLogged;
-import frc.robot.rollerAndPivot.RollerPivotSubsystem;
+import frc.robot.rollerpivot.RollerPivotSubsystem;
 import org.littletonrobotics.junction.AutoLogOutput;
 
 public class IntakeSubsystem extends RollerPivotSubsystem {
