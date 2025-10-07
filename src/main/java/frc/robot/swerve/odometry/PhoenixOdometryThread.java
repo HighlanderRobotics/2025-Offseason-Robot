@@ -80,10 +80,6 @@ public class PhoenixOdometryThread extends Thread implements OdometryThreadIO {
     this(EvictingQueue.create(5));
   }
 
-  public void registerSignals(Collection<Registration> registrations) {
-    registerSignals(registrations.toArray(new Registration[] {}));
-  }
-
   /** Adds each registration to the signals array and set */
   public void registerSignals(Registration... registrations) {
     var writeLock = journalLock.writeLock();
@@ -141,7 +137,7 @@ public class PhoenixOdometryThread extends Thread implements OdometryThreadIO {
                 "stream timestamps",
                 () ->
                     journal.stream()
-                        .filter(s -> s.timestamp > timestamp)
+                        .filter(signal -> signal.timestamp > timestamp)
                         .collect(Collectors.toUnmodifiableList()));
           } finally {
             readLock.unlock();
