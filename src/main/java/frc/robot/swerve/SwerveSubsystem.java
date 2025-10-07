@@ -67,6 +67,20 @@ public class SwerveSubsystem extends SubsystemBase {
       };
   private Rotation2d rawGyroRotation = new Rotation2d();
 
+  private static final SignalID GYRO_SIGNAL_ID = new SignalID(SignalType.GYRO, PhoenixOdometryThread.GYRO_MODULE_ID);
+  private static final SignalID[] DRIVE_SIGNAL_IDS = {
+    new SignalID(SignalType.DRIVE, 0),
+    new SignalID(SignalType.DRIVE, 1),
+    new SignalID(SignalType.DRIVE, 2),
+    new SignalID(SignalType.DRIVE, 3)
+  };
+  private static final SignalID[] TURN_SIGNAL_IDS = {
+    new SignalID(SignalType.TURN, 0),
+    new SignalID(SignalType.TURN, 1),
+    new SignalID(SignalType.TURN, 2),
+    new SignalID(SignalType.TURN, 3)
+  };
+
   private final Optional<SwerveDriveSimulation> swerveSimulation;
 
   private Alert usingSyncOdoAlert = new Alert("Using Sync Odometry", AlertType.kInfo);
@@ -205,14 +219,14 @@ public class SwerveSubsystem extends SubsystemBase {
       boolean hasNullModulePosition = false;
       // Get the positions and deltas for each module
       for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
-        Double dist = sample.values().get(new SignalID(SignalType.DRIVE, moduleIndex));
+        Double dist = sample.values().get(DRIVE_SIGNAL_IDS[moduleIndex]);
         if (dist == null) {
           // No value at timestamp
           hasNullModulePosition = true;
           break;
         }
 
-        Double rot = sample.values().get(new SignalID(SignalType.TURN, moduleIndex));
+        Double rot = sample.values().get(TURN_SIGNAL_IDS[moduleIndex]);
         if (rot == null) {
           hasNullModulePosition = true;
           break;
@@ -236,7 +250,7 @@ public class SwerveSubsystem extends SubsystemBase {
         if (!gyroInputs.isConnected
             || sample
                     .values()
-                    .get(new SignalID(SignalType.GYRO, PhoenixOdometryThread.GYRO_MODULE_ID))
+                    .get(GYRO_SIGNAL_ID)
                 == null) {
           missingGyroData.set(true);
           // No module odo or gyro so can't do much else here
@@ -246,7 +260,7 @@ public class SwerveSubsystem extends SubsystemBase {
               Rotation2d.fromDegrees(
                   sample
                       .values()
-                      .get(new SignalID(SignalType.GYRO, PhoenixOdometryThread.GYRO_MODULE_ID)));
+                      .get(GYRO_SIGNAL_ID));
           // If we're missing data, just update with the gyro and the previous module positions
           estimator.updateWithTime(sample.timestamp(), rawGyroRotation, lastModulePositions);
         }
