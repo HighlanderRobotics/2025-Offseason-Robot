@@ -22,8 +22,6 @@ import frc.robot.elevator.ElevatorSubsystem;
 import frc.robot.intake.IntakeSubsystem;
 import frc.robot.shoulder.ShoulderSubsystem;
 import frc.robot.swerve.SwerveSubsystem;
-import frc.robot.swerve.constants.KelpieSwerveConstants;
-import frc.robot.swerve.constants.SwerveConstants;
 import frc.robot.swerve.gyro.GyroIOReal;
 import frc.robot.swerve.gyro.GyroIOSim;
 import frc.robot.swerve.odometry.PhoenixOdometryThread;
@@ -43,26 +41,11 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 public class Robot extends LoggedRobot {
   public static final RobotType ROBOT_TYPE = Robot.isReal() ? RobotType.REAL : RobotType.SIM;
-  public static final RobotHardware ROBOT_HARDWARE = RobotHardware.KELPIE;
 
   public enum RobotType {
     REAL,
     SIM,
     REPLAY
-  }
-
-  public enum RobotHardware {
-    KELPIE(new KelpieSwerveConstants());
-
-    SwerveConstants constants;
-
-    private RobotHardware(SwerveConstants constants) {
-      this.constants = constants;
-    }
-
-    public SwerveConstants getSwerveConstants() {
-      return constants;
-    }
   }
 
   private final ElevatorSubsystem elevator =
@@ -82,22 +65,22 @@ public class Robot extends LoggedRobot {
               new SwerveModuleSimulationConfig(
                   DCMotor.getKrakenX60Foc(1),
                   DCMotor.getKrakenX60Foc(1),
-                  ROBOT_HARDWARE.getSwerveConstants().getDriveGearRatio(),
-                  ROBOT_HARDWARE.getSwerveConstants().getTurnGearRatio(),
+                  SwerveSubsystem.SWERVE_CONSTANTS.getDriveGearRatio(),
+                  SwerveSubsystem.SWERVE_CONSTANTS.getTurnGearRatio(),
                   // These friction voltages are copied from Reefscape repo
                   Volts.of(0.1),
                   Volts.of(0.2),
-                  Meter.of(ROBOT_HARDWARE.getSwerveConstants().getWheelRadiusMeters()),
+                  Meter.of(SwerveSubsystem.SWERVE_CONSTANTS.getWheelRadiusMeters()),
                   // Copied from Reefscape
                   KilogramSquareMeters.of(0.03),
                   // Copied from Reefscape
                   1.5))
           .withTrackLengthTrackWidth(
-              Meter.of(ROBOT_HARDWARE.getSwerveConstants().getTrackWidthX()),
-              Meter.of(ROBOT_HARDWARE.getSwerveConstants().getTrackWidthY()))
+              Meter.of(SwerveSubsystem.SWERVE_CONSTANTS.getTrackWidthX()),
+              Meter.of(SwerveSubsystem.SWERVE_CONSTANTS.getTrackWidthY()))
           .withBumperSize(
-              Meter.of(ROBOT_HARDWARE.getSwerveConstants().getBumperWidth()),
-              Meter.of(ROBOT_HARDWARE.getSwerveConstants().getBumperLength()));
+              Meter.of(SwerveSubsystem.SWERVE_CONSTANTS.getBumperWidth()),
+              Meter.of(SwerveSubsystem.SWERVE_CONSTANTS.getBumperLength()));
 
   private final Optional<SwerveDriveSimulation> swerveSimulation =
       ROBOT_TYPE == RobotType.SIM
@@ -108,9 +91,8 @@ public class Robot extends LoggedRobot {
   // Subsystem initialization
   private final SwerveSubsystem swerve =
       new SwerveSubsystem(
-          ROBOT_HARDWARE.getSwerveConstants(),
           ROBOT_TYPE != RobotType.SIM
-              ? new GyroIOReal(ROBOT_HARDWARE.getSwerveConstants().getGyroID())
+              ? new GyroIOReal(SwerveSubsystem.SWERVE_CONSTANTS.getGyroID())
               : new GyroIOSim(swerveSimulation.get().getGyroSimulation()),
           swerveSimulation,
           PhoenixOdometryThread.getInstance());
@@ -124,7 +106,6 @@ public class Robot extends LoggedRobot {
     Logger.recordMetadata("Codebase", "Comp2025");
     Logger.recordMetadata("RuntimeType", getRuntimeType().toString());
     Logger.recordMetadata("Robot Mode", ROBOT_TYPE.toString());
-    Logger.recordMetadata("Robot Hardware", ROBOT_HARDWARE.toString());
 
     switch (ROBOT_TYPE) {
       case REAL:
@@ -159,11 +140,11 @@ public class Robot extends LoggedRobot {
             () ->
                 new ChassisSpeeds(
                         modifyJoystick(driver.getLeftY())
-                            * ROBOT_HARDWARE.getSwerveConstants().getMaxLinearSpeed(),
+                            * SwerveSubsystem.SWERVE_CONSTANTS.getMaxLinearSpeed(),
                         modifyJoystick(driver.getLeftX())
-                            * ROBOT_HARDWARE.getSwerveConstants().getMaxLinearSpeed(),
+                            * SwerveSubsystem.SWERVE_CONSTANTS.getMaxLinearSpeed(),
                         modifyJoystick(driver.getRightX())
-                            * ROBOT_HARDWARE.getSwerveConstants().getMaxAngularSpeed())
+                            * SwerveSubsystem.SWERVE_CONSTANTS.getMaxAngularSpeed())
                     .times(-1)));
   }
 

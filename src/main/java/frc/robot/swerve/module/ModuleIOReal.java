@@ -12,7 +12,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.google.common.collect.ImmutableSet;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.AngularVelocity;
-import frc.robot.Robot;
+import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.swerve.module.Module.ModuleConstants;
 import frc.robot.swerve.odometry.PhoenixOdometryThread;
 import frc.robot.swerve.odometry.PhoenixOdometryThread.Registration;
@@ -61,20 +61,15 @@ public class ModuleIOReal implements ModuleIO {
     cancoder = new CANcoder(constants.cancoderID(), "*");
 
     // Configure hardware
-    driveTalon
-        .getConfigurator()
-        .apply(Robot.ROBOT_HARDWARE.getSwerveConstants().getDriveConfiguration());
+    driveTalon.getConfigurator().apply(SwerveSubsystem.SWERVE_CONSTANTS.getDriveConfiguration());
     turnTalon
         .getConfigurator()
-        .apply(
-            Robot.ROBOT_HARDWARE.getSwerveConstants().getTurnConfiguration(constants.cancoderID()));
+        .apply(SwerveSubsystem.SWERVE_CONSTANTS.getTurnConfiguration(constants.cancoderID()));
 
     cancoder
         .getConfigurator()
         .apply(
-            Robot.ROBOT_HARDWARE
-                .getSwerveConstants()
-                .getCancoderConfiguration(constants.cancoderOffset()));
+            SwerveSubsystem.SWERVE_CONSTANTS.getCancoderConfiguration(constants.cancoderOffset()));
 
     // Initialize status signals
     drivePosition = driveTalon.getPosition();

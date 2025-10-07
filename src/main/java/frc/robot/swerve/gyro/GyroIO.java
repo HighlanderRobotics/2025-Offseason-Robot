@@ -20,6 +20,7 @@ public interface GyroIO {
 
   /**
    * Resets the gyro's position
+   *
    * @param yaw the position to set the gyro to
    */
   public void setYaw(Rotation2d yaw);

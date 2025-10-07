@@ -13,7 +13,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-import frc.robot.Robot;
+import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.util.MaplePhoenixUtil;
 import org.ironmaple.simulation.drivesims.SwerveModuleSimulation;
 
@@ -59,20 +59,15 @@ public class ModuleIOSim implements ModuleIO {
     cancoder = new CANcoder(constants.cancoderID(), "*");
 
     // Configure hardware
-    driveTalon
-        .getConfigurator()
-        .apply(Robot.ROBOT_HARDWARE.getSwerveConstants().getDriveConfiguration());
+    driveTalon.getConfigurator().apply(SwerveSubsystem.SWERVE_CONSTANTS.getDriveConfiguration());
     turnTalon
         .getConfigurator()
-        .apply(
-            Robot.ROBOT_HARDWARE.getSwerveConstants().getTurnConfiguration(constants.cancoderID()));
+        .apply(SwerveSubsystem.SWERVE_CONSTANTS.getTurnConfiguration(constants.cancoderID()));
 
     cancoder
         .getConfigurator()
         .apply(
-            Robot.ROBOT_HARDWARE
-                .getSwerveConstants()
-                .getCancoderConfiguration(constants.cancoderOffset()));
+            SwerveSubsystem.SWERVE_CONSTANTS.getCancoderConfiguration(constants.cancoderOffset()));
 
     // Initialize status signals
     drivePosition = driveTalon.getPosition();
@@ -117,7 +112,7 @@ public class ModuleIOSim implements ModuleIO {
     this.simulation.useSteerMotorController(
         new MaplePhoenixUtil.TalonFXMotorControllerWithRemoteCancoderSim(
             turnTalon,
-            Robot.ROBOT_HARDWARE.getSwerveConstants().getTurnMotorInverted(),
+            SwerveSubsystem.SWERVE_CONSTANTS.getTurnMotorInverted(),
             cancoder,
             false,
             Angle.ofBaseUnits(constants.cancoderOffset().getRadians(), Radian)));

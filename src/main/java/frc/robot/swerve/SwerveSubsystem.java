@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.Robot.RobotType;
+import frc.robot.swerve.constants.KelpieSwerveConstants;
 import frc.robot.swerve.constants.SwerveConstants;
 import frc.robot.swerve.gyro.GyroIO;
 import frc.robot.swerve.gyro.GyroIOInputsAutoLogged;
@@ -42,7 +43,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class SwerveSubsystem extends SubsystemBase {
-  private final SwerveConstants swerveConstants;
+  public static final SwerveConstants SWERVE_CONSTANTS = new KelpieSwerveConstants();
 
   private final Module[] modules; // Front Left, Front Right, Back Left, Back Right
   private final GyroIO gyroIO;
@@ -71,36 +72,35 @@ public class SwerveSubsystem extends SubsystemBase {
   private Alert missingGyroData = new Alert("Missing Gyro Data", AlertType.kWarning);
 
   public SwerveSubsystem(
-      SwerveConstants swerveConstants,
       GyroIO gyroIO,
       Optional<SwerveDriveSimulation> swerveSimulation,
       OdometryThreadIO odometryThread) {
-    this.swerveConstants = swerveConstants;
     if (Robot.ROBOT_TYPE == RobotType.SIM && swerveSimulation.isPresent()) {
       // Add simulated modules
       modules =
           new Module[] {
             new Module(
                 new ModuleIOSim(
-                    swerveConstants.getFrontLeftModule(), swerveSimulation.get().getModules()[0])),
+                    SWERVE_CONSTANTS.getFrontLeftModule(), swerveSimulation.get().getModules()[0])),
             new Module(
                 new ModuleIOSim(
-                    swerveConstants.getFrontRightModule(), swerveSimulation.get().getModules()[1])),
+                    SWERVE_CONSTANTS.getFrontRightModule(),
+                    swerveSimulation.get().getModules()[1])),
             new Module(
                 new ModuleIOSim(
-                    swerveConstants.getBackLeftModule(), swerveSimulation.get().getModules()[2])),
+                    SWERVE_CONSTANTS.getBackLeftModule(), swerveSimulation.get().getModules()[2])),
             new Module(
                 new ModuleIOSim(
-                    swerveConstants.getBackRightModule(), swerveSimulation.get().getModules()[3]))
+                    SWERVE_CONSTANTS.getBackRightModule(), swerveSimulation.get().getModules()[3]))
           };
     } else {
       // Add real modules
       modules =
           new Module[] {
-            new Module(new ModuleIOReal(swerveConstants.getFrontLeftModule())),
-            new Module(new ModuleIOReal(swerveConstants.getFrontRightModule())),
-            new Module(new ModuleIOReal(swerveConstants.getBackLeftModule())),
-            new Module(new ModuleIOReal(swerveConstants.getBackRightModule()))
+            new Module(new ModuleIOReal(SWERVE_CONSTANTS.getFrontLeftModule())),
+            new Module(new ModuleIOReal(SWERVE_CONSTANTS.getFrontRightModule())),
+            new Module(new ModuleIOReal(SWERVE_CONSTANTS.getBackLeftModule())),
+            new Module(new ModuleIOReal(SWERVE_CONSTANTS.getBackRightModule()))
           };
     }
 
@@ -108,7 +108,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
     this.swerveSimulation = swerveSimulation;
 
-    this.kinematics = new SwerveDriveKinematics(swerveConstants.getModuleTranslations());
+    this.kinematics = new SwerveDriveKinematics(SWERVE_CONSTANTS.getModuleTranslations());
     // Std devs copied from reefscape
     this.estimator =
         new SwerveDrivePoseEstimator(
@@ -160,7 +160,7 @@ public class SwerveSubsystem extends SubsystemBase {
     // Convert drivetrain setpoint into individual module setpoints
     final SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
     // Makes sure each wheel isn't asked to go above its max. Recalcs the states if needed
-    SwerveDriveKinematics.desaturateWheelSpeeds(states, swerveConstants.getMaxLinearSpeed());
+    SwerveDriveKinematics.desaturateWheelSpeeds(states, SWERVE_CONSTANTS.getMaxLinearSpeed());
     if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("SwerveStates/Setpoints", states);
 
     if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("Swerve/Target Speeds", speeds);
