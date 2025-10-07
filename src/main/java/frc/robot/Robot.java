@@ -62,20 +62,13 @@ public class Robot extends LoggedRobot {
       DriveTrainSimulationConfig.Default()
           .withGyro(COTS.ofPigeon2())
           // TODO: MAKE SURE THIS MODULE IS CORRECT
-          .withSwerveModule(
-              new SwerveModuleSimulationConfig(
-                  DCMotor.getKrakenX60Foc(1),
-                  DCMotor.getKrakenX60Foc(1),
-                  SwerveSubsystem.SWERVE_CONSTANTS.getDriveGearRatio(),
-                  SwerveSubsystem.SWERVE_CONSTANTS.getTurnGearRatio(),
-                  // These friction voltages are copied from Reefscape repo
-                  Volts.of(0.1),
-                  Volts.of(0.2),
-                  Meter.of(SwerveSubsystem.SWERVE_CONSTANTS.getWheelRadiusMeters()),
-                  // Copied from Reefscape
-                  KilogramSquareMeters.of(0.03),
-                  // Copied from Reefscape
-                  1.5))
+          .withSwerveModule(COTS.ofMark4n(
+            DCMotor.getKrakenX60Foc(1), 
+            DCMotor.getKrakenX60Foc(1), 
+            // Still not sure where the 1.5 came from
+            1.5, 
+            // Running l2+ swerve modules
+            2))
           .withTrackLengthTrackWidth(
               Meter.of(SwerveSubsystem.SWERVE_CONSTANTS.getTrackWidthX()),
               Meter.of(SwerveSubsystem.SWERVE_CONSTANTS.getTrackWidthY()))
