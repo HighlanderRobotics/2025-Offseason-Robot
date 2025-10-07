@@ -163,45 +163,6 @@ public class SwerveSubsystem extends SubsystemBase {
         });
   }
 
-  /**
-   * Runs the modules to the specified ChassisSpeeds (robot velocity)
-   * @param speeds the ChassisSpeeds to run the drivetrain at
-   * @param openLoop boolean for if the drivetrain should run with feedforward control (open loop) or with feedback control (closed loop)
-   */
-  private void drive(ChassisSpeeds speeds, boolean openLoop) {
-    // Converts time continuous chassis speeds to setpoints after the specified time (dtSeconds)
-    speeds = ChassisSpeeds.discretize(speeds, 0.02);
-
-    // Convert drivetrain setpoint into individual module setpoints
-    final SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
-    // Makes sure each wheel isn't asked to go above its max. Recalcs the states if needed
-    SwerveDriveKinematics.desaturateWheelSpeeds(states, SWERVE_CONSTANTS.getMaxLinearSpeed());
-    if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("SwerveStates/Setpoints", states);
-
-    if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("Swerve/Target Speeds", speeds);
-
-    SwerveModuleState[] optimizedStates = new SwerveModuleState[modules.length];
-
-    for (int i = 0; i < optimizedStates.length; i++) {
-      if (openLoop) {
-        // Heuristic to enable/disable FOC
-        // enables FOC if the robot is moving at 90% of drivetrain max speed
-        final boolean focEnable =
-            Math.sqrt(
-                    Math.pow(this.getVelocityRobotRelative().vxMetersPerSecond, 2)
-                        + Math.pow(this.getVelocityRobotRelative().vyMetersPerSecond, 2))
-                < SWERVE_CONSTANTS.getMaxLinearSpeed()
-                    * 0.9; // 0.9 is 90% of drivetrain max speed
-        optimizedStates[i] = modules[i].runOpenLoop(states[i], focEnable);
-      } else {
-        optimizedStates[i] = modules[i].runClosedLoop(states[i]);
-      }
-    }
-
-    if (Robot.ROBOT_TYPE != RobotType.REAL)
-      Logger.recordOutput("SwerveStates/SetpointsOptimized", optimizedStates);
-  }
-
   private void updateOdometry() {
 
     List<Samples> sampledStates = odometryThreadInputs.sampledStates;
@@ -279,6 +240,87 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   /**
+   * Runs the modules to the specified ChassisSpeeds (robot velocity)
+   * @param speeds the ChassisSpeeds to run the drivetrain at
+   * @param openLoop boolean for if the drivetrain should run with feedforward control (open loop) or with feedback control (closed loop)
+   */
+  private void drive(ChassisSpeeds speeds, boolean openLoop) {
+    // Converts time continuous chassis speeds to setpoints after the specified time (dtSeconds)
+    speeds = ChassisSpeeds.discretize(speeds, 0.02);
+
+    // Convert drivetrain setpoint into individual module setpoints
+    final SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
+    // Makes sure each wheel isn't asked to go above its max. Recalcs the states if needed
+    SwerveDriveKinematics.desaturateWheelSpeeds(states, SWERVE_CONSTANTS.getMaxLinearSpeed());
+    if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("SwerveStates/Setpoints", states);
+
+    if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("Swerve/Target Speeds", speeds);
+
+    SwerveModuleState[] optimizedStates = new SwerveModuleState[modules.length];
+
+    for (int i = 0; i < optimizedStates.length; i++) {
+      if (openLoop) {
+        // Heuristic to enable/disable FOC
+        // enables FOC if the robot is moving at 90% of drivetrain max speed
+        final boolean focEnable =
+            Math.sqrt(
+                    Math.pow(this.getVelocityRobotRelative().vxMetersPerSecond, 2)
+                        + Math.pow(this.getVelocityRobotRelative().vyMetersPerSecond, 2))
+                < SWERVE_CONSTANTS.getMaxLinearSpeed()
+                    * 0.9; // 0.9 is 90% of drivetrain max speed
+        optimizedStates[i] = modules[i].runOpenLoop(states[i], focEnable);
+      } else {
+        optimizedStates[i] = modules[i].runClosedLoop(states[i]);
+      }
+    }
+
+    if (Robot.ROBOT_TYPE != RobotType.REAL)
+      Logger.recordOutput("SwerveStates/SetpointsOptimized", optimizedStates);
+  }
+
+  /**
+   * Drive closed-loop at robot relative speeds
+   *
+   * @param speeds robot relative speed setpoint
+   * @return a command driving to target speeds
+   */
+  public Command driveClosedLoopRobotRelative(Supplier<ChassisSpeeds> speeds) {
+    return this.run(() -> drive(getVelocityFieldRelative(), false));
+  }
+
+  /**
+   * Drives open-loop. Speeds field relative to driver. Used for teleop
+   *
+   * @param speeds the field-relative speeds to drive at
+   * @return a Command driving at those speeds
+   */
+  public Command driveOpenLoopFieldRelative(Supplier<ChassisSpeeds> speeds) {
+    return this.run(
+        () -> {
+          ChassisSpeeds speedRobotRelative =
+              ChassisSpeeds.fromFieldRelativeSpeeds(
+                  speeds.get(),
+                  // Flip so that speeds passed in are always relative to driver
+                  DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+                      ? getPose().getRotation()
+                      : getPose().getRotation().minus(Rotation2d.fromDegrees(180)));
+          this.drive(speedRobotRelative, true);
+        });
+  }
+
+  /**
+   * Stops all the modules
+   * @return a command stopping all the modules
+   */
+  public Command stop() {
+    return this.run(() -> {
+      for (Module module : modules) {
+        module.stop();
+      }
+    });
+  }
+
+  /**
    * Generates a set of samples without using the async thread. Makes lots of Objects, so be careful
    * when using it irl!
    */
@@ -313,11 +355,6 @@ public class SwerveSubsystem extends SubsystemBase {
     return getPose().getRotation();
   }
 
-  public Rotation3d getRotation3d() {
-    return new Rotation3d(
-        gyroInputs.roll.getRadians(), gyroInputs.pitch.getRadians(), gyroInputs.yaw.getRadians());
-  }
-
   public void resetPose(Pose2d newPose) {
     estimator.resetPose(newPose);
     if (swerveSimulation.isPresent()) {
@@ -345,62 +382,4 @@ public class SwerveSubsystem extends SubsystemBase {
     return states;
   }
 
-  /**
-   * Drive closed-loop at robot relative speeds
-   *
-   * @param speeds robot relative speed setpoint
-   * @return a command driving to target speeds
-   */
-  public Command driveClosedLoop(Supplier<ChassisSpeeds> speeds) {
-    return this.run(() -> drive(getVelocityFieldRelative(), false));
-  }
-
-  /**
-   * Drive at a robot-relative speed open-loop.
-   *
-   * @param speeds the robot-relative speed setpoint.
-   * @return a Command driving to the target speeds.
-   */
-  public Command driveOpenLoop(Supplier<ChassisSpeeds> speeds) {
-    return this.run(() -> drive(speeds.get(), true));
-  }
-
-  /**
-   * Drive closed-loop at a field relative speed
-   *
-   * @param speeds the field-relative speed setpoint
-   * @return a Command driving to those speeds
-   */
-  public Command driveVelocityFieldRelative(Supplier<ChassisSpeeds> speeds) {
-    return driveClosedLoop(
-        () -> ChassisSpeeds.fromFieldRelativeSpeeds(speeds.get(), getRotation()));
-  }
-
-  /**
-   * Drives open-loop. Speeds field relative to driver.
-   *
-   * @param speeds the field-relative speeds to drive at
-   * @return a Command driving at those speeds
-   */
-  public Command driveTeleop(Supplier<ChassisSpeeds> speeds) {
-    return this.run(
-        () -> {
-          ChassisSpeeds speedRobotRelative =
-              ChassisSpeeds.fromFieldRelativeSpeeds(
-                  speeds.get(),
-                  // Flip so that speeds passed in are always relative to driver
-                  DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
-                      ? getPose().getRotation()
-                      : getPose().getRotation().minus(Rotation2d.fromDegrees(180)));
-          this.drive(speedRobotRelative, true);
-        });
-  }
-
-  public Command stop() {
-    return this.run(() -> {
-      for (Module module : modules) {
-        module.stop();
-      }
-    });
-  }
 }
