@@ -38,16 +38,6 @@ public class KelpieSwerveConstants extends SwerveConstants {
   }
 
   @Override
-  public ModuleConstants getBackLeftModule() {
-    return new ModuleConstants(2, "Back Left", 4, 5, 2, Rotation2d.fromRotations(-0.276855));
-  }
-
-  @Override
-  public ModuleConstants getBackRightModule() {
-    return new ModuleConstants(3, "Back Right", 6, 7, 3, Rotation2d.fromRotations(-0.211426));
-  }
-
-  @Override
   public CANcoderConfiguration getCancoderConfiguration(Rotation2d cancoderOffset) {
     final var cancoderConfig = new CANcoderConfiguration();
     cancoderConfig.MagnetSensor.MagnetOffset = cancoderOffset.getRotations();
@@ -90,13 +80,23 @@ public class KelpieSwerveConstants extends SwerveConstants {
   }
 
   @Override
-  public ModuleConstants getFrontLeftModule() {
+  public ModuleConstants getFrontLeftModuleConstants() {
     return new ModuleConstants(0, "Front Left", 0, 1, 0, Rotation2d.fromRotations(0.215576));
   }
 
   @Override
-  public ModuleConstants getFrontRightModule() {
+  public ModuleConstants getFrontRightModuleConstants() {
     return new ModuleConstants(1, "Front Right", 2, 3, 1, Rotation2d.fromRotations(0.011719));
+  }
+
+  @Override
+  public ModuleConstants getBackLeftModuleConstants() {
+    return new ModuleConstants(2, "Back Left", 4, 5, 2, Rotation2d.fromRotations(-0.276855));
+  }
+
+  @Override
+  public ModuleConstants getBackRightModuleConstants() {
+    return new ModuleConstants(3, "Back Right", 6, 7, 3, Rotation2d.fromRotations(-0.211426));
   }
 
   @Override

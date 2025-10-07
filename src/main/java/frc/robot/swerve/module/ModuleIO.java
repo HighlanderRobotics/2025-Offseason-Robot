@@ -41,5 +41,5 @@ public interface ModuleIO {
 
   public void setTurnVoltage(double volts);
 
-  public void setTurnSetpoint(Rotation2d setpoint);
+  public void setTurnPositionSetpoint(Rotation2d setpoint);
 }

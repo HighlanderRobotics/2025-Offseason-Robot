@@ -39,7 +39,7 @@ public class Module {
   public SwerveModuleState runClosedLoop(SwerveModuleState state) {
     state.optimize(getAngle());
 
-    io.setTurnSetpoint(state.angle);
+    io.setTurnPositionSetpoint(state.angle);
     io.setDriveVelocitySetpoint(state.speedMetersPerSecond);
 
     return state;
@@ -69,7 +69,7 @@ public class Module {
   }
 
   private void runVoltageSetpoint(double volts, Rotation2d targetAngle, boolean focEnabled) {
-    io.setTurnSetpoint(targetAngle);
+    io.setTurnPositionSetpoint(targetAngle);
     io.setDriveVoltage(
         // I think this is supposed avoid moving the drive too much when the turn motor is out of
         // position
@@ -110,6 +110,6 @@ public class Module {
   }
 
   public void setTurnSetpoint(Rotation2d rotation) {
-    io.setTurnSetpoint(rotation);
+    io.setTurnPositionSetpoint(rotation);
   }
 }

@@ -94,26 +94,26 @@ public class SwerveSubsystem extends SubsystemBase {
           new Module[] {
             new Module(
                 new ModuleIOSim(
-                    SWERVE_CONSTANTS.getFrontLeftModule(), swerveSimulation.get().getModules()[0])),
+                    SWERVE_CONSTANTS.getFrontLeftModuleConstants(), swerveSimulation.get().getModules()[0])),
             new Module(
                 new ModuleIOSim(
-                    SWERVE_CONSTANTS.getFrontRightModule(),
+                    SWERVE_CONSTANTS.getFrontRightModuleConstants(),
                     swerveSimulation.get().getModules()[1])),
             new Module(
                 new ModuleIOSim(
-                    SWERVE_CONSTANTS.getBackLeftModule(), swerveSimulation.get().getModules()[2])),
+                    SWERVE_CONSTANTS.getBackLeftModuleConstants(), swerveSimulation.get().getModules()[2])),
             new Module(
                 new ModuleIOSim(
-                    SWERVE_CONSTANTS.getBackRightModule(), swerveSimulation.get().getModules()[3]))
+                    SWERVE_CONSTANTS.getBackRightModuleConstants(), swerveSimulation.get().getModules()[3]))
           };
     } else {
       // Add real modules
       modules =
           new Module[] {
-            new Module(new ModuleIOReal(SWERVE_CONSTANTS.getFrontLeftModule())),
-            new Module(new ModuleIOReal(SWERVE_CONSTANTS.getFrontRightModule())),
-            new Module(new ModuleIOReal(SWERVE_CONSTANTS.getBackLeftModule())),
-            new Module(new ModuleIOReal(SWERVE_CONSTANTS.getBackRightModule()))
+            new Module(new ModuleIOReal(SWERVE_CONSTANTS.getFrontLeftModuleConstants())),
+            new Module(new ModuleIOReal(SWERVE_CONSTANTS.getFrontRightModuleConstants())),
+            new Module(new ModuleIOReal(SWERVE_CONSTANTS.getBackLeftModuleConstants())),
+            new Module(new ModuleIOReal(SWERVE_CONSTANTS.getBackRightModuleConstants()))
           };
     }
 
@@ -285,7 +285,7 @@ public class SwerveSubsystem extends SubsystemBase {
    * @return a command driving to target speeds
    */
   public Command driveClosedLoopRobotRelative(Supplier<ChassisSpeeds> speeds) {
-    return this.run(() -> drive(getVelocityFieldRelative(), false));
+    return this.run(() -> drive(speeds.get(), false));
   }
 
   /**

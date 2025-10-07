@@ -19,6 +19,8 @@ import frc.robot.swerve.odometry.PhoenixOdometryThread.Registration;
 import frc.robot.swerve.odometry.PhoenixOdometryThread.SignalType;
 import java.util.Optional;
 
+import org.littletonrobotics.junction.Logger;
+
 public class ModuleIOReal implements ModuleIO {
   private final ModuleConstants constants;
 
@@ -125,7 +127,7 @@ public class ModuleIOReal implements ModuleIO {
 
   @Override
   public void updateInputs(ModuleIOInputs inputs) {
-    BaseStatusSignal.refreshAll(
+    Logger.recordOutput("Module" + constants.prefix() + "refresh status code", BaseStatusSignal.refreshAll(
         drivePosition,
         driveVelocity,
         driveAppliedVolts,
@@ -138,7 +140,7 @@ public class ModuleIOReal implements ModuleIO {
         turnAppliedVolts,
         turnStatorCurrent,
         turnSupplyCurrent,
-        turnTemp);
+        turnTemp));
 
     inputs.prefix = constants.prefix();
 
@@ -175,7 +177,7 @@ public class ModuleIOReal implements ModuleIO {
   }
 
   @Override
-  public void setTurnSetpoint(Rotation2d setpoint) {
+  public void setTurnPositionSetpoint(Rotation2d setpoint) {
     turnTalon.setControl(turnPID.withPosition(setpoint.getRotations()));
   }
 }

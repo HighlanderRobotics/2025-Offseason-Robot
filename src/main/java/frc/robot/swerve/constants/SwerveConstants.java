@@ -73,13 +73,13 @@ public abstract class SwerveConstants {
   }
 
   // Hardware constants
-  public abstract ModuleConstants getFrontLeftModule();
+  public abstract ModuleConstants getFrontLeftModuleConstants();
 
-  public abstract ModuleConstants getFrontRightModule();
+  public abstract ModuleConstants getFrontRightModuleConstants();
 
-  public abstract ModuleConstants getBackLeftModule();
+  public abstract ModuleConstants getBackLeftModuleConstants();
 
-  public abstract ModuleConstants getBackRightModule();
+  public abstract ModuleConstants getBackRightModuleConstants();
 
   /** The CAN id of the Pigeon2 */
   public abstract int getGyroID();

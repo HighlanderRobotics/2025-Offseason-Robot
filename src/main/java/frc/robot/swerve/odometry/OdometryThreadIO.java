@@ -44,7 +44,7 @@ public interface OdometryThreadIO {
       for (int i = 0; i < sampledStates.size(); i++) {
         var timestamp = timestamps[i];
         try {
-          Map<SignalID, Double> values = new HashMap();
+          Map<SignalID, Double> values = new HashMap<SignalID, Double>();
           for (var id : modIds) {
             values.put(
                 new SignalID(SignalType.DRIVE, (int) id),
