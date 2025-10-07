@@ -2,28 +2,35 @@ package frc.robot.arm;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Robot;
-import frc.robot.Robot.RobotType;
-import java.util.function.Supplier;
+import frc.robot.pivot.PivotIO;
+import frc.robot.pivot.PivotIOInputsAutoLogged;
+import frc.robot.roller.RollerIO;
+import frc.robot.roller.RollerIOInputsAutoLogged;
+import frc.robot.rollerpivot.RollerPivotSubsystem;
 import org.littletonrobotics.junction.AutoLogOutput;
-import org.littletonrobotics.junction.Logger;
 
-public class ArmSubsystem extends SubsystemBase {
-  // constants
-  // TODO: change to real values
+public class ArmSubsystem extends RollerPivotSubsystem {
   public static final double PIVOT_RATIO = (44.0 / 16.0) * 23;
   public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(180);
   public static final Rotation2d MIN_ANGLE = Rotation2d.fromDegrees(0);
+  private final RollerIOInputsAutoLogged rollerInputs = new RollerIOInputsAutoLogged();
+  private final PivotIOInputsAutoLogged pivotInputs = new PivotIOInputsAutoLogged();
+  private final RollerIO rollerIO;
+  private final PivotIO pivotIO;
+  private final String name;
 
-  private ArmIO io;
-  private ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
+  public ArmSubsystem(RollerIO rollerIO, PivotIO pivotIO, String name) {
+    super(rollerIO, pivotIO, name);
+    this.rollerIO = rollerIO;
+    this.pivotIO = pivotIO;
+    this.name = name;
+  }
 
   @AutoLogOutput(key = "Arm/State")
   private ArmState state = ArmState.IDLE;
 
-  public ArmSubsystem(ArmIO io) {
-    this.io = io;
+  public void setState(ArmState state) {
+    this.state = state;
   }
 
   // TODO : change these values to the real ones
@@ -63,23 +70,14 @@ public class ArmSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    io.updateInputs(inputs);
-    Logger.processInputs("Arm", inputs);
+    super.periodic();
   }
 
-  public Command setTargetAngle(Rotation2d target) {
-    return setTargetAngle(() -> target);
-  }
-
-  public Command setTargetAngle(Supplier<Rotation2d> target) {
+  public Command setStateAngleAndVoltage(ArmState state) {
     return this.runOnce(
         () -> {
-          if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("Arm", target.get());
-          io.setMotorPosition(target.get());
+          setPivotAngle(state.position);
+          runRollerVoltage(state.volts);
         });
-  }
-
-  public void setArmState(ArmState state) {
-    this.state = state;
   }
 }

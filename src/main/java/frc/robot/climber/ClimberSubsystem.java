@@ -1,4 +1,4 @@
-package frc.robot.intake;
+package frc.robot.climber;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -10,7 +10,7 @@ import frc.robot.roller.RollerIOInputsAutoLogged;
 import frc.robot.rollerpivot.RollerPivotSubsystem;
 import org.littletonrobotics.junction.AutoLogOutput;
 
-public class IntakeSubsystem extends RollerPivotSubsystem {
+public class ClimberSubsystem extends RollerPivotSubsystem {
   public static final double PIVOT_RATIO = (44.0 / 16.0) * 23;
   public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(180);
   public static final Rotation2d MIN_ANGLE = Rotation2d.fromDegrees(0);
@@ -20,22 +20,18 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   private final PivotIO pivotIO;
   private final String name;
 
-  public IntakeSubsystem(RollerIO rollerIO, PivotIO pivotIO, String name) {
+  public ClimberSubsystem(RollerIO rollerIO, PivotIO pivotIO, String name) {
     super(rollerIO, pivotIO, name);
     this.rollerIO = rollerIO;
     this.pivotIO = pivotIO;
     this.name = name;
   }
 
-  @AutoLogOutput(key = "Intake/State")
-  private IntakeState state = IntakeState.IDLE;
-
-  public void setState(IntakeState state) {
-    this.state = state;
-  }
+  @AutoLogOutput(key = "Climber/State")
+  private ClimberState state = ClimberState.IDLE;
 
   // TODO : change these values to the real ones
-  public enum IntakeState {
+  public enum ClimberState {
     IDLE(Rotation2d.fromDegrees(0), 0.0),
     // coral
     READY_CORAL(Rotation2d.fromDegrees(180), 0.0),
@@ -63,7 +59,7 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
     public final Rotation2d position;
     public final double volts;
 
-    IntakeState(Rotation2d position, double volts) {
+    ClimberState(Rotation2d position, double volts) {
       this.position = position;
       this.volts = volts;
     }
