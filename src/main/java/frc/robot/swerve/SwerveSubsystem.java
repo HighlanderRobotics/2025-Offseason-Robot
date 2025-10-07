@@ -149,6 +149,11 @@ public class SwerveSubsystem extends SubsystemBase {
         });
   }
 
+  /**
+   * Runs the modules to the specified ChassisSpeeds (robot velocity)
+   * @param speeds the ChassisSpeeds to run the drivetrain at
+   * @param openLoop boolean for if the drivetrain should run with feedforward control (open loop) or with feedback control (closed loop)
+   */
   private void drive(ChassisSpeeds speeds, boolean openLoop) {
     // Converts time continuous chassis speeds to setpoints after the specified time (dtSeconds)
     speeds = ChassisSpeeds.discretize(speeds, 0.02);
