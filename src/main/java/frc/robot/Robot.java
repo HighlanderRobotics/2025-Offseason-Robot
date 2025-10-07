@@ -90,12 +90,7 @@ public class Robot extends LoggedRobot {
 
   // Subsystem initialization
   private final SwerveSubsystem swerve =
-      new SwerveSubsystem(
-          ROBOT_TYPE != RobotType.SIM
-              ? new GyroIOReal(SwerveSubsystem.SWERVE_CONSTANTS.getGyroID())
-              : new GyroIOSim(swerveSimulation.get().getGyroSimulation()),
-          swerveSimulation,
-          PhoenixOdometryThread.getInstance());
+      new SwerveSubsystem(swerveSimulation);
 
   private final CommandXBoxControllerSubsystem driver = new CommandXBoxControllerSubsystem(0);
   private final CommandXBoxControllerSubsystem operator = new CommandXBoxControllerSubsystem(1);
@@ -130,6 +125,8 @@ public class Robot extends LoggedRobot {
 
     Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may
     // be added.
+
+    PhoenixOdometryThread.getInstance().start();
 
     if (ROBOT_TYPE == RobotType.SIM) {
       SimulatedArena.getInstance().addDriveTrainSimulation(swerveSimulation.get());

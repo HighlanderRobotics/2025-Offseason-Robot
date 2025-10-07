@@ -23,6 +23,8 @@ import frc.robot.swerve.constants.KelpieSwerveConstants;
 import frc.robot.swerve.constants.SwerveConstants;
 import frc.robot.swerve.gyro.GyroIO;
 import frc.robot.swerve.gyro.GyroIOInputsAutoLogged;
+import frc.robot.swerve.gyro.GyroIOReal;
+import frc.robot.swerve.gyro.GyroIOSim;
 import frc.robot.swerve.module.Module;
 import frc.robot.swerve.module.ModuleIOReal;
 import frc.robot.swerve.module.ModuleIOSim;
@@ -71,10 +73,7 @@ public class SwerveSubsystem extends SubsystemBase {
   private Alert missingModuleData = new Alert("Missing Module Data", AlertType.kError);
   private Alert missingGyroData = new Alert("Missing Gyro Data", AlertType.kWarning);
 
-  public SwerveSubsystem(
-      GyroIO gyroIO,
-      Optional<SwerveDriveSimulation> swerveSimulation,
-      OdometryThreadIO odometryThread) {
+  public SwerveSubsystem(Optional<SwerveDriveSimulation> swerveSimulation) {
     if (Robot.ROBOT_TYPE == RobotType.SIM && swerveSimulation.isPresent()) {
       // Add simulated modules
       modules =
@@ -104,7 +103,7 @@ public class SwerveSubsystem extends SubsystemBase {
           };
     }
 
-    this.gyroIO = gyroIO;
+    this.gyroIO = Robot.ROBOT_TYPE != RobotType.SIM ? new GyroIOReal(SWERVE_CONSTANTS.getGyroID()) : new GyroIOSim(swerveSimulation.get().getGyroSimulation());
 
     this.swerveSimulation = swerveSimulation;
 
@@ -118,11 +117,8 @@ public class SwerveSubsystem extends SubsystemBase {
             new Pose2d(),
             VecBuilder.fill(0.6, 0.6, 0.07),
             VecBuilder.fill(0.9, 0.9, 0.4));
-    this.odometryThread = odometryThread;
-  }
 
-  public void startOdoThread() {
-    odometryThread.start();
+    this.odometryThread = PhoenixOdometryThread.getInstance();
   }
 
   @Override
