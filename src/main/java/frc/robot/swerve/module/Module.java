@@ -26,6 +26,10 @@ public class Module {
     Logger.processInputs("Swerve/" + inputs.prefix + " Module", inputs);
   }
 
+  public void stop() {
+    io.setDriveVoltage(0);
+  }
+
   /**
    * Runs closed-loop to the specified state. Used for automated actions, i.e. auto, autoalign etc.
    *

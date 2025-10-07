@@ -385,4 +385,12 @@ public class SwerveSubsystem extends SubsystemBase {
           this.drive(speedRobotRelative, true);
         });
   }
+
+  public Command stop() {
+    return this.run(() -> {
+      for (Module module : modules) {
+        module.stop();
+      }
+    });
+  }
 }
