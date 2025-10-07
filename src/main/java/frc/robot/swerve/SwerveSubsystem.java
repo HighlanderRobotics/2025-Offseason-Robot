@@ -206,7 +206,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
     List<Samples> sampledStates = odometryThreadInputs.sampledStates;
     // Use sync samples if there aren't any async ones
-    if (sampledStates.size() == 0) {
+    if (sampledStates.size() == 0 || Robot.isSimulation() || sampledStates.get(0).values().isEmpty()) {
       usingSyncOdoAlert.set(true);
       sampledStates = getSyncSamples();
     } else {
@@ -217,6 +217,7 @@ public class SwerveSubsystem extends SubsystemBase {
       SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
       SwerveModulePosition[] moduleDeltas = new SwerveModulePosition[4];
       boolean hasNullModulePosition = false;
+      boolean hasNullGyroRotation = false;
       // Get the positions and deltas for each module
       for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
         Double dist = sample.values().get(DRIVE_SIGNAL_IDS[moduleIndex]);
@@ -244,50 +245,32 @@ public class SwerveSubsystem extends SubsystemBase {
 
         lastModulePositions[moduleIndex] = modulePositions[moduleIndex];
       }
-
-      if (hasNullModulePosition) {
-        missingModuleData.set(true);
-        if (!gyroInputs.isConnected
-            || sample
-                    .values()
-                    .get(GYRO_SIGNAL_ID)
-                == null) {
-          missingGyroData.set(true);
-          // No module odo or gyro so can't do much else here
-        } else {
-          missingGyroData.set(false);
-          rawGyroRotation =
-              Rotation2d.fromDegrees(
-                  sample
-                      .values()
-                      .get(GYRO_SIGNAL_ID));
-          // If we're missing data, just update with the gyro and the previous module positions
-          estimator.updateWithTime(sample.timestamp(), rawGyroRotation, lastModulePositions);
-        }
-        continue;
+      if (!gyroInputs.isConnected || sample.values().get(GYRO_SIGNAL_ID) == null) {
+        hasNullGyroRotation = true;
+      } else {
+        hasNullGyroRotation = false;
       }
 
-      // We have all our module data
-      missingModuleData.set(false);
+      // Set DS alerts
+      missingModuleData.set(hasNullModulePosition);
+      missingGyroData.set(hasNullGyroRotation);
 
-      // The twist represents the motion of the robot based ONLY on the module deltas, no gyro.
-      Twist2d twist = kinematics.toTwist2d(moduleDeltas);
-      if (!gyroInputs.isConnected
-          || sample
-                  .values()
-                  .get(new SignalID(SignalType.GYRO, PhoenixOdometryThread.GYRO_MODULE_ID))
-              == null) {
-        // No gyro data
-        missingGyroData.set(true);
-        // Use the Twist's rotation change to update gyro bc theres no gyro data
+      if (hasNullModulePosition && hasNullGyroRotation) {
+        // Can't really do anything else rn bc theres no data
+        continue;
+      } else if (hasNullModulePosition && !hasNullGyroRotation) {
+        rawGyroRotation = Rotation2d.fromDegrees(sample.values().get(GYRO_SIGNAL_ID));
+
+        // If we're missing data, just update with the gyro and the previous module positions
+        estimator.updateWithTime(sample.timestamp(), rawGyroRotation, lastModulePositions);
+        continue;
+      } else if (!hasNullModulePosition && hasNullGyroRotation) {
+        Twist2d twist = kinematics.toTwist2d(moduleDeltas);
+        // If theres no gyro data, update the rotation with the change in position
         rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
-      } else {
-        missingGyroData.set(false);
-        rawGyroRotation =
-            Rotation2d.fromDegrees(
-                sample
-                    .values()
-                    .get(new SignalID(SignalType.GYRO, PhoenixOdometryThread.GYRO_MODULE_ID)));
+      } else if (!hasNullModulePosition && !hasNullGyroRotation) {
+        // We have all of our data
+        rawGyroRotation = Rotation2d.fromDegrees(sample.values().get(GYRO_SIGNAL_ID));
       }
 
       // Apply update
