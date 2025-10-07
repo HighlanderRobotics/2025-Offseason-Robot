@@ -31,10 +31,8 @@ public class GyroIOReal implements GyroIO {
     roll = pigeon.getRoll();
     yawVelocity = pigeon.getAngularVelocityZWorld();
 
-    BaseStatusSignal.setUpdateFrequencyForAll(50.0, pitch, roll);
-    BaseStatusSignal.setUpdateFrequencyForAll(
-        PhoenixOdometryThread.ODOMETRY_FREQUENCY_HZ, yaw, yawVelocity);
-    // TODO: ASK IF yawVelocity SHOULD BE REGISTERED TOO
+    BaseStatusSignal.setUpdateFrequencyForAll(50.0, pitch, roll, yawVelocity);
+    yaw.setUpdateFrequency(PhoenixOdometryThread.ODOMETRY_FREQUENCY_HZ);
     PhoenixOdometryThread.getInstance()
         .registerSignals(
             new Registration(pigeon, Optional.empty(), SignalType.GYRO, ImmutableSet.of(yaw)));
