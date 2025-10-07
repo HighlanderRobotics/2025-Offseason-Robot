@@ -170,7 +170,15 @@ public class SwerveSubsystem extends SubsystemBase {
 
     for (int i = 0; i < optimizedStates.length; i++) {
       if (openLoop) {
-        optimizedStates[i] = modules[i].runOpenLoop(states[i], true);
+        // Heuristic to enable/disable FOC
+        // enables FOC if the robot is moving at 90% of drivetrain max speed
+        final boolean focEnable =
+            Math.sqrt(
+                    Math.pow(this.getVelocityRobotRelative().vxMetersPerSecond, 2)
+                        + Math.pow(this.getVelocityRobotRelative().vyMetersPerSecond, 2))
+                < SWERVE_CONSTANTS.getMaxLinearSpeed()
+                    * 0.9; // 0.9 is 90% of drivetrain max speed
+        optimizedStates[i] = modules[i].runOpenLoop(states[i], focEnable);
       } else {
         optimizedStates[i] = modules[i].runClosedLoop(states[i]);
       }
