@@ -42,8 +42,7 @@ public class PhoenixOdometryThread extends Thread implements OdometryThreadIO {
       SignalType type,
       Set<BaseStatusSignal> signals) {}
 
-  /** modID should be GYRO_MODULE_ID for the gyro signal */
-  public record RegisteredSignal(BaseStatusSignal signal, int modID, SignalType type) {}
+  public record RegisteredSignal(SignalID id, BaseStatusSignal signal) {}
 
   /** Represents the state of the signals at a timestamp */
   public record Samples(double timestamp, Map<SignalID, Double> values) {}
@@ -101,12 +100,15 @@ public class PhoenixOdometryThread extends Thread implements OdometryThreadIO {
                 .map(
                     signal ->
                         new RegisteredSignal(
-                            signal,
-                            // If there's no module constants, we must be reading from the Gyro
-                            registration.moduleConstants().isPresent()
-                                ? registration.moduleConstants().get().id()
-                                : GYRO_MODULE_ID,
-                            registration.type()))
+                          new SignalID(
+                            registration.type(), 
+                            // If there's no module constants, we must be reading from the gyro
+                            registration.moduleConstants.isPresent()
+                              ? registration.moduleConstants.get().id()
+                              : GYRO_MODULE_ID),
+                              signal
+                        )
+                )
                 .toList());
         registration.signals.stream()
             .forEach(
@@ -175,7 +177,7 @@ public class PhoenixOdometryThread extends Thread implements OdometryThreadIO {
                       filteredSignals.stream()
                           .collect(
                               Collectors.toUnmodifiableMap(
-                                  s -> new SignalID(s.type(), s.modID()),
+                                  s -> s.id,
                                   s -> s.signal().getValueAsDouble()))));
             } finally {
               writeLock.unlock();
