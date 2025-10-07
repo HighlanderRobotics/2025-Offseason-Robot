@@ -37,7 +37,7 @@ public interface ModuleIO {
     setDriveVoltage(volts, true);
   }
 
-  public void setDriveSetpoint(double setpointMetersPerSecond);
+  public void setDriveVelocitySetpoint(double setpointMetersPerSecond);
 
   public void setTurnVoltage(double volts);
 

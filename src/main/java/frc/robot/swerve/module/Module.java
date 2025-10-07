@@ -40,7 +40,7 @@ public class Module {
     state.optimize(getAngle());
 
     io.setTurnSetpoint(state.angle);
-    io.setDriveSetpoint(state.speedMetersPerSecond);
+    io.setDriveVelocitySetpoint(state.speedMetersPerSecond);
 
     return state;
   }

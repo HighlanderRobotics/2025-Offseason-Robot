@@ -165,7 +165,7 @@ public class ModuleIOReal implements ModuleIO {
   }
 
   @Override
-  public void setDriveSetpoint(double setpointMetersPerSecond) {
+  public void setDriveVelocitySetpoint(double setpointMetersPerSecond) {
     driveTalon.setControl(driveVelocityControl.withVelocity(setpointMetersPerSecond));
   }
 
