@@ -71,10 +71,16 @@ public class Robot extends LoggedRobot {
     PROCESSOR
   }
 
+  public static enum ScoringSide {
+    LEFT,
+    RIGHT
+  }
+
   @AutoLogOutput private static CoralScoreTarget coralScoreTarget = CoralScoreTarget.L4;
   @AutoLogOutput private static CoralIntakeTarget coralIntakeTarget = CoralIntakeTarget.GROUND;
   @AutoLogOutput private static AlgaeIntakeTarget algaeIntakeTarget = AlgaeIntakeTarget.STACK;
   @AutoLogOutput private static AlgaeScoreTarget algaeScoreTarget = AlgaeScoreTarget.BARGE;
+  @AutoLogOutput private static ScoringSide scoringSide = ScoringSide.RIGHT;
 
   // Instantiate subsystems
   private final ElevatorSubsystem elevator =
@@ -216,8 +222,8 @@ public class Robot extends LoggedRobot {
                             new Trigger(swerve::nearIntakeAlgaeOffsetPose)
                                 // TODO figure out trigger order of operations? also this is just
                                 // bad
-                                .and(() -> superstructure.atExtension(SuperState.INTAKE_ALGAE_HIGH))
-                                .or(() -> superstructure.atExtension(SuperState.INTAKE_ALGAE_LOW))),
+                                .and(() -> superstructure.atExtension(SuperState.INTAKE_ALGAE_HIGH_RIGHT))
+                                .or(() -> superstructure.atExtension(SuperState.INTAKE_ALGAE_LOW_RIGHT))),
                     swerve.approachAlgae()),
                 Commands.waitUntil(
                         new Trigger(swerve::nearAlgaeIntakePose)
@@ -254,6 +260,7 @@ public class Robot extends LoggedRobot {
                 () -> {
                   coralScoreTarget = CoralScoreTarget.L1;
                   algaeIntakeTarget = AlgaeIntakeTarget.GROUND;
+                  algaeScoreTarget = AlgaeScoreTarget.PROCESSOR;
                 }));
     operator
         .x()
@@ -278,15 +285,16 @@ public class Robot extends LoggedRobot {
                 () -> {
                   coralScoreTarget = CoralScoreTarget.L4;
                   algaeIntakeTarget = AlgaeIntakeTarget.HIGH;
+                  algaeScoreTarget = AlgaeScoreTarget.BARGE;
                 }));
 
     operator
         .leftTrigger()
-        .onTrue(Commands.runOnce(() -> algaeScoreTarget = AlgaeScoreTarget.BARGE));
+        .onTrue(Commands.runOnce(() -> scoringSide = ScoringSide.LEFT));
 
     operator
         .rightTrigger()
-        .onTrue(Commands.runOnce(() -> algaeScoreTarget = AlgaeScoreTarget.PROCESSOR));
+        .onTrue(Commands.runOnce(() -> scoringSide = ScoringSide.RIGHT));
 
     // Enable/disable left handed auto align
     // TODO isn't this already accounted for by the autoaim method?
@@ -397,5 +405,9 @@ public class Robot extends LoggedRobot {
 
   public static AlgaeScoreTarget getAlgaeScoreTarget() {
     return algaeScoreTarget;
+  }
+
+  public static ScoringSide getScoringSide() {
+    return scoringSide;
   }
 }
