@@ -119,4 +119,7 @@ public class ArmSubsystem extends SubsystemBase {
   public boolean hasAlgae() {
     return true;
   }
+
+  // TODO setSimCoral
+  public void setSimCoral(boolean b) {}
 }

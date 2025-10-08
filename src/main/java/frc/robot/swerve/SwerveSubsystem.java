@@ -4,10 +4,12 @@
 
 package frc.robot.swerve;
 
+import choreo.trajectory.SwerveSample;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -15,8 +17,11 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.utils.AutoAim;
+import frc.robot.utils.FieldUtils;
 import frc.robot.utils.FieldUtils.AlgaeIntakeTargets;
 import frc.robot.utils.FieldUtils.L1Targets;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 
 public class SwerveSubsystem extends SubsystemBase {
@@ -42,6 +47,13 @@ public class SwerveSubsystem extends SubsystemBase {
   //   return
   // }
 
+  // TODO choreoDriveController
+  public Consumer<SwerveSample> choreoDriveController() {
+    return null;
+  }
+
+  public void resetPose(Pose2d pose) {}
+
   public boolean isNearReef() {
     return getPose()
             .getTranslation()
@@ -51,6 +63,17 @@ public class SwerveSubsystem extends SubsystemBase {
                     : AutoAim.RED_REEF_CENTER)
             .getNorm()
         < 3.25;
+  }
+
+  public boolean isNearReef(double toleranceMeters) {
+    return getPose()
+            .getTranslation()
+            .minus(
+                DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+                    ? AutoAim.BLUE_REEF_CENTER
+                    : AutoAim.RED_REEF_CENTER)
+            .getNorm()
+        < toleranceMeters;
   }
 
   public boolean isNearL1Reef() { // TODO ??
@@ -226,5 +249,29 @@ public class SwerveSubsystem extends SubsystemBase {
     return MathUtil.isNear(0.0, diff.getX(), Units.inchesToMeters(1.0))
         && MathUtil.isNear(0.0, diff.getY(), Units.inchesToMeters(1.0))
         && MathUtil.isNear(0.0, diff.getRotation().getDegrees(), 2.0);
+  }
+
+  public boolean isNearPoseAuto(Supplier<Pose2d> poseSupplier) {
+    return AutoAim.isInTolerance(
+        getPose(),
+        FieldUtils.CoralTargets.getClosestTarget(poseSupplier.get()),
+        getVelocityFieldRelative(),
+        Units.inchesToMeters(1.0),
+        Units.degreesToRadians(1.0));
+  }
+
+  public ChassisSpeeds getVelocityFieldRelative() {
+    return null;
+  }
+
+  // TODO autoAimAuto
+  // im realizing the limitations of our naming conventions
+  public Command autoAimAuto(Supplier<Pose2d> poseSupplier) {
+    // return AutoAim.translateToPose(
+    //                   this,
+    //                   () -> FieldUtils.CoralTargets.getClosestTarget(poseSupplier.get()),
+    //                   ChassisSpeeds::new,
+    //                   new Constraints(1.5, 1.0));
+    return Commands.none();
   }
 }

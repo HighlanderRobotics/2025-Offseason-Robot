@@ -6,9 +6,11 @@ package frc.robot;
 
 import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -24,10 +26,12 @@ import frc.robot.intake.IntakeSubsystem;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.utils.CommandXboxControllerSubsystem;
 import frc.robot.utils.FieldUtils.AlgaeIntakeTargets;
+import java.util.Optional;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
@@ -95,6 +99,10 @@ public class Robot extends LoggedRobot {
   private final Superstructure superstructure =
       new Superstructure(elevator, arm, intake, climber, swerve, driver, operator);
 
+  private final Autos autos;
+  private Optional<Alliance> lastAlliance = Optional.empty();
+  private final LoggedDashboardChooser<Command> autoChooser = new LoggedDashboardChooser<>("Autos");
+
   @SuppressWarnings("resource")
   public Robot() {
     DriverStation.silenceJoystickConnectionWarning(true);
@@ -152,6 +160,10 @@ public class Robot extends LoggedRobot {
     operator.setDefaultCommand(operator.rumbleCmd(0.0, 0.0));
 
     addControllerBindings();
+
+    autos = new Autos(swerve, arm);
+    // autoChooser.addDefaultOption("None", autos.getNoneAuto());
+    // TODO add autos trigger
   }
 
   private void addControllerBindings() {
@@ -292,6 +304,23 @@ public class Robot extends LoggedRobot {
     //                     DriverStation.getAlliance().equals(Alliance.Blue)
     //                         ? Rotation2d.kZero
     //                         : Rotation2d.k180deg)));
+  }
+
+  private void addAutos() {
+    System.out.println("------- Regenerating Autos");
+    System.out.println(
+        "Regenerating Autos on " + DriverStation.getAlliance().map((a) -> a.toString()));
+    // autoChooser.addOption("Triangle Test", autos.getTestTriangle());
+    // autoChooser.addOption("Sprint Test", autos.getTestSprint());
+    // autoChooser.addOption("LM to H", autos.LMtoH());
+    // autoChooser.addOption("RM to G", autos.RMtoG());
+    // autoChooser.addOption("4.5 L Outside", autos.LOtoJ());
+    // autoChooser.addOption("4.5 R Outside", autos.ROtoE());
+    // autoChooser.addOption("4.5 L Inside", autos.LItoK());
+    // autoChooser.addOption("4.5 R Inside", autos.RItoD());
+    // autoChooser.addOption("Push Auto", autos.PMtoPL());
+    // autoChooser.addOption("Algae auto", autos.CMtoGH());
+    // autoChooser.addOption("!!! DO NOT RUN!! 2910 auto", autos.LOtoA());
   }
 
   @Override
