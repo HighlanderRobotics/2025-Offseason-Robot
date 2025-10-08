@@ -14,6 +14,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.elevator.ElevatorIOReal;
 import frc.robot.elevator.ElevatorIOSim;
@@ -129,7 +130,7 @@ public class Robot extends LoggedRobot {
                             * SwerveSubsystem.SWERVE_CONSTANTS.getMaxAngularSpeed())
                     .times(-1)));
 
-    new Trigger(this::isDisabled).whileTrue(swerve.stop());
+    RobotModeTriggers.disabled().whileTrue(swerve.stop());
   }
 
   /** Scales a joystick value for teleop driving */
