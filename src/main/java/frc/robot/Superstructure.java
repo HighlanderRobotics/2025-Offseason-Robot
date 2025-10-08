@@ -52,29 +52,29 @@ public class Superstructure {
     PRE_L1(ElevatorState.IDLE, ArmState.IDLE, IntakeState.PRE_L1),
     L1(ElevatorState.IDLE, ArmState.IDLE, IntakeState.SCORE_L1),
 
-    PRE_L2_RIGHT(ElevatorState.PRE_L2, ArmState.PRE_L2, IntakeState.IDLE),
-    SCORE_L2_RIGHT(ElevatorState.L2, ArmState.SCORE_L2, IntakeState.IDLE),
-    PRE_L3_RIGHT(ElevatorState.PRE_L3, ArmState.PRE_L3, IntakeState.IDLE),
-    SCORE_L3_RIGHT(ElevatorState.L3, ArmState.SCORE_L3, IntakeState.IDLE),
-    PRE_L4_RIGHT(ElevatorState.PRE_L4, ArmState.PRE_L4, IntakeState.IDLE),
-    SCORE_L4_RIGHT(ElevatorState.L4, ArmState.SCORE_L4, IntakeState.IDLE),
+    PRE_L2_RIGHT(ElevatorState.PRE_L2, ArmState.PRE_L2_RIGHT, IntakeState.IDLE),
+    SCORE_L2_RIGHT(ElevatorState.L2, ArmState.SCORE_L2_RIGHT, IntakeState.IDLE),
+    PRE_L3_RIGHT(ElevatorState.PRE_L3, ArmState.PRE_L3_RIGHT, IntakeState.IDLE),
+    SCORE_L3_RIGHT(ElevatorState.L3, ArmState.SCORE_L3_RIGHT, IntakeState.IDLE),
+    PRE_L4_RIGHT(ElevatorState.PRE_L4, ArmState.PRE_L4_RIGHT, IntakeState.IDLE),
+    SCORE_L4_RIGHT(ElevatorState.L4, ArmState.SCORE_L4_RIGHT, IntakeState.IDLE),
 
-    PRE_L2_LEFT(ElevatorState.PRE_L2, ArmState.PRE_L2, IntakeState.IDLE),
-    SCORE_L2_LEFT(ElevatorState.L2, ArmState.SCORE_L2, IntakeState.IDLE),
-    PRE_L3_LEFT(ElevatorState.PRE_L3, ArmState.PRE_L3, IntakeState.IDLE),
-    SCORE_L3_LEFT(ElevatorState.L3, ArmState.SCORE_L3, IntakeState.IDLE),
-    PRE_L4_LEFT(ElevatorState.PRE_L4, ArmState.PRE_L4, IntakeState.IDLE),
-    SCORE_L4_LEFT(ElevatorState.L4, ArmState.SCORE_L4, IntakeState.IDLE),
+    PRE_L2_LEFT(ElevatorState.PRE_L2, ArmState.PRE_L2_LEFT, IntakeState.IDLE),
+    SCORE_L2_LEFT(ElevatorState.L2, ArmState.SCORE_L2_LEFT, IntakeState.IDLE),
+    PRE_L3_LEFT(ElevatorState.PRE_L3, ArmState.PRE_L3_LEFT, IntakeState.IDLE),
+    SCORE_L3_LEFT(ElevatorState.L3, ArmState.SCORE_L3_LEFT, IntakeState.IDLE),
+    PRE_L4_LEFT(ElevatorState.PRE_L4, ArmState.PRE_L4_LEFT, IntakeState.IDLE),
+    SCORE_L4_LEFT(ElevatorState.L4, ArmState.SCORE_L4_LEFT, IntakeState.IDLE),
 
     INTAKE_ALGAE_HIGH_RIGHT(
-        ElevatorState.INTAKE_ALGAE_REEF_HIGH, ArmState.INTAKE_ALGAE_REEF, IntakeState.IDLE),
+        ElevatorState.INTAKE_ALGAE_REEF_HIGH, ArmState.INTAKE_ALGAE_REEF_RIGHT, IntakeState.IDLE),
     INTAKE_ALGAE_LOW_RIGHT(
-        ElevatorState.INTAKE_ALGAE_REEF_LOW, ArmState.INTAKE_ALGAE_REEF, IntakeState.IDLE),
+        ElevatorState.INTAKE_ALGAE_REEF_LOW, ArmState.INTAKE_ALGAE_REEF_RIGHT, IntakeState.IDLE),
 
     INTAKE_ALGAE_HIGH_LEFT(
-        ElevatorState.INTAKE_ALGAE_REEF_HIGH, ArmState.INTAKE_ALGAE_REEF, IntakeState.IDLE),
+        ElevatorState.INTAKE_ALGAE_REEF_HIGH, ArmState.INTAKE_ALGAE_REEF_LEFT, IntakeState.IDLE),
     INTAKE_ALGAE_LOW_LEFT(
-        ElevatorState.INTAKE_ALGAE_REEF_LOW, ArmState.INTAKE_ALGAE_REEF, IntakeState.IDLE),
+        ElevatorState.INTAKE_ALGAE_REEF_LOW, ArmState.INTAKE_ALGAE_REEF_LEFT, IntakeState.IDLE),
 
     INTAKE_ALGAE_STACK(
         ElevatorState.INTAKE_ALGAE_STACK, ArmState.INTAKE_ALGAE_STACK, IntakeState.IDLE),
@@ -83,11 +83,11 @@ public class Superstructure {
 
     READY_ALGAE(ElevatorState.READY_ALGAE, ArmState.READY_ALGAE, IntakeState.IDLE),
 
-    PRE_BARGE_RIGHT(ElevatorState.BARGE, ArmState.PRE_BARGE, IntakeState.IDLE),
-    SCORE_BARGE_RIGHT(ElevatorState.BARGE, ArmState.SCORE_BARGE, IntakeState.IDLE),
+    PRE_BARGE_RIGHT(ElevatorState.BARGE, ArmState.PRE_BARGE_RIGHT, IntakeState.IDLE),
+    SCORE_BARGE_RIGHT(ElevatorState.BARGE, ArmState.SCORE_BARGE_RIGHT, IntakeState.IDLE),
 
-    PRE_BARGE_LEFT(ElevatorState.BARGE, ArmState.PRE_BARGE, IntakeState.IDLE),
-    SCORE_BARGE_LEFT(ElevatorState.BARGE, ArmState.SCORE_BARGE, IntakeState.IDLE),
+    PRE_BARGE_LEFT(ElevatorState.BARGE, ArmState.PRE_BARGE_LEFT, IntakeState.IDLE),
+    SCORE_BARGE_LEFT(ElevatorState.BARGE, ArmState.SCORE_BARGE_LEFT, IntakeState.IDLE),
 
     // processor is left side only
     PRE_PROCESSOR(ElevatorState.PROCESSOR, ArmState.PRE_PROCESSOR, IntakeState.IDLE),

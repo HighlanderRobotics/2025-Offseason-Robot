@@ -31,28 +31,40 @@ public class ArmSubsystem extends SubsystemBase {
   // TODO : change these values to the real ones
   public enum ArmState {
     // TODO check positive direction
-    // 0 for position is horizontal pointed right. positive is counterclockwise
+    // 0 for position is vertical with the EE up. positive is counterclockwise
     // positive voltage is intaking, negative is outtaking
     IDLE(Rotation2d.fromDegrees(0), 0.0),
     // coral
-    HANDOFF(Rotation2d.fromDegrees(0), 5.0),
+    HANDOFF(Rotation2d.fromDegrees(180), 5.0),
     READY_CORAL(Rotation2d.fromDegrees(0), 1.0),
-    INTAKE_CORAL_STACK(Rotation2d.fromDegrees(190), 5.0),
+    INTAKE_CORAL_STACK(Rotation2d.fromDegrees(100), 5.0),
 
-    PRE_L2(Rotation2d.fromDegrees(45), 0.0),
-    SCORE_L2(Rotation2d.fromDegrees(0), -10.0),
-    PRE_L3(Rotation2d.fromDegrees(45), 0.0),
-    SCORE_L3(Rotation2d.fromDegrees(0), -10.0),
-    PRE_L4(Rotation2d.fromDegrees(20), 0.0),
-    SCORE_L4(Rotation2d.fromDegrees(0), -10.0),
+    PRE_L2_RIGHT(Rotation2d.fromDegrees(-45), 0.0),
+    SCORE_L2_RIGHT(Rotation2d.fromDegrees(-90), -10.0),
+    PRE_L3_RIGHT(Rotation2d.fromDegrees(-45), 0.0),
+    SCORE_L3_RIGHT(Rotation2d.fromDegrees(-90), -10.0),
+    PRE_L4_RIGHT(Rotation2d.fromDegrees(-70), 0.0),
+    SCORE_L4_RIGHT(Rotation2d.fromDegrees(-90), -10.0),
+
+    PRE_L2_LEFT(Rotation2d.fromDegrees(45), 0.0),
+    SCORE_L2_LEFT(Rotation2d.fromDegrees(90), -10.0),
+    PRE_L3_LEFT(Rotation2d.fromDegrees(45), 0.0),
+    SCORE_L3_LEFT(Rotation2d.fromDegrees(90), -10.0),
+    PRE_L4_LEFT(Rotation2d.fromDegrees(70), 0.0),
+    SCORE_L4_LEFT(Rotation2d.fromDegrees(90), -10.0),
     // algae
-    INTAKE_ALGAE_REEF(Rotation2d.fromDegrees(0), 10.0),
-    INTAKE_ALGAE_GROUND(Rotation2d.fromDegrees(215), 15.0),
-    INTAKE_ALGAE_STACK(Rotation2d.fromDegrees(180), 10.0),
-    READY_ALGAE(Rotation2d.fromDegrees(90), 2.0),
+    INTAKE_ALGAE_REEF_RIGHT(Rotation2d.fromDegrees(-90), 10.0),
+    INTAKE_ALGAE_REEF_LEFT(Rotation2d.fromDegrees(90), 10.0),
+    INTAKE_ALGAE_GROUND(Rotation2d.fromDegrees(125), 15.0),
+    INTAKE_ALGAE_STACK(Rotation2d.fromDegrees(90), 10.0),
+    READY_ALGAE(Rotation2d.fromDegrees(0), 2.0),
 
-    PRE_BARGE(Rotation2d.fromDegrees(110), 4.0),
-    SCORE_BARGE(Rotation2d.fromDegrees(110), -10.0),
+    PRE_BARGE_RIGHT(Rotation2d.fromDegrees(-20), 4.0),
+    SCORE_BARGE_RIGHT(Rotation2d.fromDegrees(-20), -10.0),
+
+    PRE_BARGE_LEFT(Rotation2d.fromDegrees(20), 4.0),
+    SCORE_BARGE_LEFT(Rotation2d.fromDegrees(20), -10.0),
+
     PRE_PROCESSOR(Rotation2d.fromDegrees(180), 0.0),
     SCORE_PROCESSOR(Rotation2d.fromDegrees(180), -10.0),
     // climbing
