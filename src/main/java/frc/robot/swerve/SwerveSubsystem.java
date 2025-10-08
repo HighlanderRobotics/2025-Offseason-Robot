@@ -5,7 +5,6 @@ import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -38,7 +37,6 @@ import frc.robot.util.Tracer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Supplier;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -67,7 +65,8 @@ public class SwerveSubsystem extends SubsystemBase {
       };
   private Rotation2d rawGyroRotation = new Rotation2d();
 
-  private static final SignalID GYRO_SIGNAL_ID = new SignalID(SignalType.GYRO, PhoenixOdometryThread.GYRO_MODULE_ID);
+  private static final SignalID GYRO_SIGNAL_ID =
+      new SignalID(SignalType.GYRO, PhoenixOdometryThread.GYRO_MODULE_ID);
   private static final SignalID[] DRIVE_SIGNAL_IDS = {
     new SignalID(SignalType.DRIVE, 0),
     new SignalID(SignalType.DRIVE, 1),
@@ -81,30 +80,33 @@ public class SwerveSubsystem extends SubsystemBase {
     new SignalID(SignalType.TURN, 3)
   };
 
-  private final Optional<SwerveDriveSimulation> swerveSimulation;
+  private final SwerveDriveSimulation swerveSimulation;
 
   private Alert usingSyncOdoAlert = new Alert("Using Sync Odometry", AlertType.kInfo);
   private Alert missingModuleData = new Alert("Missing Module Data", AlertType.kError);
   private Alert missingGyroData = new Alert("Missing Gyro Data", AlertType.kWarning);
 
-  public SwerveSubsystem(Optional<SwerveDriveSimulation> swerveSimulation) {
-    if (Robot.ROBOT_TYPE == RobotType.SIM && swerveSimulation.isPresent()) {
+  public SwerveSubsystem(SwerveDriveSimulation swerveSimulation) {
+    if (Robot.ROBOT_TYPE == RobotType.SIM) {
       // Add simulated modules
       modules =
           new Module[] {
             new Module(
                 new ModuleIOSim(
-                    SWERVE_CONSTANTS.getFrontLeftModuleConstants(), swerveSimulation.get().getModules()[0])),
+                    SWERVE_CONSTANTS.getFrontLeftModuleConstants(),
+                    swerveSimulation.getModules()[0])),
             new Module(
                 new ModuleIOSim(
                     SWERVE_CONSTANTS.getFrontRightModuleConstants(),
-                    swerveSimulation.get().getModules()[1])),
+                    swerveSimulation.getModules()[1])),
             new Module(
                 new ModuleIOSim(
-                    SWERVE_CONSTANTS.getBackLeftModuleConstants(), swerveSimulation.get().getModules()[2])),
+                    SWERVE_CONSTANTS.getBackLeftModuleConstants(),
+                    swerveSimulation.getModules()[2])),
             new Module(
                 new ModuleIOSim(
-                    SWERVE_CONSTANTS.getBackRightModuleConstants(), swerveSimulation.get().getModules()[3]))
+                    SWERVE_CONSTANTS.getBackRightModuleConstants(),
+                    swerveSimulation.getModules()[3]))
           };
     } else {
       // Add real modules
@@ -117,7 +119,10 @@ public class SwerveSubsystem extends SubsystemBase {
           };
     }
 
-    this.gyroIO = Robot.ROBOT_TYPE != RobotType.SIM ? new GyroIOReal(SWERVE_CONSTANTS.getGyroID()) : new GyroIOSim(swerveSimulation.get().getGyroSimulation());
+    this.gyroIO =
+        Robot.ROBOT_TYPE != RobotType.SIM
+            ? new GyroIOReal(SWERVE_CONSTANTS.getGyroID())
+            : new GyroIOSim(swerveSimulation.getGyroSimulation());
 
     this.swerveSimulation = swerveSimulation;
 
@@ -167,7 +172,9 @@ public class SwerveSubsystem extends SubsystemBase {
 
     List<Samples> sampledStates = odometryThreadInputs.sampledStates;
     // Use sync samples if there aren't any async ones
-    if (sampledStates.size() == 0 || Robot.isSimulation() || sampledStates.get(0).values().isEmpty()) {
+    if (sampledStates.size() == 0
+        || Robot.isSimulation()
+        || sampledStates.get(0).values().isEmpty()) {
       usingSyncOdoAlert.set(true);
       sampledStates = getSyncSamples();
     } else {
@@ -241,8 +248,10 @@ public class SwerveSubsystem extends SubsystemBase {
 
   /**
    * Runs the modules to the specified ChassisSpeeds (robot velocity)
+   *
    * @param speeds the ChassisSpeeds to run the drivetrain at
-   * @param openLoop boolean for if the drivetrain should run with feedforward control (open loop) or with feedback control (closed loop)
+   * @param openLoop boolean for if the drivetrain should run with feedforward control (open loop)
+   *     or with feedback control (closed loop)
    */
   private void drive(ChassisSpeeds speeds, boolean openLoop) {
     // Converts time continuous chassis speeds to setpoints after the specified time (dtSeconds)
@@ -266,8 +275,7 @@ public class SwerveSubsystem extends SubsystemBase {
             Math.sqrt(
                     Math.pow(this.getVelocityRobotRelative().vxMetersPerSecond, 2)
                         + Math.pow(this.getVelocityRobotRelative().vyMetersPerSecond, 2))
-                < SWERVE_CONSTANTS.getMaxLinearSpeed()
-                    * 0.9; // 0.9 is 90% of drivetrain max speed
+                < SWERVE_CONSTANTS.getMaxLinearSpeed() * 0.9; // 0.9 is 90% of drivetrain max speed
         optimizedStates[i] = modules[i].runOpenLoop(states[i], focEnable);
       } else {
         optimizedStates[i] = modules[i].runClosedLoop(states[i]);
@@ -310,14 +318,16 @@ public class SwerveSubsystem extends SubsystemBase {
 
   /**
    * Stops all the modules
+   *
    * @return a command stopping all the modules
    */
   public Command stop() {
-    return this.run(() -> {
-      for (Module module : modules) {
-        module.stop();
-      }
-    });
+    return this.run(
+        () -> {
+          for (Module module : modules) {
+            module.stop();
+          }
+        });
   }
 
   /**
@@ -357,9 +367,9 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public void resetPose(Pose2d newPose) {
     estimator.resetPose(newPose);
-    if (swerveSimulation.isPresent()) {
-      swerveSimulation.get().setSimulationWorldPose(newPose);
-      swerveSimulation.get().setRobotSpeeds(new ChassisSpeeds());
+    if (Robot.ROBOT_TYPE == RobotType.SIM) {
+      swerveSimulation.setSimulationWorldPose(newPose);
+      swerveSimulation.setRobotSpeeds(new ChassisSpeeds());
     }
   }
 
@@ -381,5 +391,4 @@ public class SwerveSubsystem extends SubsystemBase {
         Arrays.stream(modules).map(Module::getState).toArray(SwerveModuleState[]::new);
     return states;
   }
-
 }

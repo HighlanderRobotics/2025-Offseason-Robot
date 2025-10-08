@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.swerve.module.Module.ModuleConstants;
 import frc.robot.util.Tracer;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -96,15 +95,13 @@ public class PhoenixOdometryThread extends Thread implements OdometryThreadIO {
                 .map(
                     signal ->
                         new RegisteredSignal(
-                          new SignalID(
-                            registration.type(), 
-                            // If there's no module constants, we must be reading from the gyro
-                            registration.moduleConstants.isPresent()
-                              ? registration.moduleConstants.get().id()
-                              : GYRO_MODULE_ID),
-                              signal
-                        )
-                )
+                            new SignalID(
+                                registration.type(),
+                                // If there's no module constants, we must be reading from the gyro
+                                registration.moduleConstants.isPresent()
+                                    ? registration.moduleConstants.get().id()
+                                    : GYRO_MODULE_ID),
+                            signal))
                 .toList());
         registration.signals.stream()
             .forEach(
@@ -173,8 +170,7 @@ public class PhoenixOdometryThread extends Thread implements OdometryThreadIO {
                       filteredSignals.stream()
                           .collect(
                               Collectors.toUnmodifiableMap(
-                                  s -> s.id,
-                                  s -> s.signal().getValueAsDouble()))));
+                                  s -> s.id, s -> s.signal().getValueAsDouble()))));
             } finally {
               writeLock.unlock();
             }
