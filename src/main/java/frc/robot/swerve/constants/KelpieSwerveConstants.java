@@ -1,5 +1,7 @@
 package frc.robot.swerve.constants;
 
+import static edu.wpi.first.units.Units.Pound;
+
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
@@ -8,6 +10,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Mass;
 import frc.robot.swerve.module.Module.ModuleConstants;
 
 // These values are copied from Reefscape's constants class
@@ -114,6 +117,12 @@ public class KelpieSwerveConstants extends SwerveConstants {
   @Override
   public double getMaxLinearAcceleration() {
     return 14.0;
+  }
+
+  @Override
+  public Mass getMass() {
+    // With old end effector (new EE isn't in the main robot cad...)
+    return Pound.of(142);
   }
 
   @Override

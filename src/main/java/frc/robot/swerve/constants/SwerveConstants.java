@@ -5,6 +5,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Mass;
 import frc.robot.swerve.module.Module.ModuleConstants;
 
 public abstract class SwerveConstants {
@@ -44,6 +45,9 @@ public abstract class SwerveConstants {
 
   /** The gear ratio between the wheel and the turn motor */
   public abstract double getTurnGearRatio();
+
+  /** The total mass of the robot */
+  public abstract Mass getMass();
 
   /**
    * Returns an array of module translations. The translations are relative to the robot's center.

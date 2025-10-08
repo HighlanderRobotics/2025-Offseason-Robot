@@ -74,7 +74,8 @@ public class Robot extends LoggedRobot {
               Meter.of(SwerveSubsystem.SWERVE_CONSTANTS.getTrackWidthY()))
           .withBumperSize(
               Meter.of(SwerveSubsystem.SWERVE_CONSTANTS.getBumperWidth()),
-              Meter.of(SwerveSubsystem.SWERVE_CONSTANTS.getBumperLength()));
+              Meter.of(SwerveSubsystem.SWERVE_CONSTANTS.getBumperLength()))
+          .withRobotMass(SwerveSubsystem.SWERVE_CONSTANTS.getMass());
 
   private final Optional<SwerveDriveSimulation> swerveSimulation =
       ROBOT_TYPE == RobotType.SIM
