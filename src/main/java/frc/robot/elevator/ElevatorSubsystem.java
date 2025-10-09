@@ -47,7 +47,8 @@ public class ElevatorSubsystem extends SubsystemBase {
   private final SysIdRoutine currentSysid;
 
   public enum ElevatorState {
-    IDLE(Units.inchesToMeters(37.841)),
+    IDLE(Units.inchesToMeters(0)),
+    HANDOFF(Units.inchesToMeters(37.841)),
     INTAKE_CORAL_STACK(Units.inchesToMeters(0)),
     // coral
     PRE_L2(Units.inchesToMeters(0)),

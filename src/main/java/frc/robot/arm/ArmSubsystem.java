@@ -36,21 +36,21 @@ public class ArmSubsystem extends SubsystemBase {
     IDLE(Rotation2d.fromDegrees(0), 0.0),
     // coral
     HANDOFF(Rotation2d.fromDegrees(180), 5.0),
-    READY_CORAL(Rotation2d.fromDegrees(0), 1.0),
+    READY_CORAL_ARM(Rotation2d.fromDegrees(0), 1.0),
     INTAKE_CORAL_STACK(Rotation2d.fromDegrees(100), 5.0),
 
-    PRE_L2_RIGHT(Rotation2d.fromDegrees(-45), 0.0),
+    PRE_L2_RIGHT(Rotation2d.fromDegrees(-45), 1.0),
     SCORE_L2_RIGHT(Rotation2d.fromDegrees(-90), -10.0),
-    PRE_L3_RIGHT(Rotation2d.fromDegrees(-45), 0.0),
+    PRE_L3_RIGHT(Rotation2d.fromDegrees(-45), 1.0),
     SCORE_L3_RIGHT(Rotation2d.fromDegrees(-90), -10.0),
-    PRE_L4_RIGHT(Rotation2d.fromDegrees(-70), 0.0),
+    PRE_L4_RIGHT(Rotation2d.fromDegrees(-70), 1.0),
     SCORE_L4_RIGHT(Rotation2d.fromDegrees(-90), -10.0),
 
-    PRE_L2_LEFT(Rotation2d.fromDegrees(45), 0.0),
+    PRE_L2_LEFT(Rotation2d.fromDegrees(45), 1.0),
     SCORE_L2_LEFT(Rotation2d.fromDegrees(90), -10.0),
-    PRE_L3_LEFT(Rotation2d.fromDegrees(45), 0.0),
+    PRE_L3_LEFT(Rotation2d.fromDegrees(45), 1.0),
     SCORE_L3_LEFT(Rotation2d.fromDegrees(90), -10.0),
-    PRE_L4_LEFT(Rotation2d.fromDegrees(70), 0.0),
+    PRE_L4_LEFT(Rotation2d.fromDegrees(70), 1.0),
     SCORE_L4_LEFT(Rotation2d.fromDegrees(90), -10.0),
     // algae
     INTAKE_ALGAE_REEF_RIGHT(Rotation2d.fromDegrees(-90), 10.0),
