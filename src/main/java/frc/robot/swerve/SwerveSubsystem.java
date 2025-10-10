@@ -213,11 +213,8 @@ public class SwerveSubsystem extends SubsystemBase {
 
         lastModulePositions[moduleIndex] = modulePositions[moduleIndex];
       }
-      if (!gyroInputs.isConnected || sample.values().get(GYRO_SIGNAL_ID) == null) {
-        hasNullGyroRotation = true;
-      } else {
-        hasNullGyroRotation = false;
-      }
+
+      hasNullGyroRotation = !gyroInputs.isConnected || (sample.values().get(GYRO_SIGNAL_ID) == null);
 
       // Set DS alerts
       missingModuleData.set(hasNullModulePosition);
