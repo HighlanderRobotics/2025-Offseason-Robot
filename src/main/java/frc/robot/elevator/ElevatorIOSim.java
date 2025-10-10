@@ -15,7 +15,10 @@ public class ElevatorIOSim implements ElevatorIO {
           DCMotor.getKrakenX60Foc(2),
           ElevatorSubsystem.GEAR_RATIO,
           // Add half of first stage mass bc its on a 2:1 ratio compared to carriage
-          Units.lbsToKilograms(7.0 + (3.345 / 2)),
+          // First stage weighs 3.345 lbs
+          // Carriage weighs 8.863
+          // Arm weighs 5.625
+          Units.lbsToKilograms((3.345 / 2) + 8.863 + 5.625),
           ElevatorSubsystem.SPROCKET_DIAMETER_METERS,
           0.0,
           ElevatorSubsystem.MAX_EXTENSION_METERS,
