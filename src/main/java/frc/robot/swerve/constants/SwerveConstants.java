@@ -12,6 +12,8 @@ public abstract class SwerveConstants {
 
   public SwerveConstants() {}
 
+  public abstract String getName();
+
   /** The width from wheel to wheel in the x direction */
   public abstract double getTrackWidthX();
 

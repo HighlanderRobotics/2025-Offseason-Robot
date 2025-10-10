@@ -87,6 +87,7 @@ public class Robot extends LoggedRobot {
     Logger.recordMetadata("Codebase", "Comp2025");
     Logger.recordMetadata("RuntimeType", getRuntimeType().toString());
     Logger.recordMetadata("Robot Mode", ROBOT_TYPE.toString());
+    Logger.recordMetadata("Robot Hardware", SwerveSubsystem.SWERVE_CONSTANTS.getName());
 
     switch (ROBOT_TYPE) {
       case REAL:

@@ -16,6 +16,11 @@ import frc.robot.swerve.module.Module.ModuleConstants;
 // These values are copied from Reefscape's constants class
 public class KelpieSwerveConstants extends SwerveConstants {
 
+  @Override
+  public String getName() {
+      return "Kelpie";
+  }
+
   public KelpieSwerveConstants() {
     super();
   }
