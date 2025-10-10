@@ -47,33 +47,35 @@ public class ElevatorSubsystem extends SubsystemBase {
   private final SysIdRoutine currentSysid;
 
   public enum ElevatorState {
-    IDLE(Units.inchesToMeters(0)),
-    HANDOFF(Units.inchesToMeters(37.841)),
-    INTAKE_CORAL_STACK(Units.inchesToMeters(0)),
+    // Although the motor takes it in terms of meters, we usually measure extension in terms of inches
+    // So the constructor handles the conversion
+    IDLE(0),
+    HANDOFF(37.841),
+    INTAKE_CORAL_STACK(0),
     // coral
-    PRE_L2(Units.inchesToMeters(0)),
-    L2(Units.inchesToMeters(15)),
-    PRE_L3(Units.inchesToMeters(25)),
-    L3(Units.inchesToMeters(29)),
-    PRE_L4(Units.inchesToMeters(58.75)),
-    L4(Units.inchesToMeters(52)),
+    PRE_L2(0),
+    L2(15),
+    PRE_L3(25),
+    L3(29),
+    PRE_L4(58.75),
+    L4(52),
     // algae
-    INTAKE_ALGAE_REEF_HIGH(Units.inchesToMeters(43)),
-    INTAKE_ALGAE_REEF_LOW(Units.inchesToMeters(26)),
-    INTAKE_ALGAE_STACK(Units.inchesToMeters(10)),
-    INTAKE_ALGAE_GROUND(Units.inchesToMeters(25)),
-    READY_ALGAE(Units.inchesToMeters(0)),
+    INTAKE_ALGAE_REEF_HIGH(43),
+    INTAKE_ALGAE_REEF_LOW(26),
+    INTAKE_ALGAE_STACK(10),
+    INTAKE_ALGAE_GROUND(25),
+    READY_ALGAE(0),
 
-    BARGE(Units.inchesToMeters(58.75)),
-    PROCESSOR(Units.inchesToMeters(4)),
+    BARGE(58.75),
+    PROCESSOR(4),
     // climbing
-    PRE_CLIMB(Units.inchesToMeters(0)),
-    CLIMB(Units.inchesToMeters(0));
+    PRE_CLIMB(0),
+    CLIMB(0);
 
     private final double extensionMeters;
 
-    private ElevatorState(double extensionMeters) {
-      this.extensionMeters = extensionMeters;
+    private ElevatorState(double extensionInches) {
+      this.extensionMeters = Units.inchesToMeters(extensionInches);
     }
 
     public double getExtensionMeters() {

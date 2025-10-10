@@ -19,17 +19,17 @@ public class ClimberSubsystem extends SubsystemBase {
   public ClimberSubsystem() {}
 
   public enum ClimberState {
-    // for position 0 is straight up and 90 is fully retracted (positive is CCW)
-    IDLE(Rotation2d.fromDegrees(0), 0.0),
-    PRE_CLIMB(Rotation2d.fromDegrees(0), 1.0),
-    CLIMB(Rotation2d.fromDegrees(90), 10.0),
+    // for position 0 is straight up and 90 is fully retracted (positive is counterclockwise)
+    IDLE(0, 0.0),
+    PRE_CLIMB(0, 1.0),
+    CLIMB(90, 10.0),
     ;
 
     public final Rotation2d position;
     public final double volts;
 
-    private ClimberState(Rotation2d position, double volts) {
-      this.position = position;
+    private ClimberState(double positionDegrees, double volts) {
+      this.position = Rotation2d.fromDegrees(positionDegrees);
       this.volts = volts;
     }
   }

@@ -33,8 +33,9 @@ import frc.robot.utils.CommandXboxControllerSubsystem;
 public class Superstructure {
 
   /**
-   * We should have a state for every single "pose" the robot will hit. Hopefully we can get named
-   * positions set up in cad to make this easier?
+   * We should have a state for every single "pose" the robot will hit.
+   * See <a href=https://docs.google.com/document/d/1l7MigoxtVseHWCiXcUjIAOOn5Q1dl7hid5luzBnOgzE/edit?tab=t.0> this document</a> for screenshots of the robot in each state.
+   * There are also named positions in cad for each state.
    */
   public enum SuperState {
     IDLE(ElevatorState.IDLE, ArmState.IDLE, IntakeState.IDLE),
@@ -250,7 +251,7 @@ public class Superstructure {
    *     in the first state)
    */
   private void bindTransition(SuperState start, SuperState end, Trigger trigger) {
-    // maps triggers to the transitions
+    // when 1) the robot is in the start state and 2) the trigger is true, the robot changes state to the end state
     trigger.and(new Trigger(() -> state == start)).onTrue(changeStateTo(end));
   }
 
@@ -262,7 +263,7 @@ public class Superstructure {
    * @param cmd some command to run while making the transition
    */
   private void bindTransition(SuperState start, SuperState end, Trigger trigger, Command cmd) {
-    // maps triggers to the transitions
+    // when 1) the robot is in the start state and 2) the trigger is true, the robot changes state to the end state IN PARALLEL to running the command that got passed in
     trigger
         .and(new Trigger(() -> state == start))
         .onTrue(Commands.parallel(changeStateTo(end), cmd));
@@ -288,10 +289,6 @@ public class Superstructure {
               setSubstates();
             })
         .ignoringDisable(true);
-  }
-
-  public Command changeStateTo(Supplier<SuperState> state) {
-    return changeStateTo(state.get());
   }
 
   private void setSubstates() {

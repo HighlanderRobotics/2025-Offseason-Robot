@@ -24,22 +24,26 @@ public class IntakeSubsystem extends SubsystemBase {
     this.io = io;
   }
 
+  /**
+   * 0 for position is horizontal against bumper, positive is upwards.
+    we're in real life!! use degrees.
+    degrees -> Rotation2d gets handled in the constructor
+    Positive voltage is intaking, negative is outtaking. (TODO)
+   */
   public enum IntakeState {
-    // 0 for position is horizontal against bumper
-    // positive voltage is intaking, negative is outtaking TBD?
-    IDLE(Rotation2d.fromDegrees(130),0.0),
-    INTAKE_CORAL(Rotation2d.fromDegrees(0), 10.0),
-    READY_CORAL_INTAKE(Rotation2d.fromDegrees(130), 1.0),
-    HANDOFF(Rotation2d.fromDegrees(130), -5.0),
-    PRE_L1(Rotation2d.fromDegrees(90), 1.0),
-    SCORE_L1(Rotation2d.fromDegrees(90), -5.0),
-    CLIMB(Rotation2d.fromDegrees(0), 0.0);
+    IDLE(130,0.0),
+    INTAKE_CORAL(0, 10.0),
+    READY_CORAL_INTAKE(130, 1.0),
+    HANDOFF(130, -5.0),
+    PRE_L1(90, 1.0),
+    SCORE_L1(9, -5.0),
+    CLIMB(0, 0.0);
 
     public final Rotation2d position;
     public final double volts;
 
-    private IntakeState(Rotation2d position, double volts) {
-      this.position = position;
+    private IntakeState(double positionDegrees, double volts) {
+      this.position = Rotation2d.fromDegrees(positionDegrees);
       this.volts = volts;
     }
 
