@@ -47,7 +47,8 @@ public class ElevatorSubsystem extends SubsystemBase {
   private final SysIdRoutine currentSysid;
 
   public enum ElevatorState {
-    // Although the motor takes it in terms of meters, we usually measure extension in terms of inches
+    // Although the motor takes it in terms of meters, we usually measure extension in terms of
+    // inches
     // So the constructor handles the conversion
     IDLE(0),
     HANDOFF(37.841),

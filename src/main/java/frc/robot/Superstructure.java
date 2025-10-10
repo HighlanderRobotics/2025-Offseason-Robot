@@ -4,11 +4,6 @@
 
 package frc.robot;
 
-import java.util.function.Supplier;
-
-import org.littletonrobotics.junction.AutoLogOutput;
-import org.littletonrobotics.junction.Logger;
-
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -29,13 +24,16 @@ import frc.robot.intake.IntakeSubsystem;
 import frc.robot.intake.IntakeSubsystem.IntakeState;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.utils.CommandXboxControllerSubsystem;
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 public class Superstructure {
 
   /**
-   * We should have a state for every single "pose" the robot will hit.
-   * See <a href=https://docs.google.com/document/d/1l7MigoxtVseHWCiXcUjIAOOn5Q1dl7hid5luzBnOgzE/edit?tab=t.0> this document</a> for screenshots of the robot in each state.
-   * There are also named positions in cad for each state.
+   * We should have a state for every single "pose" the robot will hit. See <a
+   * href=https://docs.google.com/document/d/1l7MigoxtVseHWCiXcUjIAOOn5Q1dl7hid5luzBnOgzE/edit?tab=t.0>
+   * this document</a> for screenshots of the robot in each state. There are also named positions in
+   * cad for each state.
    */
   public enum SuperState {
     IDLE(ElevatorState.IDLE, ArmState.IDLE, IntakeState.IDLE),
@@ -251,7 +249,8 @@ public class Superstructure {
    *     in the first state)
    */
   private void bindTransition(SuperState start, SuperState end, Trigger trigger) {
-    // when 1) the robot is in the start state and 2) the trigger is true, the robot changes state to the end state
+    // when 1) the robot is in the start state and 2) the trigger is true, the robot changes state
+    // to the end state
     trigger.and(new Trigger(() -> state == start)).onTrue(changeStateTo(end));
   }
 
@@ -263,7 +262,8 @@ public class Superstructure {
    * @param cmd some command to run while making the transition
    */
   private void bindTransition(SuperState start, SuperState end, Trigger trigger, Command cmd) {
-    // when 1) the robot is in the start state and 2) the trigger is true, the robot changes state to the end state IN PARALLEL to running the command that got passed in
+    // when 1) the robot is in the start state and 2) the trigger is true, the robot changes state
+    // to the end state IN PARALLEL to running the command that got passed in
     trigger
         .and(new Trigger(() -> state == start))
         .onTrue(Commands.parallel(changeStateTo(end), cmd));
@@ -350,9 +350,12 @@ public class Superstructure {
     bindTransition(
         SuperState.READY_CORAL_ARM,
         SuperState.PRE_L2_RIGHT,
-        preScoreReq.and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L2).and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
+        preScoreReq
+            .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L2)
+            .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
-    bindTransition(SuperState.PRE_L2_RIGHT, SuperState.SCORE_L2_RIGHT, scoreReq.and(atExtensionTrigger));
+    bindTransition(
+        SuperState.PRE_L2_RIGHT, SuperState.SCORE_L2_RIGHT, scoreReq.and(atExtensionTrigger));
 
     bindTransition(
         SuperState.SCORE_L2_RIGHT,
@@ -365,9 +368,12 @@ public class Superstructure {
     bindTransition(
         SuperState.READY_CORAL_ARM,
         SuperState.PRE_L2_LEFT,
-        preScoreReq.and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L2).and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
+        preScoreReq
+            .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L2)
+            .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
-    bindTransition(SuperState.PRE_L2_LEFT, SuperState.SCORE_L2_LEFT, scoreReq.and(atExtensionTrigger));
+    bindTransition(
+        SuperState.PRE_L2_LEFT, SuperState.SCORE_L2_LEFT, scoreReq.and(atExtensionTrigger));
 
     bindTransition(
         SuperState.SCORE_L2_LEFT,
@@ -381,9 +387,12 @@ public class Superstructure {
     bindTransition(
         SuperState.READY_CORAL_ARM,
         SuperState.PRE_L3_RIGHT,
-        preScoreReq.and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L3).and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
+        preScoreReq
+            .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L3)
+            .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
-    bindTransition(SuperState.PRE_L3_RIGHT, SuperState.SCORE_L3_RIGHT, scoreReq.and(atExtensionTrigger));
+    bindTransition(
+        SuperState.PRE_L3_RIGHT, SuperState.SCORE_L3_RIGHT, scoreReq.and(atExtensionTrigger));
 
     bindTransition(
         SuperState.SCORE_L3_RIGHT,
@@ -396,9 +405,12 @@ public class Superstructure {
     bindTransition(
         SuperState.READY_CORAL_ARM,
         SuperState.PRE_L3_LEFT,
-        preScoreReq.and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L3).and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
+        preScoreReq
+            .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L3)
+            .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
-    bindTransition(SuperState.PRE_L3_LEFT, SuperState.SCORE_L3_LEFT, scoreReq.and(atExtensionTrigger));
+    bindTransition(
+        SuperState.PRE_L3_LEFT, SuperState.SCORE_L3_LEFT, scoreReq.and(atExtensionTrigger));
 
     bindTransition(
         SuperState.SCORE_L3_LEFT,
@@ -412,9 +424,12 @@ public class Superstructure {
     bindTransition(
         SuperState.READY_CORAL_ARM,
         SuperState.PRE_L4_RIGHT,
-        preScoreReq.and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L4).and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
+        preScoreReq
+            .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L4)
+            .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
-    bindTransition(SuperState.PRE_L4_RIGHT, SuperState.SCORE_L4_RIGHT, scoreReq.and(atExtensionTrigger));
+    bindTransition(
+        SuperState.PRE_L4_RIGHT, SuperState.SCORE_L4_RIGHT, scoreReq.and(atExtensionTrigger));
 
     bindTransition(
         SuperState.SCORE_L4_RIGHT,
@@ -427,9 +442,12 @@ public class Superstructure {
     bindTransition(
         SuperState.READY_CORAL_ARM,
         SuperState.PRE_L4_LEFT,
-        preScoreReq.and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L4).and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
+        preScoreReq
+            .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L4)
+            .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
-    bindTransition(SuperState.PRE_L4_LEFT, SuperState.SCORE_L4_LEFT, scoreReq.and(atExtensionTrigger));
+    bindTransition(
+        SuperState.PRE_L4_LEFT, SuperState.SCORE_L4_LEFT, scoreReq.and(atExtensionTrigger));
 
     bindTransition(
         SuperState.SCORE_L4_LEFT,
@@ -465,17 +483,21 @@ public class Superstructure {
     bindTransition(
         SuperState.IDLE,
         SuperState.INTAKE_ALGAE_LOW_RIGHT,
-        intakeAlgaeReq.and(() -> Robot.getAlgaeIntakeTarget() == AlgaeIntakeTarget.LOW).and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
+        intakeAlgaeReq
+            .and(() -> Robot.getAlgaeIntakeTarget() == AlgaeIntakeTarget.LOW)
+            .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
     bindTransition(
         SuperState.INTAKE_ALGAE_LOW_RIGHT,
         SuperState.READY_ALGAE,
         new Trigger(arm::hasAlgae).debounce(0.1));
 
-        bindTransition(
+    bindTransition(
         SuperState.IDLE,
         SuperState.INTAKE_ALGAE_LOW_LEFT,
-        intakeAlgaeReq.and(() -> Robot.getAlgaeIntakeTarget() == AlgaeIntakeTarget.LOW).and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
+        intakeAlgaeReq
+            .and(() -> Robot.getAlgaeIntakeTarget() == AlgaeIntakeTarget.LOW)
+            .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
     bindTransition(
         SuperState.INTAKE_ALGAE_LOW_LEFT,
@@ -486,7 +508,9 @@ public class Superstructure {
     bindTransition(
         SuperState.IDLE,
         SuperState.INTAKE_ALGAE_HIGH_RIGHT,
-        intakeAlgaeReq.and(() -> Robot.getAlgaeIntakeTarget() == AlgaeIntakeTarget.HIGH).and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
+        intakeAlgaeReq
+            .and(() -> Robot.getAlgaeIntakeTarget() == AlgaeIntakeTarget.HIGH)
+            .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
     bindTransition(
         SuperState.INTAKE_ALGAE_HIGH_RIGHT,
@@ -496,7 +520,9 @@ public class Superstructure {
     bindTransition(
         SuperState.IDLE,
         SuperState.INTAKE_ALGAE_HIGH_LEFT,
-        intakeAlgaeReq.and(() -> Robot.getAlgaeIntakeTarget() == AlgaeIntakeTarget.HIGH).and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
+        intakeAlgaeReq
+            .and(() -> Robot.getAlgaeIntakeTarget() == AlgaeIntakeTarget.HIGH)
+            .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
     bindTransition(
         SuperState.INTAKE_ALGAE_HIGH_LEFT,
@@ -507,9 +533,12 @@ public class Superstructure {
     bindTransition(
         SuperState.READY_ALGAE,
         SuperState.PRE_BARGE_RIGHT,
-        preScoreReq.and(() -> Robot.getAlgaeScoreTarget() == AlgaeScoreTarget.BARGE).and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
+        preScoreReq
+            .and(() -> Robot.getAlgaeScoreTarget() == AlgaeScoreTarget.BARGE)
+            .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
-    bindTransition(SuperState.PRE_BARGE_RIGHT, SuperState.SCORE_BARGE_RIGHT, scoreReq.and(atExtensionTrigger));
+    bindTransition(
+        SuperState.PRE_BARGE_RIGHT, SuperState.SCORE_BARGE_RIGHT, scoreReq.and(atExtensionTrigger));
 
     bindTransition(
         SuperState.SCORE_BARGE_RIGHT,
@@ -520,9 +549,12 @@ public class Superstructure {
     bindTransition(
         SuperState.READY_ALGAE,
         SuperState.PRE_BARGE_LEFT,
-        preScoreReq.and(() -> Robot.getAlgaeScoreTarget() == AlgaeScoreTarget.BARGE).and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
+        preScoreReq
+            .and(() -> Robot.getAlgaeScoreTarget() == AlgaeScoreTarget.BARGE)
+            .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
-    bindTransition(SuperState.PRE_BARGE_LEFT, SuperState.SCORE_BARGE_LEFT, scoreReq.and(atExtensionTrigger));
+    bindTransition(
+        SuperState.PRE_BARGE_LEFT, SuperState.SCORE_BARGE_LEFT, scoreReq.and(atExtensionTrigger));
 
     bindTransition(
         SuperState.SCORE_BARGE_LEFT,
@@ -563,7 +595,8 @@ public class Superstructure {
   }
 
   public boolean stateIsIntakeAlgaeReef() {
-    return state == SuperState.INTAKE_ALGAE_HIGH_RIGHT || state == SuperState.INTAKE_ALGAE_LOW_RIGHT;
+    return state == SuperState.INTAKE_ALGAE_HIGH_RIGHT
+        || state == SuperState.INTAKE_ALGAE_LOW_RIGHT;
   }
 
   public boolean stateIsIdle() {

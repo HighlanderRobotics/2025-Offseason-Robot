@@ -25,13 +25,12 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   /**
-   * 0 for position is horizontal against bumper, positive is upwards.
-    we're in real life!! use degrees.
-    degrees -> Rotation2d gets handled in the constructor
-    Positive voltage is intaking, negative is outtaking. (TODO)
+   * 0 for position is horizontal against bumper, positive is upwards. we're in real life!! use
+   * degrees. degrees -> Rotation2d gets handled in the constructor Positive voltage is intaking,
+   * negative is outtaking. (TODO)
    */
   public enum IntakeState {
-    IDLE(130,0.0),
+    IDLE(130, 0.0),
     INTAKE_CORAL(0, 10.0),
     READY_CORAL_INTAKE(130, 1.0),
     HANDOFF(130, -5.0),

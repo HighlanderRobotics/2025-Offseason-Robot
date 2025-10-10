@@ -222,8 +222,14 @@ public class Robot extends LoggedRobot {
                             new Trigger(swerve::nearIntakeAlgaeOffsetPose)
                                 // TODO figure out trigger order of operations? also this is just
                                 // bad
-                                .and(() -> superstructure.atExtension(SuperState.INTAKE_ALGAE_HIGH_RIGHT))
-                                .or(() -> superstructure.atExtension(SuperState.INTAKE_ALGAE_LOW_RIGHT))),
+                                .and(
+                                    () ->
+                                        superstructure.atExtension(
+                                            SuperState.INTAKE_ALGAE_HIGH_RIGHT))
+                                .or(
+                                    () ->
+                                        superstructure.atExtension(
+                                            SuperState.INTAKE_ALGAE_LOW_RIGHT))),
                     swerve.approachAlgae()),
                 Commands.waitUntil(
                         new Trigger(swerve::nearAlgaeIntakePose)
@@ -288,13 +294,9 @@ public class Robot extends LoggedRobot {
                   algaeScoreTarget = AlgaeScoreTarget.BARGE;
                 }));
 
-    operator
-        .leftTrigger()
-        .onTrue(Commands.runOnce(() -> scoringSide = ScoringSide.LEFT));
+    operator.leftTrigger().onTrue(Commands.runOnce(() -> scoringSide = ScoringSide.LEFT));
 
-    operator
-        .rightTrigger()
-        .onTrue(Commands.runOnce(() -> scoringSide = ScoringSide.RIGHT));
+    operator.rightTrigger().onTrue(Commands.runOnce(() -> scoringSide = ScoringSide.RIGHT));
 
     // Enable/disable left handed auto align
     // TODO isn't this already accounted for by the autoaim method?
