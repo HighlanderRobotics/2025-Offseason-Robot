@@ -10,136 +10,137 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
 
-
 public class ElevatorIOReal implements ElevatorIO {
-    // TODO: ACTUAL IDS
-    private TalonFX leader = new TalonFX(0);
-    private TalonFX follower = new TalonFX(0);
-    
-    // Conversion from angle to distance happens in sensor to mechanism ratio
-    private final BaseStatusSignal leaderPositionMeters = leader.getPosition();
-    private final BaseStatusSignal leaderVelocityMetersPerSec = leader.getVelocity();
-    private final StatusSignal<Voltage> leaderVoltage = leader.getMotorVoltage();
-    private final StatusSignal<Current> leaderStatorCurrent = leader.getStatorCurrent();
-    private final StatusSignal<Current> leaderSupplyCurrent = leader.getSupplyCurrent();
-    private final StatusSignal<Temperature> leaderTemp = leader.getDeviceTemp();
+  // TODO: ACTUAL IDS
+  private TalonFX leader = new TalonFX(0);
+  private TalonFX follower = new TalonFX(0);
 
-    private final BaseStatusSignal followerPositionMeters = follower.getPosition();
-    private final BaseStatusSignal followerVelocityMetersPerSec = follower.getVelocity();
-    private final StatusSignal<Voltage> followerVoltage = follower.getMotorVoltage();
-    private final StatusSignal<Current> followerStatorCurrent = follower.getStatorCurrent();
-    private final StatusSignal<Current> followerSupplyCurrent = follower.getSupplyCurrent();
-    private final StatusSignal<Temperature> followerTemp = follower.getDeviceTemp();
+  // Conversion from angle to distance happens in sensor to mechanism ratio
+  private final BaseStatusSignal leaderPositionMeters = leader.getPosition();
+  private final BaseStatusSignal leaderVelocityMetersPerSec = leader.getVelocity();
+  private final StatusSignal<Voltage> leaderVoltage = leader.getMotorVoltage();
+  private final StatusSignal<Current> leaderStatorCurrent = leader.getStatorCurrent();
+  private final StatusSignal<Current> leaderSupplyCurrent = leader.getSupplyCurrent();
+  private final StatusSignal<Temperature> leaderTemp = leader.getDeviceTemp();
 
-    private VoltageOut voltageOut = new VoltageOut(0.0).withEnableFOC(true);
-    private DynamicMotionMagicVoltage motionMagicVoltage;
+  private final BaseStatusSignal followerPositionMeters = follower.getPosition();
+  private final BaseStatusSignal followerVelocityMetersPerSec = follower.getVelocity();
+  private final StatusSignal<Voltage> followerVoltage = follower.getMotorVoltage();
+  private final StatusSignal<Current> followerStatorCurrent = follower.getStatorCurrent();
+  private final StatusSignal<Current> followerSupplyCurrent = follower.getSupplyCurrent();
+  private final StatusSignal<Temperature> followerTemp = follower.getDeviceTemp();
 
-    public ElevatorIOReal() {
-        // TODO: CONFIGS ETC.
-        TalonFXConfiguration config = new TalonFXConfiguration();
-        
-        config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+  private VoltageOut voltageOut = new VoltageOut(0.0).withEnableFOC(true);
+  private DynamicMotionMagicVoltage motionMagicVoltage;
 
-        config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+  public ElevatorIOReal() {
+    // TODO: CONFIGS ETC.
+    TalonFXConfiguration config = new TalonFXConfiguration();
 
-        // Converts angular motion to linear motion
-        config.Feedback.SensorToMechanismRatio = ElevatorSubsystem.GEAR_RATIO / (Math.PI * ElevatorSubsystem.SPROCKET_DIAMETER_METERS);
+    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
-        // TODO: TUNE
-        config.Slot0.GravityType = GravityTypeValue.Elevator_Static;
-        config.Slot0.kS = 0.0;
-        config.Slot0.kG = 0.0;
-        config.Slot0.kV = 0.0;
-        config.Slot0.kP = 0.0;
-        config.Slot0.kD = 0.0;
+    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
-        // TODO: TUNE
-        config.CurrentLimits.StatorCurrentLimit = 80.0;
-        config.CurrentLimits.StatorCurrentLimitEnable = false;
-        config.CurrentLimits.SupplyCurrentLimit = 60.0;
-        config.CurrentLimits.SupplyCurrentLimitEnable = true;
-        config.CurrentLimits.SupplyCurrentLowerLimit = 40.0;
-        config.CurrentLimits.SupplyCurrentLowerTime = 0.25;
+    // Converts angular motion to linear motion
+    config.Feedback.SensorToMechanismRatio =
+        ElevatorSubsystem.GEAR_RATIO / (Math.PI * ElevatorSubsystem.SPROCKET_DIAMETER_METERS);
 
-        config.MotionMagic.MotionMagicAcceleration = ElevatorSubsystem.MAX_ACCELERATION;
+    // TODO: TUNE
+    config.Slot0.GravityType = GravityTypeValue.Elevator_Static;
+    config.Slot0.kS = 0.0;
+    config.Slot0.kG = 0.0;
+    config.Slot0.kV = 0.0;
+    config.Slot0.kP = 0.0;
+    config.Slot0.kD = 0.0;
 
-        motionMagicVoltage = 
-            new DynamicMotionMagicVoltage(0.0, config.MotionMagic.MotionMagicCruiseVelocity, config.MotionMagic.MotionMagicAcceleration, 100.0).withEnableFOC(true);
+    // TODO: TUNE
+    config.CurrentLimits.StatorCurrentLimit = 80.0;
+    config.CurrentLimits.StatorCurrentLimitEnable = false;
+    config.CurrentLimits.SupplyCurrentLimit = 60.0;
+    config.CurrentLimits.SupplyCurrentLimitEnable = true;
+    config.CurrentLimits.SupplyCurrentLowerLimit = 40.0;
+    config.CurrentLimits.SupplyCurrentLowerTime = 0.25;
 
-        leader.getConfigurator().apply(config);
-        follower.getConfigurator().apply(config);
+    config.MotionMagic.MotionMagicAcceleration = ElevatorSubsystem.MAX_ACCELERATION;
 
-        follower.setControl(new Follower(leader.getDeviceID(), false));
+    motionMagicVoltage =
+        new DynamicMotionMagicVoltage(
+                0.0,
+                config.MotionMagic.MotionMagicCruiseVelocity,
+                config.MotionMagic.MotionMagicAcceleration,
+                100.0)
+            .withEnableFOC(true);
 
-        BaseStatusSignal.setUpdateFrequencyForAll(50.0,
-            leaderPositionMeters,
-            leaderVelocityMetersPerSec,
-            leaderVoltage,
-            leaderStatorCurrent,
-            leaderSupplyCurrent,
-            leaderTemp,
-            followerPositionMeters,
-            followerVelocityMetersPerSec,
-            followerVoltage,
-            followerStatorCurrent,
-            followerSupplyCurrent,
-            followerTemp  
-        );
-        leader.optimizeBusUtilization();
-        follower.optimizeBusUtilization();
-    }
+    leader.getConfigurator().apply(config);
+    follower.getConfigurator().apply(config);
 
+    follower.setControl(new Follower(leader.getDeviceID(), false));
 
-    @Override
-    public void updateInputs(ElevatorIOInputs inputs) {
-        BaseStatusSignal.refreshAll(
-            leaderPositionMeters,
-            leaderVelocityMetersPerSec,
-            leaderVoltage,
-            leaderStatorCurrent,
-            leaderSupplyCurrent,
-            leaderTemp,
-            followerPositionMeters,
-            followerVelocityMetersPerSec,
-            followerVoltage,
-            followerStatorCurrent,
-            followerSupplyCurrent,
-            followerTemp  
-        );
+    BaseStatusSignal.setUpdateFrequencyForAll(
+        50.0,
+        leaderPositionMeters,
+        leaderVelocityMetersPerSec,
+        leaderVoltage,
+        leaderStatorCurrent,
+        leaderSupplyCurrent,
+        leaderTemp,
+        followerPositionMeters,
+        followerVelocityMetersPerSec,
+        followerVoltage,
+        followerStatorCurrent,
+        followerSupplyCurrent,
+        followerTemp);
+    leader.optimizeBusUtilization();
+    follower.optimizeBusUtilization();
+  }
 
-        inputs.leaderPositionMeters = leaderPositionMeters.getValueAsDouble();
-        inputs.leaderVelocityMetersPerSec = leaderVelocityMetersPerSec.getValueAsDouble();
-        inputs.leaderVoltage = leaderVoltage.getValueAsDouble();
-        inputs.leaderStatorCurrentAmps = leaderStatorCurrent.getValueAsDouble();
-        inputs.leaderSupplyCurrentAmps = leaderSupplyCurrent.getValueAsDouble();
-        inputs.leaderTempC = leaderTemp.getValueAsDouble();
+  @Override
+  public void updateInputs(ElevatorIOInputs inputs) {
+    BaseStatusSignal.refreshAll(
+        leaderPositionMeters,
+        leaderVelocityMetersPerSec,
+        leaderVoltage,
+        leaderStatorCurrent,
+        leaderSupplyCurrent,
+        leaderTemp,
+        followerPositionMeters,
+        followerVelocityMetersPerSec,
+        followerVoltage,
+        followerStatorCurrent,
+        followerSupplyCurrent,
+        followerTemp);
 
-        inputs.followerPositionMeters = followerPositionMeters.getValueAsDouble();
-        inputs.followerVelocityMetersPerSec = followerVelocityMetersPerSec.getValueAsDouble();
-        inputs.followerVoltage = followerVoltage.getValueAsDouble();
-        inputs.followerStatorCurrentAmps = followerStatorCurrent.getValueAsDouble();
-        inputs.followerSupplyCurrentAmps = followerSupplyCurrent.getValueAsDouble();
-        inputs.followerTempC = followerTemp.getValueAsDouble();
-    }
+    inputs.leaderPositionMeters = leaderPositionMeters.getValueAsDouble();
+    inputs.leaderVelocityMetersPerSec = leaderVelocityMetersPerSec.getValueAsDouble();
+    inputs.leaderVoltage = leaderVoltage.getValueAsDouble();
+    inputs.leaderStatorCurrentAmps = leaderStatorCurrent.getValueAsDouble();
+    inputs.leaderSupplyCurrentAmps = leaderSupplyCurrent.getValueAsDouble();
+    inputs.leaderTempC = leaderTemp.getValueAsDouble();
 
+    inputs.followerPositionMeters = followerPositionMeters.getValueAsDouble();
+    inputs.followerVelocityMetersPerSec = followerVelocityMetersPerSec.getValueAsDouble();
+    inputs.followerVoltage = followerVoltage.getValueAsDouble();
+    inputs.followerStatorCurrentAmps = followerStatorCurrent.getValueAsDouble();
+    inputs.followerSupplyCurrentAmps = followerSupplyCurrent.getValueAsDouble();
+    inputs.followerTempC = followerTemp.getValueAsDouble();
+  }
 
-    @Override
-    public void setVoltage(double volts) {
-        leader.setControl(voltageOut.withOutput(volts));
-    }
+  @Override
+  public void setVoltage(double volts) {
+    leader.setControl(voltageOut.withOutput(volts));
+  }
 
-    @Override
-    public void setPositionSetpoint(double positionMeters) {
-        leader.setControl(motionMagicVoltage.withPosition(positionMeters));
-    }
+  @Override
+  public void setPositionSetpoint(double positionMeters) {
+    leader.setControl(motionMagicVoltage.withPosition(positionMeters));
+  }
 
-    @Override
-    public void resetEncoder(double position) {
-        leader.setPosition(position);
-    }
+  @Override
+  public void resetEncoder(double position) {
+    leader.setPosition(position);
+  }
 }

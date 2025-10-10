@@ -4,36 +4,36 @@ import org.littletonrobotics.junction.AutoLog;
 
 public interface ElevatorIO {
 
-    @AutoLog
-    public static class ElevatorIOInputs {
-        public double leaderPositionMeters = 0.0;
-        public double leaderVelocityMetersPerSec = 0.0;
-        public double leaderStatorCurrentAmps = 0.0;
-        public double leaderSupplyCurrentAmps = 0.0;
-        public double leaderVoltage = 0.0;
-        public double leaderTempC = 0.0;
+  @AutoLog
+  public static class ElevatorIOInputs {
+    public double leaderPositionMeters = 0.0;
+    public double leaderVelocityMetersPerSec = 0.0;
+    public double leaderStatorCurrentAmps = 0.0;
+    public double leaderSupplyCurrentAmps = 0.0;
+    public double leaderVoltage = 0.0;
+    public double leaderTempC = 0.0;
 
-        public double followerPositionMeters = 0.0;
-        public double followerVelocityMetersPerSec = 0.0;
-        public double followerStatorCurrentAmps = 0.0;
-        public double followerSupplyCurrentAmps = 0.0;
-        public double followerVoltage = 0.0;
-        public double followerTempC = 0.0;
-    }
+    public double followerPositionMeters = 0.0;
+    public double followerVelocityMetersPerSec = 0.0;
+    public double followerStatorCurrentAmps = 0.0;
+    public double followerSupplyCurrentAmps = 0.0;
+    public double followerVoltage = 0.0;
+    public double followerTempC = 0.0;
+  }
 
-    void updateInputs(ElevatorIOInputs inputs);
+  void updateInputs(ElevatorIOInputs inputs);
 
-    void setPositionSetpoint(double positionMeters);
+  void setPositionSetpoint(double positionMeters);
 
-    void setVoltage(double volts);
+  void setVoltage(double volts);
 
-    void resetEncoder(double position);
+  void resetEncoder(double position);
 
-    default void stop() {
-        setVoltage(0.0);
-    }
+  default void stop() {
+    setVoltage(0.0);
+  }
 
-    default void resetEncoder() {
-        resetEncoder(0.0);
-    }
+  default void resetEncoder() {
+    resetEncoder(0.0);
+  }
 }

@@ -13,6 +13,7 @@ import frc.robot.arm.ArmSubsystem;
 import frc.robot.elevator.ElevatorIOReal;
 import frc.robot.elevator.ElevatorIOSim;
 import frc.robot.elevator.ElevatorSubsystem;
+import frc.robot.intake.IntakeIOReal;
 import frc.robot.intake.IntakeSubsystem;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -37,7 +38,7 @@ public class Robot extends LoggedRobot {
   private final ArmSubsystem arm =
       new ArmSubsystem(ROBOT_TYPE != RobotType.SIM ? new ArmIOReal() : new ArmIOSim());
 
-  private final IntakeSubsystem intake = new IntakeSubsystem();
+  private final IntakeSubsystem intake = new IntakeSubsystem(new IntakeIOReal());
 
   private final Superstructure superstructure = new Superstructure(elevator, arm, intake);
 
@@ -66,6 +67,8 @@ public class Robot extends LoggedRobot {
     }
     Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may
     // be added.
+
+    elevator.setDefaultCommand(elevator.setExtensionMeters(() -> 0.5));
   }
 
   @Override
