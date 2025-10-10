@@ -4,30 +4,36 @@ import org.littletonrobotics.junction.AutoLog;
 
 public interface ElevatorIO {
 
-  @AutoLog
-  public static class ElevatorIOInputs {
-    public double positionMeters = 0.0;
-    public double velocityMetersPerSec = 0.0;
-    public double appliedVolts = 0.0;
-    public double statorCurrentAmps = 0.0;
-    public double supplyCurrentAmps = 0.0;
-  }
+    @AutoLog
+    public static class ElevatorIOInputs {
+        public double leaderPositionMeters = 0.0;
+        public double leaderVelocityMetersPerSec = 0.0;
+        public double leaderStatorCurrentAmps = 0.0;
+        public double leaderSupplyCurrentAmps = 0.0;
+        public double leaderVoltage = 0.0;
+        public double leaderTempC = 0.0;
 
-  public void updateInputs(final ElevatorIOInputsAutoLogged inputs);
+        public double followerPositionMeters = 0.0;
+        public double followerVelocityMetersPerSec = 0.0;
+        public double followerStatorCurrentAmps = 0.0;
+        public double followerSupplyCurrentAmps = 0.0;
+        public double followerVoltage = 0.0;
+        public double followerTempC = 0.0;
+    }
 
-  public void setVoltage(final double volts);
+    void updateInputs(ElevatorIOInputs inputs);
 
-  public void setPositionTarget(final double meters);
+    void setPositionSetpoint(double positionMeters);
 
-  public void setCurrent(final double amps);
+    void setVoltage(double volts);
 
-  public default void stop() {
-    setVoltage(0.0);
-  }
+    void resetEncoder(double position);
 
-  public void resetEncoder(final double position);
+    default void stop() {
+        setVoltage(0.0);
+    }
 
-  public default void resetEncoder() {
-    resetEncoder(0.0);
-  }
+    default void resetEncoder() {
+        resetEncoder(0.0);
+    }
 }
