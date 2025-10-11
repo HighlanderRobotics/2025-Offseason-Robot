@@ -69,6 +69,11 @@ public class ElevatorIOSim implements ElevatorIO {
   }
 
   @Override
+  public void setCurrent(double amps) {
+      // We can't do current control in sim so this noops
+  }
+
+  @Override
   public void resetEncoder(final double position) {
     // sim always has a perfectly accurate encoder
   }

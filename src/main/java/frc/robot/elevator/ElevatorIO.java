@@ -27,6 +27,8 @@ public interface ElevatorIO {
 
   void setVoltage(double volts);
 
+  void setCurrent(double amps);
+
   void resetEncoder(double position);
 
   default void stop() {

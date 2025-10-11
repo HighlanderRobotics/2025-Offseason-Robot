@@ -5,6 +5,7 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.TorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
@@ -36,6 +37,7 @@ public class ElevatorIOReal implements ElevatorIO {
 
   private VoltageOut voltageOut = new VoltageOut(0.0).withEnableFOC(true);
   private DynamicMotionMagicVoltage motionMagicVoltage;
+  private TorqueCurrentFOC torqueCurrent = new TorqueCurrentFOC(0.0);
 
   public ElevatorIOReal() {
     // TODO: CONFIGS ETC.
@@ -135,6 +137,11 @@ public class ElevatorIOReal implements ElevatorIO {
   }
 
   @Override
+  public void setCurrent(double amps) {
+      leader.setControl(torqueCurrent.withOutput(amps));
+  }
+
+  @Override
   public void setPositionSetpoint(double positionMeters) {
     leader.setControl(motionMagicVoltage.withPosition(positionMeters));
   }
@@ -143,4 +150,5 @@ public class ElevatorIOReal implements ElevatorIO {
   public void resetEncoder(double position) {
     leader.setPosition(position);
   }
+  
 }
