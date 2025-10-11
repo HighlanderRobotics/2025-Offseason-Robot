@@ -9,7 +9,7 @@ import com.google.common.collect.EvictingQueue;
 import com.google.common.collect.Sets;
 import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.swerve.module.Module.ModuleConstants;
-import frc.robot.util.Tracer;
+import frc.robot.utils.Tracer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;

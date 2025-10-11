@@ -14,7 +14,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import frc.robot.swerve.SwerveSubsystem;
-import frc.robot.util.MaplePhoenixUtil;
+import frc.robot.utils.MaplePhoenixUtil;
 import org.ironmaple.simulation.drivesims.SwerveModuleSimulation;
 
 public class ModuleIOSim implements ModuleIO {

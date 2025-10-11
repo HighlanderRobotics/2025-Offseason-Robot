@@ -1,5 +1,7 @@
 package frc.robot.swerve;
 
+import choreo.trajectory.SwerveSample;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -15,6 +17,7 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.Robot.RobotType;
@@ -33,10 +36,12 @@ import frc.robot.swerve.odometry.PhoenixOdometryThread;
 import frc.robot.swerve.odometry.PhoenixOdometryThread.Samples;
 import frc.robot.swerve.odometry.PhoenixOdometryThread.SignalID;
 import frc.robot.swerve.odometry.PhoenixOdometryThread.SignalType;
-import frc.robot.util.Tracer;
+import frc.robot.utils.AutoAim;
+import frc.robot.utils.Tracer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -214,7 +219,8 @@ public class SwerveSubsystem extends SubsystemBase {
         lastModulePositions[moduleIndex] = modulePositions[moduleIndex];
       }
 
-      hasNullGyroRotation = !gyroInputs.isConnected || (sample.values().get(GYRO_SIGNAL_ID) == null);
+      hasNullGyroRotation =
+          !gyroInputs.isConnected || (sample.values().get(GYRO_SIGNAL_ID) == null);
 
       // Set DS alerts
       missingModuleData.set(hasNullModulePosition);
@@ -327,6 +333,97 @@ public class SwerveSubsystem extends SubsystemBase {
         });
   }
 
+  public Command autoAimToL1() {
+    // TODO
+    return Commands.none();
+  }
+
+  public boolean nearL1() {
+    // TODO
+    return true;
+  }
+
+  public boolean isNearL1Reef() {
+    // TODO
+    // Not sure why this is different from near l1??
+    return true;
+  }
+
+  public boolean isNearReef(double toleranceMeters) {
+    // TODO
+    return true;
+  }
+
+  public Command autoAimToL23() {
+    // TODO
+    return Commands.none();
+  }
+
+  public boolean nearL23() {
+    // TODO
+    return true;
+  }
+
+  public Command autoAimToL4() {
+    // TODO
+    return Commands.none();
+  }
+
+  public boolean nearL4() {
+    // TODO
+    return true;
+  }
+
+  public Command autoAimToOffsetAlgae() {
+    // TODO
+    return Commands.none();
+  }
+
+  public boolean nearIntakeAlgaeOffsetPose() {
+    // TODO
+    return true;
+  }
+
+  public Command approachAlgae() {
+    // TODO
+    return Commands.none();
+  }
+
+  public boolean nearAlgaeIntakePose() {
+    // TODO
+    return true;
+  }
+
+  public Command autoAimToProcessor() {
+    // TODO
+    return Commands.none();
+  }
+
+  public boolean nearProcessor() {
+    // TODO
+    return true;
+  }
+
+  public Command autoAimToBarge() {
+    // TODO
+    return Commands.none();
+  }
+
+  public boolean nearBarge() {
+    // TODO
+    return true;
+  }
+
+  public Command autoAimAuto(Supplier<Pose2d> pose) {
+    // TODO
+    return Commands.none();
+  }
+
+  public boolean isNearPoseAuto(Supplier<Pose2d> pose) {
+    // TODO
+    return true;
+  }
+
   /**
    * Generates a set of samples without using the async thread. Makes lots of Objects, so be careful
    * when using it irl!
@@ -381,11 +478,25 @@ public class SwerveSubsystem extends SubsystemBase {
     return ChassisSpeeds.fromRobotRelativeSpeeds(getVelocityRobotRelative(), getRotation());
   }
 
+  public boolean isNotMoving() {
+    return MathUtil.isNear(
+        0,
+        Math.hypot(
+            getVelocityRobotRelative().vxMetersPerSecond,
+            getVelocityRobotRelative().vyMetersPerSecond),
+        AutoAim.VELOCITY_TOLERANCE_METERSPERSECOND);
+  }
+
   /** Returns the module states (turn angles and drive velocities) for all of the modules. */
   @AutoLogOutput(key = "SwerveStates/Measured")
   private SwerveModuleState[] getModuleStates() {
     SwerveModuleState[] states =
         Arrays.stream(modules).map(Module::getState).toArray(SwerveModuleState[]::new);
     return states;
+  }
+
+  public Consumer<SwerveSample> choreoDriveController() {
+    // TODO
+    return null;
   }
 }
