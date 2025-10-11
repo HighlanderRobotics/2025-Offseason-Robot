@@ -70,7 +70,7 @@ public class ElevatorIOSim implements ElevatorIO {
 
   @Override
   public void setCurrent(double amps) {
-      // We can't do current control in sim so this noops
+    // We can't do current control in sim so this noops
   }
 
   @Override

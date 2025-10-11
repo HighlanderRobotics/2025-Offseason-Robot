@@ -138,7 +138,7 @@ public class ElevatorIOReal implements ElevatorIO {
 
   @Override
   public void setCurrent(double amps) {
-      leader.setControl(torqueCurrent.withOutput(amps));
+    leader.setControl(torqueCurrent.withOutput(amps));
   }
 
   @Override
@@ -150,5 +150,4 @@ public class ElevatorIOReal implements ElevatorIO {
   public void resetEncoder(double position) {
     leader.setPosition(position);
   }
-  
 }

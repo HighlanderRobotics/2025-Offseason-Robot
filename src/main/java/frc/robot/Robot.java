@@ -22,7 +22,6 @@ import frc.robot.climber.ClimberSubsystem;
 import frc.robot.elevator.ElevatorIOReal;
 import frc.robot.elevator.ElevatorIOSim;
 import frc.robot.elevator.ElevatorSubsystem;
-import frc.robot.intake.IntakeIOReal;
 import frc.robot.intake.IntakeSubsystem;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.utils.CommandXboxControllerSubsystem;
