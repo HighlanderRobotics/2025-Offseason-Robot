@@ -574,7 +574,7 @@ public class Superstructure {
     bindTransition(
         SuperState.SCORE_PROCESSOR,
         SuperState.IDLE,
-        new Trigger(arm::hasAlgae).negate().debounce(0.2).and(swerve::isNearProcessor).negate());
+        new Trigger(arm::hasAlgae).negate().debounce(0.2).and(swerve::nearProcessor).negate());
 
     // ---Climb---
     bindTransition(SuperState.IDLE, SuperState.PRE_CLIMB, preClimbReq);

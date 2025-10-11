@@ -1,0 +1,76 @@
+package frc.robot.swerve.odometry;
+
+import frc.robot.swerve.odometry.PhoenixOdometryThread.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.littletonrobotics.junction.LogTable;
+import org.littletonrobotics.junction.inputs.LoggableInputs;
+
+/** Provides an interface for high frequency sampling of robot odometry. */
+public interface OdometryThreadIO {
+  public static final int GYRO_MODULE_ID = -1;
+
+  // Allows logging of Samples
+  public class OdometryThreadIOInputs implements LoggableInputs {
+    public List<Samples> sampledStates = List.of();
+
+    @Override
+    public void toLog(LogTable table) {
+      final var timestamps = sampledStates.stream().mapToDouble(Samples::timestamp).toArray();
+      final Set<Integer> modIds = new HashSet();
+      for (int i = 0; i < sampledStates.size(); i++) {
+        final var sample = sampledStates.get(i);
+        for (var signal : sample.values().entrySet()) {
+          table.put(
+              "Data/" + i + " " + signal.getKey().type().toString() + " " + signal.getKey().modID(),
+              signal.getValue());
+          modIds.add(signal.getKey().modID());
+        }
+      }
+      // Remove Gyro/placeholder
+      modIds.remove(-1);
+      table.put("Module IDs", modIds.stream().mapToInt(Integer::intValue).toArray());
+      table.put("Timestamps", timestamps);
+    }
+
+    @Override
+    public void fromLog(LogTable table) {
+      sampledStates = List.of();
+      final var modIds = table.get("Module IDs").getIntegerArray();
+      final var timestamps = table.get("Timestamps").getDoubleArray();
+      for (int i = 0; i < sampledStates.size(); i++) {
+        var timestamp = timestamps[i];
+        try {
+          Map<SignalID, Double> values = new HashMap<SignalID, Double>();
+          for (var id : modIds) {
+            values.put(
+                new SignalID(SignalType.DRIVE, (int) id),
+                table.get("Data/" + i + " " + SignalType.DRIVE + " " + id).getDouble());
+            values.put(
+                new SignalID(SignalType.TURN, (int) id),
+                table.get("Data/" + i + " " + SignalType.TURN + " " + id).getDouble());
+          }
+          try {
+            values.put(
+                new SignalID(SignalType.GYRO, (int) -1),
+                table.get("Data/" + i + " " + SignalType.GYRO + " " + GYRO_MODULE_ID).getDouble());
+          } catch (NullPointerException e) {
+            // We don't have a gyro this loop ig
+          }
+          sampledStates.add(new Samples(timestamp, values));
+        } catch (NullPointerException e) {
+          System.out.println("Failed to get all swerve signals at " + timestamp);
+        }
+      }
+    }
+  }
+
+  public void updateInputs(OdometryThreadIOInputs inputs, double lastTimestamp);
+
+  public void start();
+
+  public void interrupt();
+}

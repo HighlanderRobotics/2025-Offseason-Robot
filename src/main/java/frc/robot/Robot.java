@@ -4,7 +4,12 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Meter;
+
 import com.ctre.phoenix6.SignalLogger;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -14,6 +19,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Robot.AlgaeIntakeTarget;
+import frc.robot.Robot.AlgaeScoreTarget;
+import frc.robot.Robot.CoralScoreTarget;
+import frc.robot.Robot.ScoringSide;
 import frc.robot.Superstructure.SuperState;
 import frc.robot.arm.ArmIOReal;
 import frc.robot.arm.ArmIOSim;
@@ -27,6 +36,10 @@ import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.utils.CommandXboxControllerSubsystem;
 import frc.robot.utils.FieldUtils.AlgaeIntakeTargets;
 import java.util.Optional;
+import org.ironmaple.simulation.SimulatedArena;
+import org.ironmaple.simulation.drivesims.COTS;
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -92,7 +105,32 @@ public class Robot extends LoggedRobot {
 
   private final IntakeSubsystem intake = new IntakeSubsystem();
   private final ClimberSubsystem climber = new ClimberSubsystem();
-  private final SwerveSubsystem swerve = new SwerveSubsystem();
+
+  // Maple Sim Stuff
+  private final DriveTrainSimulationConfig driveTrainSimConfig =
+      DriveTrainSimulationConfig.Default()
+          .withGyro(COTS.ofPigeon2())
+          // TODO: MAKE SURE THIS MODULE IS CORRECT
+          .withSwerveModule(
+              COTS.ofMark4n(
+                  DCMotor.getKrakenX60Foc(1),
+                  DCMotor.getKrakenX60Foc(1),
+                  // Still not sure where the 1.5 came from
+                  1.5,
+                  // Running l2+ swerve modules
+                  2))
+          .withTrackLengthTrackWidth(
+              Meter.of(SwerveSubsystem.SWERVE_CONSTANTS.getTrackWidthX()),
+              Meter.of(SwerveSubsystem.SWERVE_CONSTANTS.getTrackWidthY()))
+          .withBumperSize(
+              Meter.of(SwerveSubsystem.SWERVE_CONSTANTS.getBumperWidth()),
+              Meter.of(SwerveSubsystem.SWERVE_CONSTANTS.getBumperLength()))
+          .withRobotMass(SwerveSubsystem.SWERVE_CONSTANTS.getMass());
+
+  private final SwerveDriveSimulation swerveSimulation =
+      new SwerveDriveSimulation(driveTrainSimConfig, new Pose2d(3, 3, Rotation2d.kZero));
+  // Subsystem initialization
+  private final SwerveSubsystem swerve = new SwerveSubsystem(swerveSimulation);
 
   private final CommandXboxControllerSubsystem driver = new CommandXboxControllerSubsystem(0);
   private final CommandXboxControllerSubsystem operator = new CommandXboxControllerSubsystem(1);
@@ -255,7 +293,7 @@ public class Robot extends LoggedRobot {
         .whileTrue(
             Commands.parallel(
                 swerve.autoAimToBarge(),
-                Commands.waitUntil(swerve::isNearBarge)
+                Commands.waitUntil(swerve::nearBarge)
                     .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy())));
 
     // Operator - Set scoring/intaking levels
@@ -337,6 +375,20 @@ public class Robot extends LoggedRobot {
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
     superstructure.periodic();
+  }
+
+  @Override
+  public void simulationInit() {
+    // Sets the odometry pose to start at the same place as maple sim pose
+    swerve.resetPose(swerveSimulation.getSimulatedDriveTrainPose());
+  }
+
+  @Override
+  public void simulationPeriodic() {
+    // Update maple simulation
+    SimulatedArena.getInstance().simulationPeriodic();
+    // Log simulated pose
+    Logger.recordOutput("MapleSim/Pose", swerveSimulation.getSimulatedDriveTrainPose());
   }
 
   @Override
