@@ -9,7 +9,6 @@ import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
-
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Mass;
@@ -17,172 +16,170 @@ import frc.robot.swerve.module.Module.ModuleConstants;
 
 public class OffseasonBotSwerveConstants extends SwerveConstants {
 
-    @Override
-    public String getName() {
-        return "Offseason Bot";
-    }
+  @Override
+  public String getName() {
+    return "Offseason Bot";
+  }
 
-    @Override
-    public ModuleConstants getFrontLeftModuleConstants() {
-        // TODO Correct IDs, tune offsets
-        return new ModuleConstants(0, "Front Left",0, 1, 0, Rotation2d.fromRotations(0.0));
-    }
+  @Override
+  public ModuleConstants getFrontLeftModuleConstants() {
+    // TODO Correct IDs, tune offsets
+    return new ModuleConstants(0, "Front Left", 0, 1, 0, Rotation2d.fromRotations(0.0));
+  }
 
-    @Override
-    public ModuleConstants getFrontRightModuleConstants() {
-        // TODO Correct IDs, tune offsets
-        return new ModuleConstants(1, "Front Right",2, 3, 1, Rotation2d.fromRotations(0.0));
-    }
+  @Override
+  public ModuleConstants getFrontRightModuleConstants() {
+    // TODO Correct IDs, tune offsets
+    return new ModuleConstants(1, "Front Right", 2, 3, 1, Rotation2d.fromRotations(0.0));
+  }
 
-    @Override
-    public ModuleConstants getBackLeftModuleConstants() {
-        // TODO Correct IDs, tune offsets
-        return new ModuleConstants(2, "Back Left", 4, 5, 2, Rotation2d.fromRotations(0.0));
-    }
+  @Override
+  public ModuleConstants getBackLeftModuleConstants() {
+    // TODO Correct IDs, tune offsets
+    return new ModuleConstants(2, "Back Left", 4, 5, 2, Rotation2d.fromRotations(0.0));
+  }
 
-    @Override
-    public ModuleConstants getBackRightModuleConstants() {
-        // TODO Correct IDs, tune offsets
-        return new ModuleConstants(3, "Back Right", 6, 7, 3, Rotation2d.fromRotations(0.0));
-    }
+  @Override
+  public ModuleConstants getBackRightModuleConstants() {
+    // TODO Correct IDs, tune offsets
+    return new ModuleConstants(3, "Back Right", 6, 7, 3, Rotation2d.fromRotations(0.0));
+  }
 
-    @Override
-    public int getGyroID() {
-        // TODO ACTUAL ID
-        return 0;
-    }
+  @Override
+  public int getGyroID() {
+    // TODO ACTUAL ID
+    return 0;
+  }
 
-    @Override
-    public TalonFXConfiguration getTurnConfiguration(int cancoderID) {
-        var turnConfig = new TalonFXConfiguration();
-        // Current limits
-        turnConfig.CurrentLimits.SupplyCurrentLimit = 20.0;
-        turnConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-        // Inverts
-        turnConfig.MotorOutput.Inverted =
-            getTurnMotorInverted()
-                ? InvertedValue.Clockwise_Positive
-                : InvertedValue.CounterClockwise_Positive;
-        turnConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        // Fused Cancoder
-        turnConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
-        turnConfig.Feedback.FeedbackRemoteSensorID = cancoderID;
-        turnConfig.Feedback.RotorToSensorRatio = getTurnGearRatio();
-        turnConfig.Feedback.SensorToMechanismRatio = 1.0;
-        turnConfig.Feedback.FeedbackRotorOffset = 0.0;
-        // Controls Gains
-        // TODO: TUNE
-        // Copied from Kelpie
-        turnConfig.Slot0.kV = 0.42962962963; // ((5800 / 60) / getTurnGearRatio()) / 12
-        turnConfig.Slot0.kA = 0.031543;
-        turnConfig.Slot0.kS = 0.27;
-        turnConfig.Slot0.kP = 20.0;
-        turnConfig.Slot0.kD = 0.68275;
-        turnConfig.MotionMagic.MotionMagicCruiseVelocity = (5500 / 60) / getTurnGearRatio();
-        turnConfig.MotionMagic.MotionMagicAcceleration = (5500 / 60) / (getTurnGearRatio() * 0.005);
-        turnConfig.ClosedLoopGeneral.ContinuousWrap = true;
+  @Override
+  public TalonFXConfiguration getTurnConfiguration(int cancoderID) {
+    var turnConfig = new TalonFXConfiguration();
+    // Current limits
+    turnConfig.CurrentLimits.SupplyCurrentLimit = 20.0;
+    turnConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+    // Inverts
+    turnConfig.MotorOutput.Inverted =
+        getTurnMotorInverted()
+            ? InvertedValue.Clockwise_Positive
+            : InvertedValue.CounterClockwise_Positive;
+    turnConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    // Fused Cancoder
+    turnConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
+    turnConfig.Feedback.FeedbackRemoteSensorID = cancoderID;
+    turnConfig.Feedback.RotorToSensorRatio = getTurnGearRatio();
+    turnConfig.Feedback.SensorToMechanismRatio = 1.0;
+    turnConfig.Feedback.FeedbackRotorOffset = 0.0;
+    // Controls Gains
+    // TODO: TUNE
+    // Copied from Kelpie
+    turnConfig.Slot0.kV = 0.42962962963; // ((5800 / 60) / getTurnGearRatio()) / 12
+    turnConfig.Slot0.kA = 0.031543;
+    turnConfig.Slot0.kS = 0.27;
+    turnConfig.Slot0.kP = 20.0;
+    turnConfig.Slot0.kD = 0.68275;
+    turnConfig.MotionMagic.MotionMagicCruiseVelocity = (5500 / 60) / getTurnGearRatio();
+    turnConfig.MotionMagic.MotionMagicAcceleration = (5500 / 60) / (getTurnGearRatio() * 0.005);
+    turnConfig.ClosedLoopGeneral.ContinuousWrap = true;
 
-        return turnConfig;
-    }
+    return turnConfig;
+  }
 
-    @Override
-    public TalonFXConfiguration getDriveConfiguration() {
-        var driveConfig = new TalonFXConfiguration();
-        // Current limits
-        driveConfig.CurrentLimits.SupplyCurrentLimit = 40.0;
-        driveConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-        driveConfig.CurrentLimits.StatorCurrentLimit = 120.0;
-        driveConfig.CurrentLimits.StatorCurrentLimitEnable = true;
-        // Inverts
-        driveConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-        driveConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        // Sensor
-        // Meters per second
-        driveConfig.Feedback.SensorToMechanismRatio = getDriveRotorToMeters();
-        // Current control gains
-        // Gains copied from Kelpie Swerve Constants
-        // May need tuning
-        driveConfig.Slot0.kV = 5.0;
-        // kT (stall torque / stall current) converted to linear wheel frame
-        driveConfig.Slot0.kA = 0.0; // (9.37 / 483.0) / getDriveRotorToMeters(); // 3.07135116146;
-        driveConfig.Slot0.kS = 10.0;
-        driveConfig.Slot0.kP = 300.0;
-        driveConfig.Slot0.kD = 0.0; // 1.0;
+  @Override
+  public TalonFXConfiguration getDriveConfiguration() {
+    var driveConfig = new TalonFXConfiguration();
+    // Current limits
+    driveConfig.CurrentLimits.SupplyCurrentLimit = 40.0;
+    driveConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+    driveConfig.CurrentLimits.StatorCurrentLimit = 120.0;
+    driveConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+    // Inverts
+    driveConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    driveConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    // Sensor
+    // Meters per second
+    driveConfig.Feedback.SensorToMechanismRatio = getDriveRotorToMeters();
+    // Current control gains
+    // Gains copied from Kelpie Swerve Constants
+    // May need tuning
+    driveConfig.Slot0.kV = 5.0;
+    // kT (stall torque / stall current) converted to linear wheel frame
+    driveConfig.Slot0.kA = 0.0; // (9.37 / 483.0) / getDriveRotorToMeters(); // 3.07135116146;
+    driveConfig.Slot0.kS = 10.0;
+    driveConfig.Slot0.kP = 300.0;
+    driveConfig.Slot0.kD = 0.0; // 1.0;
 
-        driveConfig.TorqueCurrent.TorqueNeutralDeadband = 10.0;
+    driveConfig.TorqueCurrent.TorqueNeutralDeadband = 10.0;
 
-        driveConfig.MotionMagic.MotionMagicCruiseVelocity = getMaxLinearSpeed();
-        driveConfig.MotionMagic.MotionMagicAcceleration = getMaxLinearAcceleration();
+    driveConfig.MotionMagic.MotionMagicCruiseVelocity = getMaxLinearSpeed();
+    driveConfig.MotionMagic.MotionMagicAcceleration = getMaxLinearAcceleration();
 
-        return driveConfig;
-    }
+    return driveConfig;
+  }
 
-    @Override
-    public CANcoderConfiguration getCancoderConfiguration(Rotation2d cancoderOffset) {
-        final var cancoderConfig = new CANcoderConfiguration();
-        cancoderConfig.MagnetSensor.MagnetOffset = cancoderOffset.getRotations();
-        cancoderConfig.MagnetSensor.SensorDirection =
-            getTurnMotorInverted()
-                ? SensorDirectionValue.CounterClockwise_Positive
-                : SensorDirectionValue.Clockwise_Positive;
-        return cancoderConfig;
-    }
+  @Override
+  public CANcoderConfiguration getCancoderConfiguration(Rotation2d cancoderOffset) {
+    final var cancoderConfig = new CANcoderConfiguration();
+    cancoderConfig.MagnetSensor.MagnetOffset = cancoderOffset.getRotations();
+    cancoderConfig.MagnetSensor.SensorDirection =
+        getTurnMotorInverted()
+            ? SensorDirectionValue.CounterClockwise_Positive
+            : SensorDirectionValue.Clockwise_Positive;
+    return cancoderConfig;
+  }
 
-    @Override
-    public double getBumperLength() {
-        return Units.inchesToMeters(36.6);
-    }
+  @Override
+  public double getBumperLength() {
+    return Units.inchesToMeters(36.6);
+  }
 
-    @Override
-    public double getBumperWidth() {
-        return Units.inchesToMeters(36.6);
-    }
+  @Override
+  public double getBumperWidth() {
+    return Units.inchesToMeters(36.6);
+  }
 
-    @Override
-    public double getDriveGearRatio() {
-        // For SDS Mk4i L2 swerve
-        return 6.75;
-    }
+  @Override
+  public double getDriveGearRatio() {
+    // For SDS Mk4i L2 swerve
+    return 6.75;
+  }
 
-    @Override
-    public double getTurnGearRatio() {
-        // For Mk4i swerve
-        return 150.0 / 7.0;
-    }
+  @Override
+  public double getTurnGearRatio() {
+    // For Mk4i swerve
+    return 150.0 / 7.0;
+  }
 
-    @Override
-    public Mass getMass() {
-        // 115.67 lb is weight of robot + battery. 28.95 lb is weight of bumpers
-        return Pound.of(115.76 + 28.95);
-    }
+  @Override
+  public Mass getMass() {
+    // 115.67 lb is weight of robot + battery. 28.95 lb is weight of bumpers
+    return Pound.of(115.76 + 28.95);
+  }
 
-    @Override
-    public double getMaxLinearAcceleration() {
-        // 9.0 Nm is slightly less than x60 stall torque (w) (9.37 Nm)
-        // a = F/m
-        // F = w/d
-        // d = distance torque is applied to
-        // Does this make sense??
-        // It comes out to like 3 m/s^2 (max speed in 1.5 seconds roughly)
-        // Kelpie's was 14 but it seemed arbitrary...
-        return ((9.37 * getDriveGearRatio()) / getDriveRotorToMeters()) / getMass().in(Kilogram);
-    }
+  @Override
+  public double getMaxLinearAcceleration() {
+    // 9.0 Nm is slightly less than x60 stall torque (w) (9.37 Nm)
+    // a = F/m
+    // F = w/d
+    // d = distance torque is applied to
+    // Does this make sense??
+    // It comes out to like 3 m/s^2 (max speed in 1.5 seconds roughly)
+    // Kelpie's was 14 but it seemed arbitrary...
+    return ((9.37 * getDriveGearRatio()) / getDriveRotorToMeters()) / getMass().in(Kilogram);
+  }
 
-    @Override
-    public double getMaxLinearSpeed() {
-        // For SDS Mk4i L2 swerve with Kraken x60 FOC for drive
-        return Units.feetToMeters(15.0);
-    }
+  @Override
+  public double getMaxLinearSpeed() {
+    // For SDS Mk4i L2 swerve with Kraken x60 FOC for drive
+    return Units.feetToMeters(15.0);
+  }
 
-    @Override
-    public double getTrackWidthX() {
-        return Units.inchesToMeters(23.729);
-    }
+  @Override
+  public double getTrackWidthX() {
+    return Units.inchesToMeters(23.729);
+  }
 
-    @Override
-    public double getTrackWidthY() {
-        return Units.inchesToMeters(23.729);
-    }
-    
-    
+  @Override
+  public double getTrackWidthY() {
+    return Units.inchesToMeters(23.729);
+  }
 }
