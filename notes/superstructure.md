@@ -1,0 +1,84 @@
+
+# Superstructure Graph
+
+[Google doc w/screenshots here](https://docs.google.com/document/d/1l7MigoxtVseHWCiXcUjIAOOn5Q1dl7hid5luzBnOgzE/edit?tab=t.0)
+
+```mermaid
+%%{init: {"flowchart": {"defaultRenderer": "elk"}} }%%
+graph TD;
+
+IDLE
+
+subgraph CORAL
+subgraph intakeCoral [INTAKE_CORAL]
+
+IDLE --> INTAKE_CORAL_GROUND
+INTAKE_CORAL_GROUND --> READY_CORAL_INTAKE
+
+IDLE --> INTAKE_CORAL_STACK
+INTAKE_CORAL_STACK --> READY_CORAL_ARM
+
+end
+
+subgraph handoff [HANDOFF]
+READY_CORAL_INTAKE --> PRE_HANDOFF
+PRE_HANDOFF --> HANDOFF
+HANDOFF --> READY_CORAL_ARM
+
+end
+
+subgraph SCORE_CORAL
+
+READY_CORAL_INTAKE --> PRE_L1
+PRE_L1 --> L1
+L1 --> IDLE
+
+READY_CORAL_ARM --> PRE_L2
+PRE_L2 --> IDLE
+
+READY_CORAL_ARM --> PRE_L3
+PRE_L3 --> IDLE
+
+READY_CORAL_ARM --> PRE_L4
+PRE_L4 --> IDLE
+
+end
+
+end
+
+subgraph ALGAE
+
+subgraph INTAKE_ALGAE
+
+IDLE --> INTAKE_ALGAE_REEF_HIGH
+INTAKE_ALGAE_REEF_HIGH --> READY_ALGAE
+
+IDLE --> INTAKE_ALGAE_REEF_LOW
+INTAKE_ALGAE_REEF_LOW --> READY_ALGAE
+
+IDLE --> INTAKE_ALGAE_GROUND
+INTAKE_ALGAE_GROUND --> READY_ALGAE
+
+IDLE --> INTAKE_ALGAE_STACK
+INTAKE_ALGAE_STACK --> READY_ALGAE
+
+end
+
+subgraph SCORE_ALGAE
+
+READY_ALGAE --> PRE_BARGE
+PRE_BARGE --> SCORE_BARGE
+SCORE_BARGE --> IDLE
+
+READY_ALGAE --> PRE_PROCESSOR
+PRE_PROCESSOR --> PROCESSOR
+PROCESSOR --> IDLE
+
+end
+
+end
+
+subgraph climb [CLIMB]
+IDLE --> PRE_CLIMB
+PRE_CLIMB --> CLIMB
+end
