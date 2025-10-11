@@ -19,7 +19,7 @@ Intake Rollers (X44) | 13
 Routing Leader (X44) | 14
 Routing Follower (X44) | 15
 Climber Pivot (X60) | 16
-Climber Rollers (X??) | 17
+Climber Rollers (X44) | 17
 Front Left Encoder (CANcoder) | 0
 Front Right Encoder (CANcoder) | 1
 Back Left Encoder (CANcoder) | 2
