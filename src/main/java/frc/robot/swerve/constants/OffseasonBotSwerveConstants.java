@@ -23,31 +23,30 @@ public class OffseasonBotSwerveConstants extends SwerveConstants {
 
   @Override
   public ModuleConstants getFrontLeftModuleConstants() {
-    // TODO Correct IDs, tune offsets
+    // TODO tune offsets
     return new ModuleConstants(0, "Front Left", 0, 1, 0, Rotation2d.fromRotations(0.0));
   }
 
   @Override
   public ModuleConstants getFrontRightModuleConstants() {
-    // TODO Correct IDs, tune offsets
+    // TODO tune offsets
     return new ModuleConstants(1, "Front Right", 2, 3, 1, Rotation2d.fromRotations(0.0));
   }
 
   @Override
   public ModuleConstants getBackLeftModuleConstants() {
-    // TODO Correct IDs, tune offsets
+    // TODO tune offsets
     return new ModuleConstants(2, "Back Left", 4, 5, 2, Rotation2d.fromRotations(0.0));
   }
 
   @Override
   public ModuleConstants getBackRightModuleConstants() {
-    // TODO Correct IDs, tune offsets
+    // TODO tune offsets
     return new ModuleConstants(3, "Back Right", 6, 7, 3, Rotation2d.fromRotations(0.0));
   }
 
   @Override
   public int getGyroID() {
-    // TODO ACTUAL ID
     return 0;
   }
 
