@@ -2,28 +2,26 @@ package frc.robot.arm;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.cancoder.CANcoderIO;
+import frc.robot.cancoder.CANcoderIOInputsAutoLogged;
 import frc.robot.pivot.PivotIO;
-import frc.robot.pivot.PivotIOInputsAutoLogged;
 import frc.robot.roller.RollerIO;
-import frc.robot.roller.RollerIOInputsAutoLogged;
 import frc.robot.rollerpivot.RollerPivotSubsystem;
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 public class ArmSubsystem extends RollerPivotSubsystem {
   public static final double PIVOT_RATIO = (44.0 / 16.0) * 23;
   public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(180);
   public static final Rotation2d MIN_ANGLE = Rotation2d.fromDegrees(0);
-  private final RollerIOInputsAutoLogged rollerInputs = new RollerIOInputsAutoLogged();
-  private final PivotIOInputsAutoLogged pivotInputs = new PivotIOInputsAutoLogged();
-  private final RollerIO rollerIO;
-  private final PivotIO pivotIO;
-  private final String name;
+  public static final double GAME_PIECE_CURRENT_THRESHOLD = 20.0;
 
-  public ArmSubsystem(RollerIO rollerIO, PivotIO pivotIO, String name) {
+  private final CANcoderIO cancoderIO;
+  private final CANcoderIOInputsAutoLogged cancoderInputs = new CANcoderIOInputsAutoLogged();
+
+  public ArmSubsystem(RollerIO rollerIO, PivotIO pivotIO, CANcoderIO cancoderIO, String name) {
     super(rollerIO, pivotIO, name);
-    this.rollerIO = rollerIO;
-    this.pivotIO = pivotIO;
-    this.name = name;
+    this.cancoderIO = cancoderIO;
   }
 
   @AutoLogOutput(key = "Arm/State")
@@ -68,9 +66,20 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     }
   }
 
+  public Rotation2d getCANcoderPosition() {
+    return cancoderInputs.cancoderPosition;
+  }
+
+  @AutoLogOutput(key = "Arm/Has GamePiece")
+  public boolean hasGamePiece() {
+    return (Math.abs(currentFilterValue) > GAME_PIECE_CURRENT_THRESHOLD);
+  }
+
   @Override
   public void periodic() {
     super.periodic();
+    cancoderIO.updateInputs(cancoderInputs);
+    Logger.processInputs("Arm/CANcoder", cancoderInputs);
   }
 
   public Command setStateAngleAndVoltage(ArmState state) {

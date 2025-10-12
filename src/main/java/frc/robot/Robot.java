@@ -15,12 +15,13 @@ import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.arm.ArmSubsystem;
+import frc.robot.cancoder.CANcoderIOReal;
+import frc.robot.canrange.CANrangeIOReal;
 import frc.robot.climber.ClimberSubsystem;
 import frc.robot.elevator.ElevatorIOReal;
 import frc.robot.elevator.ElevatorIOSim;
 import frc.robot.elevator.ElevatorSubsystem;
 import frc.robot.intake.IntakeSubsystem;
-import frc.robot.pivot.PivotCANcoderIOReal;
 import frc.robot.pivot.PivotIOReal;
 import frc.robot.pivot.PivotIOSim;
 import frc.robot.roller.RollerIOReal;
@@ -99,8 +100,9 @@ public class Robot extends LoggedRobot {
                   new ProfiledPIDController(
                       0.5, 0.0, 0.0, new TrapezoidProfile.Constraints(15, 1))),
           ROBOT_TYPE != RobotType.SIM
-              ? new PivotCANcoderIOReal(15, 16, pivotConfig(20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0))
+              ? new PivotIOReal(15, pivotConfig(20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0))
               : new PivotIOSim((44.0 / 16.0) * 23, 0.0, 180.0, 23.0),
+          ROBOT_TYPE != RobotType.SIM ? new CANcoderIOReal(16) : null,
           "Arm");
 
   private final IntakeSubsystem intake =
@@ -116,6 +118,8 @@ public class Robot extends LoggedRobot {
           ROBOT_TYPE != RobotType.SIM
               ? new PivotIOReal(18, pivotConfig(20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0))
               : new PivotIOSim((44.0 / 16.0) * 23, 0.0, 90.0, 15),
+          ROBOT_TYPE != RobotType.SIM ? new CANrangeIOReal(19) : null,
+          ROBOT_TYPE != RobotType.SIM ? new CANrangeIOReal(19) : null,
           "Intake");
 
   private final ClimberSubsystem climber =

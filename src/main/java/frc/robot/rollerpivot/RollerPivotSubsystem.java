@@ -1,7 +1,10 @@
 package frc.robot.rollerpivot;
 
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.Robot.RobotType;
@@ -9,6 +12,7 @@ import frc.robot.pivot.PivotIO;
 import frc.robot.pivot.PivotIOInputsAutoLogged;
 import frc.robot.roller.RollerIO;
 import frc.robot.roller.RollerIOInputsAutoLogged;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class RollerPivotSubsystem extends SubsystemBase {
@@ -17,6 +21,9 @@ public class RollerPivotSubsystem extends SubsystemBase {
   private final RollerIO rollerIO;
   private final PivotIO pivotIO;
   private final String name;
+
+  private LinearFilter currentFilter = LinearFilter.movingAverage(10);
+  @AutoLogOutput public double currentFilterValue = 0.0;
 
   public RollerPivotSubsystem(RollerIO rollerIO, PivotIO pivotIO, String name) {
     this.rollerIO = rollerIO;
@@ -36,11 +43,39 @@ public class RollerPivotSubsystem extends SubsystemBase {
         });
   }
 
+  public Command setPivotVoltage(double volts) {
+    return this.run(() -> pivotIO.setMotorVoltage(volts));
+  }
+
+  public Rotation2d getAngle() {
+    return pivotInputs.position;
+  }
+
+  public double getVoltage() {
+    return pivotInputs.appliedVoltage;
+  }
+
+  public boolean isNear(Rotation2d target) {
+    return MathUtil.isNear(target.getDegrees(), getAngle().getDegrees(), 15.0);
+  }
+
+  public Command zeroPivot() {
+    return Commands.runOnce(() -> pivotIO.resetEncoder(0.0)).ignoringDisable(true);
+  }
+
+  public double getStatorCurrentAmps() {
+    return currentFilterValue;
+  }
+
   @Override
   public void periodic() {
     pivotIO.updateInputs(pivotInputs);
     Logger.processInputs(name + "/Pivot", pivotInputs);
     rollerIO.updateInputs(rollerInputs);
     Logger.processInputs(name + "/Roller", rollerInputs);
+
+    currentFilterValue = currentFilter.calculate(rollerInputs.statorCurrentAmps);
+    if (Robot.ROBOT_TYPE != RobotType.REAL)
+      Logger.recordOutput(name + "/Filtered Current", currentFilterValue);
   }
 }
