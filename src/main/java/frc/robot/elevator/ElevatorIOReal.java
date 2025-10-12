@@ -19,8 +19,8 @@ import edu.wpi.first.units.measure.Voltage;
 
 public class ElevatorIOReal implements ElevatorIO {
   // init motors
-  private final TalonFX motor = new TalonFX(0, "*"); // put correct ID
-  private final TalonFX follower = new TalonFX(1, "*"); // put correct ID
+  private final TalonFX motor = new TalonFX(17, "*"); // put correct ID
+  private final TalonFX follower = new TalonFX(18, "*"); // put correct ID
 
   private final VoltageOut voltageOut = new VoltageOut(0.0).withEnableFOC(true);
   private final TorqueCurrentFOC torque = new TorqueCurrentFOC(0.0);
