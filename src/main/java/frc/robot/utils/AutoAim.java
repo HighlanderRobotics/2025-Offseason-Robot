@@ -2,10 +2,12 @@ package frc.robot.utils;
 
 import choreo.util.ChoreoAllianceFlipUtil;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
 import frc.robot.utils.FieldUtils.AlgaeIntakeTargets;
 import frc.robot.utils.FieldUtils.CoralTargets;
@@ -34,6 +36,34 @@ public class AutoAim {
   public static final double ROTATION_TOLERANCE_RADIANS = Units.degreesToRadians(2.0);
   public static final double VELOCITY_TOLERANCE_METERSPERSECOND = 0.5;
   public static final double INITIAL_REEF_KEEPOFF_DISTANCE_METERS = -0.1;
+
+  static final ProfiledPIDController VX_CONTROLLER =
+      new ProfiledPIDController(
+          10.0, 0.01, 0.02, new Constraints(MAX_AUTOAIM_SPEED, MAX_AUTOAIM_ACCELERATION));
+  static final ProfiledPIDController VY_CONTROLLER =
+      new ProfiledPIDController(
+          10.0, 0.01, 0.02, new Constraints(MAX_AUTOAIM_SPEED, MAX_AUTOAIM_ACCELERATION));
+  static final ProfiledPIDController HEADING_CONTROLLER =
+      new ProfiledPIDController(
+          6.0, 0.0, 0.0, new Constraints(MAX_ANGULAR_SPEED, MAX_ANGULAR_ACCELERATION));
+
+  public static void resetPIDs(Pose2d robotPos, ChassisSpeeds robotVelocityFieldRelative) {
+    VX_CONTROLLER.reset(robotPos.getX(), robotVelocityFieldRelative.vxMetersPerSecond);
+    VY_CONTROLLER.reset(robotPos.getY(), robotVelocityFieldRelative.vyMetersPerSecond);
+    HEADING_CONTROLLER.reset(
+        robotPos.getRotation().getRadians(), robotVelocityFieldRelative.omegaRadiansPerSecond);
+  }
+
+  public static ChassisSpeeds calculateSpeeds(Pose2d robotPose, Pose2d target) {
+    return new ChassisSpeeds(
+        VX_CONTROLLER.calculate(robotPose.getX(), target.getX())
+            + VX_CONTROLLER.getSetpoint().velocity,
+        VY_CONTROLLER.calculate(robotPose.getY(), target.getY())
+            + VY_CONTROLLER.getSetpoint().velocity,
+        HEADING_CONTROLLER.calculate(
+                robotPose.getRotation().getRadians(), robotPose.getRotation().getRadians())
+            + HEADING_CONTROLLER.getSetpoint().velocity);
+  }
 
   // public static Command translateToPose(SwerveSubsystem swerve, Supplier<Pose2d> target) {
   //   return translateToPose(swerve, target, () -> new ChassisSpeeds());
