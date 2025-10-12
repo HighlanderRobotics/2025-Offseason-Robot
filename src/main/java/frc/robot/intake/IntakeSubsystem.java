@@ -91,6 +91,7 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
     return rearCanrangeInputs.distanceCm;
   }
 
+  @AutoLogOutput(key = "Intake/HasGamePiece")
   public boolean hasGamePiece() {
     return getfrontCanrangePosition() < 10.0 || getRearCanrangePosition() < 10.0;
   }

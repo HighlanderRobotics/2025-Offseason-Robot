@@ -2,6 +2,8 @@ package frc.robot.arm;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.cancoder.CANcoderIO;
 import frc.robot.cancoder.CANcoderIOInputsAutoLogged;
 import frc.robot.pivot.PivotIO;
@@ -14,10 +16,17 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public static final double PIVOT_RATIO = (44.0 / 16.0) * 23;
   public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(180);
   public static final Rotation2d MIN_ANGLE = Rotation2d.fromDegrees(0);
-  public static final double GAME_PIECE_CURRENT_THRESHOLD = 20.0;
+  // public static final double GAME_PIECE_CURRENT_THRESHOLD = 20.0;
+  public static final double ALGAE_INTAKE_VOLTAGE = 8.0;
+  public static final double CORAL_INTAKE_VOLTAGE = 5.0;
+  public static final double ALGAE_CURRENT_THRESHOLD = 20.0;
+  public static final double CORAL_CURRENT_THRESHOLD = 20.0;
 
   private final CANcoderIO cancoderIO;
   private final CANcoderIOInputsAutoLogged cancoderInputs = new CANcoderIOInputsAutoLogged();
+
+  @AutoLogOutput public boolean hasAlgae = false;
+  @AutoLogOutput public boolean hasCoral = false;
 
   public ArmSubsystem(RollerIO rollerIO, PivotIO pivotIO, CANcoderIO cancoderIO, String name) {
     super(rollerIO, pivotIO, name);
@@ -70,9 +79,27 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     return cancoderInputs.cancoderPosition;
   }
 
+  public Command intakeAlgae() {
+    return this.run(() -> runRollerVoltage(ALGAE_INTAKE_VOLTAGE))
+        .until(
+            new Trigger(() -> Math.abs(currentFilterValue) > ALGAE_CURRENT_THRESHOLD)
+                .debounce(0.25))
+        .andThen(Commands.runOnce(() -> hasAlgae = true));
+  }
+
+  public Command intakeCoral() {
+    return this.run(() -> runRollerVoltage(CORAL_INTAKE_VOLTAGE))
+        .until(
+            new Trigger(() -> Math.abs(currentFilterValue) > CORAL_CURRENT_THRESHOLD)
+                .debounce(0.25))
+        .andThen(Commands.runOnce(() -> hasCoral = true));
+  }
+
   @AutoLogOutput(key = "Arm/Has GamePiece")
   public boolean hasGamePiece() {
-    return (Math.abs(currentFilterValue) > GAME_PIECE_CURRENT_THRESHOLD);
+    // return (Math.abs(currentFilterValue) > CORAL_CURRENT_THRESHOLD ||
+    // Math.abs(currentFilterValue) > ALGAE_CURRENT_THRESHOLD);
+    return hasAlgae || hasCoral;
   }
 
   @Override
