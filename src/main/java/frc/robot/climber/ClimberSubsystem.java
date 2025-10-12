@@ -77,5 +77,4 @@ public class ClimberSubsystem extends RollerPivotSubsystem {
           runRollerVoltage(state.volts);
         });
   }
-  
 }
