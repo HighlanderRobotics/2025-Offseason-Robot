@@ -65,6 +65,20 @@ public class AutoAim {
             + HEADING_CONTROLLER.getSetpoint().velocity);
   }
 
+  public static double getClosestBargeXCoord(Pose2d pose) {
+   return Math.abs(pose.getX() - AutoAim.BLUE_NET_X)
+          < Math.abs(pose.getX() - AutoAim.RED_NET_X)
+          ? AutoAim.BLUE_NET_X
+          : AutoAim.RED_NET_X;
+  }
+
+  public static Rotation2d getClosestBargeRotation(Pose2d pose) {
+    return (Math.abs(pose.getX() - AutoAim.BLUE_NET_X)
+            > Math.abs(pose.getX() - AutoAim.RED_NET_X)
+      ? Rotation2d.kZero
+      : Rotation2d.k180deg).plus(Rotation2d.fromDegrees(20.0));
+   }
+
   // public static Command translateToPose(SwerveSubsystem swerve, Supplier<Pose2d> target) {
   //   return translateToPose(swerve, target, () -> new ChassisSpeeds());
   // }
