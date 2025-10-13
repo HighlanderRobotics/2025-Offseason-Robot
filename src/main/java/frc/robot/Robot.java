@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -11,9 +12,6 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj.PowerDistribution;
-import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
-import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -27,7 +25,6 @@ import frc.robot.Superstructure.SuperState;
 import frc.robot.arm.ArmSubsystem;
 import frc.robot.cancoder.CANcoderIOReal;
 import frc.robot.canrange.CANrangeIOReal;
-import frc.robot.climber.ClimberSubsystem;
 import frc.robot.climber.ClimberSubsystem;
 import frc.robot.elevator.ElevatorIOReal;
 import frc.robot.elevator.ElevatorIOSim;
@@ -201,7 +198,7 @@ public class Robot extends LoggedRobot {
               ? new PivotIOReal(16, climberPivotConfig)
               : new PivotIOSim((44.0 / 16.0) * 23, 0.0, 90.0, 9.25),
           "Climber");
-          
+
   private final SwerveSubsystem swerve = new SwerveSubsystem();
 
   private final CommandXboxControllerSubsystem driver = new CommandXboxControllerSubsystem(0);
