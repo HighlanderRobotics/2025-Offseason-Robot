@@ -133,7 +133,7 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
     return isNear(target, TOLERANCE_DEGREES);
   }
 
-  public Command setStateAngleAndVoltage(ArmState state) {
+  public Command setStateAngleVoltage(ArmState state) {
     return this.runOnce(
         () -> {
           setPivotAngle(state.position);

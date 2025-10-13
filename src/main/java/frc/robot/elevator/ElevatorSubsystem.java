@@ -31,7 +31,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   public static final double DRUM_RADIUS_METERS = Units.inchesToMeters(1.751 / 2.0);
   public static final Rotation2d ELEVATOR_ANGLE = Rotation2d.fromDegrees(90.0);
 
-  public static final double MAX_EXTENSION_METERS = Units.inchesToMeters(68.50);
+  public static final double MAX_EXTENSION_METERS = Units.inchesToMeters(58.75);
 
   private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
   private final ElevatorIO io;
@@ -47,34 +47,36 @@ public class ElevatorSubsystem extends SubsystemBase {
   private final SysIdRoutine currentSysid;
 
   public enum ElevatorState {
-    IDLE(Units.inchesToMeters(6)),
+    // Although the motor takes it in terms of meters, we usually measure extension in terms of
+    // inches
+    // So the constructor handles the conversion
+    IDLE(0),
+    HANDOFF(37.841),
+    INTAKE_CORAL_STACK(0),
     // coral
-    READY_CORAL(Units.inchesToMeters(6)),
-    PRE_INTAKE_CORAL_GROUND(Units.inchesToMeters(36)),
-    INTAKE_CORAL_GROUND(Units.inchesToMeters(28)),
-    L1(Units.inchesToMeters(25)),
-    PRE_L2(Units.inchesToMeters(22)),
-    L2(Units.inchesToMeters(22)),
-    PRE_L3(Units.inchesToMeters(36)),
-    L3(Units.inchesToMeters(36)),
-    PRE_L4(Units.inchesToMeters(68.50)),
-    L4(Units.inchesToMeters(61.5)),
-    POST_L4(Units.inchesToMeters(61.5)),
+    PRE_L2(0),
+    L2(15),
+    PRE_L3(25),
+    L3(29),
+    PRE_L4(58.75),
+    L4(52),
     // algae
-    INTAKE_ALGAE_REEF_HIGH(Units.inchesToMeters(53)),
-    INTAKE_ALGAE_REEF_LOW(Units.inchesToMeters(36)),
-    INTAKE_ALGAE_GROUND(Units.inchesToMeters(25)),
-    BARGE(Units.inchesToMeters(61.5)),
-    READY_ALGAE(Units.inchesToMeters(6)),
-    PROCESSOR(Units.inchesToMeters(14)),
+    INTAKE_ALGAE_REEF_HIGH(43),
+    INTAKE_ALGAE_REEF_LOW(26),
+    INTAKE_ALGAE_STACK(10),
+    INTAKE_ALGAE_GROUND(25),
+    READY_ALGAE(0),
+
+    BARGE(58.75),
+    PROCESSOR(4),
     // climbing
-    PRE_CLIMB(Units.inchesToMeters(6)),
-    CLIMB(Units.inchesToMeters(6));
+    PRE_CLIMB(0),
+    CLIMB(0);
 
     private final double extensionMeters;
 
-    private ElevatorState(double extensionMeters) {
-      this.extensionMeters = extensionMeters;
+    private ElevatorState(double extensionInches) {
+      this.extensionMeters = Units.inchesToMeters(extensionInches);
     }
 
     public double getExtensionMeters() {
@@ -205,5 +207,17 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   public double getExtensionMeters() {
     return inputs.positionMeters;
+  }
+
+  public boolean atExtension(double expected) {
+    return MathUtil.isNear(expected, inputs.positionMeters, 0.05);
+  }
+
+  public boolean atExtension() {
+    return atExtension(setpoint);
+  }
+
+  public Command setStateExtension() {
+    return setExtension(() -> state.getExtensionMeters());
   }
 }
