@@ -41,8 +41,6 @@ import frc.robot.utils.AutoAim;
 import frc.robot.utils.FieldUtils;
 import frc.robot.utils.FieldUtils.L1Targets;
 import frc.robot.utils.Tracer;
-
-import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -354,20 +352,24 @@ public class SwerveSubsystem extends SubsystemBase {
    * Autoailgns to the given pose
    *
    * @param target the target pose
-   * @param speedsModifier Field relative speeds to be added onto the PID calculated speeds. i.e. driver requested speeds to drive along a line.
+   * @param speedsModifier Field relative speeds to be added onto the PID calculated speeds. i.e.
+   *     driver requested speeds to drive along a line.
    * @return a Command driving to the target
    */
   public Command translateToPose(Supplier<Pose2d> target, Supplier<ChassisSpeeds> speedsModifier) {
     return Commands.runOnce(() -> AutoAim.resetPIDs(getPose(), getVelocityFieldRelative()))
-    .andThen(
-        driveClosedLoopFieldRelative(() -> {
-          Logger.recordOutput("AutoAim/TargetPose", target.get());
-          return AutoAim.calculateSpeeds(getPose(), target.get()).plus(speedsModifier.get());
-        }));
+        .andThen(
+            driveClosedLoopFieldRelative(
+                () -> {
+                  Logger.recordOutput("AutoAim/TargetPose", target.get());
+                  return AutoAim.calculateSpeeds(getPose(), target.get())
+                      .plus(speedsModifier.get());
+                }));
   }
 
   /**
    * Autoaligns to the given pose
+   *
    * @param target the target pose
    * @return a Command driving to the target
    */
@@ -402,30 +404,34 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public boolean isInAutoAimTolerance(Pose2d target) {
     return MathUtil.isNear(target.getX(), getPose().getX(), AutoAim.TRANSLATION_TOLERANCE_METERS)
-      && MathUtil.isNear(target.getY(), getPose().getY(), AutoAim.TRANSLATION_TOLERANCE_METERS)
-      && MathUtil.isNear(target.getRotation().getRadians(), target.getRotation().getRadians(), AutoAim.ROTATION_TOLERANCE_RADIANS);
+        && MathUtil.isNear(target.getY(), getPose().getY(), AutoAim.TRANSLATION_TOLERANCE_METERS)
+        && MathUtil.isNear(
+            target.getRotation().getRadians(),
+            target.getRotation().getRadians(),
+            AutoAim.ROTATION_TOLERANCE_RADIANS);
   }
 
   public Command autoAimToL1(double vxModifier, double vyModifier) {
     return translateToPose(
-      () -> {
-        Rectangle2d nearestLine = FieldUtils.L1Targets.getNearestLine(getPose());
-        return new Pose2d(
-          nearestLine.nearest(getPose().getTranslation()), nearestLine.getRotation());
-      },
-      () -> {
-        ChassisSpeeds speedsModifierRobotRelative = ChassisSpeeds.fromFieldRelativeSpeeds(vxModifier, vyModifier, 0.0, getRotation());
-        // Kill all front-back requested velocity (because we want the robot to strafe)
-        speedsModifierRobotRelative.vxMetersPerSecond = 0.0;
-        return ChassisSpeeds.fromRobotRelativeSpeeds(speedsModifierRobotRelative, getRotation());
-      }
-      );
+        () -> {
+          Rectangle2d nearestLine = FieldUtils.L1Targets.getNearestLine(getPose());
+          return new Pose2d(
+              nearestLine.nearest(getPose().getTranslation()), nearestLine.getRotation());
+        },
+        () -> {
+          ChassisSpeeds speedsModifierRobotRelative =
+              ChassisSpeeds.fromFieldRelativeSpeeds(vxModifier, vyModifier, 0.0, getRotation());
+          // Kill all front-back requested velocity (because we want the robot to strafe)
+          speedsModifierRobotRelative.vxMetersPerSecond = 0.0;
+          return ChassisSpeeds.fromRobotRelativeSpeeds(speedsModifierRobotRelative, getRotation());
+        });
   }
 
   public boolean nearL1() {
-    return isInAutoAimTolerance(new Pose2d(
-      L1Targets.getNearestLine(getPose()).nearest(getPose().getTranslation()),
-      L1Targets.getNearestLine(getPose()).getRotation()));
+    return isInAutoAimTolerance(
+        new Pose2d(
+            L1Targets.getNearestLine(getPose()).nearest(getPose().getTranslation()),
+            L1Targets.getNearestLine(getPose()).getRotation()));
   }
 
   public boolean isNearL1Reef() {
@@ -446,9 +452,7 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public Command autoAimToL23() {
-    return translateToPose(() -> 
-      FieldUtils.CoralTargets.getClosestTarget(getPose())
-    );
+    return translateToPose(() -> FieldUtils.CoralTargets.getClosestTarget(getPose()));
   }
 
   public boolean nearL23() {
@@ -466,11 +470,16 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public Command autoAimToOffsetAlgae() {
-    return translateToPose(() -> FieldUtils.AlgaeIntakeTargets.getOffsetLocation(FieldUtils.AlgaeIntakeTargets.getClosestTargetPose(getPose())));
+    return translateToPose(
+        () ->
+            FieldUtils.AlgaeIntakeTargets.getOffsetLocation(
+                FieldUtils.AlgaeIntakeTargets.getClosestTargetPose(getPose())));
   }
 
   public boolean nearIntakeAlgaeOffsetPose() {
-    return isInAutoAimTolerance(FieldUtils.AlgaeIntakeTargets.getOffsetLocation(FieldUtils.AlgaeIntakeTargets.getClosestTargetPose(getPose())));
+    return isInAutoAimTolerance(
+        FieldUtils.AlgaeIntakeTargets.getOffsetLocation(
+            FieldUtils.AlgaeIntakeTargets.getClosestTargetPose(getPose())));
   }
 
   public Command approachAlgae() {
@@ -490,25 +499,32 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public Command autoAimToBarge(DoubleSupplier yModifier) {
-    return Commands.runOnce(() -> AutoAim.resetPIDs(getPose(), getVelocityFieldRelative())).andThen(
-      driveClosedLoopFieldRelative(() -> {
-        ChassisSpeeds calculatedSpeeds = AutoAim.calculateSpeeds(
-          getPose(), 
-          new Pose2d(
-            AutoAim.getClosestBargeXCoord(getPose()), 
-            0.0, 
-            AutoAim.getClosestBargeRotation(getPose())
-        ));
-        // Sub calculated velocity for requested velocity
-        calculatedSpeeds.vyMetersPerSecond = yModifier.getAsDouble();
-        return calculatedSpeeds;
-      })
-    );
+    return Commands.runOnce(() -> AutoAim.resetPIDs(getPose(), getVelocityFieldRelative()))
+        .andThen(
+            driveClosedLoopFieldRelative(
+                () -> {
+                  ChassisSpeeds calculatedSpeeds =
+                      AutoAim.calculateSpeeds(
+                          getPose(),
+                          new Pose2d(
+                              AutoAim.getClosestBargeXCoord(getPose()),
+                              0.0,
+                              AutoAim.getClosestBargeRotation(getPose())));
+                  // Sub calculated velocity for requested velocity
+                  calculatedSpeeds.vyMetersPerSecond = yModifier.getAsDouble();
+                  return calculatedSpeeds;
+                }));
   }
 
   public boolean nearBarge() {
-    return MathUtil.isNear(AutoAim.getClosestBargeXCoord(getPose()), getPose().getX(), AutoAim.TRANSLATION_TOLERANCE_METERS)
-      && MathUtil.isNear(AutoAim.getClosestBargeRotation(getPose()).getRadians(), getPose().getRotation().getRadians(), AutoAim.ROTATION_TOLERANCE_RADIANS);
+    return MathUtil.isNear(
+            AutoAim.getClosestBargeXCoord(getPose()),
+            getPose().getX(),
+            AutoAim.TRANSLATION_TOLERANCE_METERS)
+        && MathUtil.isNear(
+            AutoAim.getClosestBargeRotation(getPose()).getRadians(),
+            getPose().getRotation().getRadians(),
+            AutoAim.ROTATION_TOLERANCE_RADIANS);
   }
 
   public Command autoAimAuto(Supplier<Pose2d> pose) {
