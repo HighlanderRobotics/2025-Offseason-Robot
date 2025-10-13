@@ -447,22 +447,20 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public Command autoAimToL23() {
     return translateToPose(() -> 
-      FieldUtils.CoralTargets.getClosestTarget(getPose())
+      FieldUtils.CoralTargets.getClosestTargetL23(getPose())
     );
   }
 
   public boolean nearL23() {
-    return isInAutoAimTolerance(FieldUtils.CoralTargets.getClosestTarget(getPose()));
+    return isInAutoAimTolerance(FieldUtils.CoralTargets.getClosestTargetL23(getPose()));
   }
 
   public Command autoAimToL4() {
-    // TODO
-    return Commands.none();
+    return translateToPose(() -> FieldUtils.CoralTargets.getClosestTargetL4(getPose()));
   }
 
   public boolean nearL4() {
-    // TODO
-    return true;
+    return isInAutoAimTolerance(FieldUtils.CoralTargets.getClosestTargetL4(getPose()));
   }
 
   public Command autoAimToOffsetAlgae() {

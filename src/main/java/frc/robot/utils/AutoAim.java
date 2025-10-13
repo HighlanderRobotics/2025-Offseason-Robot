@@ -385,7 +385,7 @@ public class AutoAim {
   // }
 
   public static boolean isInToleranceCoral(Pose2d pose) {
-    final var diff = pose.minus(CoralTargets.getClosestTarget(pose));
+    final var diff = pose.minus(CoralTargets.getClosestTargetL23(pose));
     return MathUtil.isNear(
             0.0, Math.hypot(diff.getX(), diff.getY()), AutoAim.TRANSLATION_TOLERANCE_METERS)
         && MathUtil.isNear(
@@ -393,7 +393,7 @@ public class AutoAim {
   }
 
   public static boolean isInToleranceCoral(Pose2d pose, double translationTol, double rotationTol) {
-    final var diff = pose.minus(CoralTargets.getClosestTarget(pose));
+    final var diff = pose.minus(CoralTargets.getClosestTargetL23(pose));
     return MathUtil.isNear(0.0, Math.hypot(diff.getX(), diff.getY()), translationTol)
         && MathUtil.isNear(0.0, diff.getRotation().getRadians(), rotationTol);
   }

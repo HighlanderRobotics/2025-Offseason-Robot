@@ -204,21 +204,31 @@ public class FieldUtils {
       this.leftHanded = leftHanded;
     }
 
-    private static final List<Pose2d> transformedPoses =
+    private static final List<Pose2d> TRANSFORMED_POSES_L23 =
         Arrays.stream(values())
             .map(
                 (CoralTargets targets) -> {
-                  return CoralTargets.getRobotTargetLocation(targets.location);
+                  return CoralTargets.getRobotTargetLocationL23(targets.location);
                 })
             .toList();
+    private static final List<Pose2d> TRANSFORMED_POSES_L4 =
+                Arrays.stream(values())
+                  .map((CoralTargets target) -> CoralTargets.getRobotTargetLocationL4(target.location))
+                  .toList();
 
-    public static Pose2d getRobotTargetLocation(Pose2d original) {
+    public static Pose2d getRobotTargetLocationL23(Pose2d original) {
       // 0.248 for trough
+      // TODO: UPDATE FOR NEW ROBOT
       return original.transformBy(
           new Transform2d(
               0.291 + (SwerveSubsystem.SWERVE_CONSTANTS.getBumperLength() / 2),
               0,
               Rotation2d.fromDegrees(180.0)));
+    }
+
+    public static Pose2d getRobotTargetLocationL4(Pose2d original) {
+      // TODO
+      return original;
     }
 
     public static Pose2d getBranchLocation(Pose2d transformed) {
@@ -232,8 +242,12 @@ public class FieldUtils {
     }
 
     /** Gets the closest offset target to the given pose. */
-    public static Pose2d getClosestTarget(Pose2d pose) {
-      return pose.nearest(transformedPoses);
+    public static Pose2d getClosestTargetL23(Pose2d pose) {
+      return pose.nearest(TRANSFORMED_POSES_L23);
+    }
+
+    public static Pose2d getClosestTargetL4(Pose2d pose) {
+      return pose.nearest(TRANSFORMED_POSES_L4);
     }
 
     /** Gets the closest offset target to the given pose. */
@@ -243,7 +257,7 @@ public class FieldUtils {
               .filter((target) -> target.leftHanded == leftHandeed)
               .map(
                   (CoralTargets targets) -> {
-                    return CoralTargets.getRobotTargetLocation(targets.location);
+                    return CoralTargets.getRobotTargetLocationL23(targets.location);
                   })
               .toList());
     }
