@@ -4,9 +4,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.arm.ArmSubsystem.ArmState;
 import frc.robot.pivot.PivotIO;
-import frc.robot.pivot.PivotIOInputsAutoLogged;
 import frc.robot.roller.RollerIO;
-import frc.robot.roller.RollerIOInputsAutoLogged;
 import frc.robot.rollerpivot.RollerPivotSubsystem;
 import org.littletonrobotics.junction.AutoLogOutput;
 
@@ -14,21 +12,6 @@ public class ClimberSubsystem extends RollerPivotSubsystem {
   public static final double PIVOT_RATIO = (44.0 / 16.0) * 23;
   public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(180);
   public static final Rotation2d MIN_ANGLE = Rotation2d.fromDegrees(0);
-  private final RollerIOInputsAutoLogged rollerInputs = new RollerIOInputsAutoLogged();
-  private final PivotIOInputsAutoLogged pivotInputs = new PivotIOInputsAutoLogged();
-  private final RollerIO rollerIO;
-  private final PivotIO pivotIO;
-  private final String name;
-
-  public ClimberSubsystem(RollerIO rollerIO, PivotIO pivotIO, String name) {
-    super(rollerIO, pivotIO, name);
-    this.rollerIO = rollerIO;
-    this.pivotIO = pivotIO;
-    this.name = name;
-  }
-
-  @AutoLogOutput(key = "Climber/State")
-  private ClimberState state = ClimberState.IDLE;
 
   // TODO : change these values to the real ones
   public enum ClimberState {
@@ -64,6 +47,13 @@ public class ClimberSubsystem extends RollerPivotSubsystem {
       this.volts = volts;
     }
   }
+
+  public ClimberSubsystem(RollerIO rollerIO, PivotIO pivotIO, String name) {
+    super(rollerIO, pivotIO, name);
+  }
+
+  @AutoLogOutput(key = "Climber/State")
+  private ClimberState state = ClimberState.IDLE;
 
   @Override
   public void periodic() {

@@ -16,28 +16,15 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   public static final double PIVOT_RATIO = (44.0 / 16.0) * 23;
   public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(180);
   public static final Rotation2d MIN_ANGLE = Rotation2d.fromDegrees(0);
+  public static final double TOLERANCE_DEGREES = 15.0;
+
   private final CANrangeIO frontCanrangeIO;
   private final CANrangeIO rearCanrangeIO;
   private final CANrangeIOInputsAutoLogged frontCanrangeInputs = new CANrangeIOInputsAutoLogged();
   private final CANrangeIOInputsAutoLogged rearCanrangeInputs = new CANrangeIOInputsAutoLogged();
-
-  public IntakeSubsystem(
-      RollerIO rollerIO,
-      PivotIO pivotIO,
-      CANrangeIO frontCanrangeIO,
-      CANrangeIO rearCanrangeIO,
-      String name) {
-    super(rollerIO, pivotIO, name);
-    this.frontCanrangeIO = frontCanrangeIO;
-    this.rearCanrangeIO = rearCanrangeIO;
-  }
-
-  @AutoLogOutput(key = "Intake/State")
-  private IntakeState state = IntakeState.IDLE;
-
-  public void setState(IntakeState state) {
-    this.state = state;
-  }
+  private final double ZEROING_OFFSET = -10;
+  private boolean intakeHasZeroed = false;
+  private Rotation2d currentPosition = new Rotation2d();
 
   // TODO : change these values to the real ones
   public enum IntakeState {
@@ -74,6 +61,31 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
     }
   }
 
+  private boolean isIntakingState(IntakeState state) {
+    return state == IntakeState.INTAKE_ALGAE_GROUND
+        || state == IntakeState.INTAKE_ALGAE_REEF_HIGH
+        || state == IntakeState.INTAKE_ALGAE_REEF_LOW
+        || state == IntakeState.INTAKE_CORAL_GROUND;
+  }
+
+  public IntakeSubsystem(
+      RollerIO rollerIO,
+      PivotIO pivotIO,
+      CANrangeIO frontCanrangeIO,
+      CANrangeIO rearCanrangeIO,
+      String name) {
+    super(rollerIO, pivotIO, name);
+    this.frontCanrangeIO = frontCanrangeIO;
+    this.rearCanrangeIO = rearCanrangeIO;
+  }
+
+  @AutoLogOutput(key = "Intake/State")
+  private IntakeState state = IntakeState.IDLE;
+
+  public void setState(IntakeState state) {
+    this.state = state;
+  }
+
   @Override
   public void periodic() {
     super.periodic();
@@ -96,15 +108,29 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
     return getfrontCanrangePosition() < 10.0 || getRearCanrangePosition() < 10.0;
   }
 
+  public Command zeroPivot() {
+    return Commands.runOnce(
+        () -> {
+          intakeHasZeroed = true;
+          System.out.println("Intake zeroed!");
+          currentPosition = Rotation2d.fromDegrees(ZEROING_OFFSET);
+        });
+  }
+
   public Command zeroIntake() {
-    return Commands.run(() -> setPivotVoltage(-2.0))
-        .until(() -> currentFilterValue > 10.0)
-        .andThen(
-            Commands.runOnce(
-                () -> {
-                  zeroPivot();
-                  setPivotVoltage(0.0);
-                }));
+    return Commands.run(() -> setPivotVoltage(-2))
+        .until(() -> Math.abs(currentFilterValue) > 10.0)
+        .andThen(zeroPivot());
+  }
+
+  public void setIntakePosition(Rotation2d target) {
+    if (intakeHasZeroed) {
+      currentPosition = target;
+    }
+  }
+
+  public boolean isNear(Rotation2d target) {
+    return isNear(target, TOLERANCE_DEGREES);
   }
 
   public Command setStateAngleAndVoltage(ArmState state) {

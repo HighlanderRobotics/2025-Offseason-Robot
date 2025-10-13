@@ -21,24 +21,13 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public static final double CORAL_INTAKE_VOLTAGE = 5.0;
   public static final double ALGAE_CURRENT_THRESHOLD = 20.0;
   public static final double CORAL_CURRENT_THRESHOLD = 20.0;
+  public static final double TOLERANCE_DEGREES = 20.0;
 
   private final CANcoderIO cancoderIO;
   private final CANcoderIOInputsAutoLogged cancoderInputs = new CANcoderIOInputsAutoLogged();
 
   @AutoLogOutput public boolean hasAlgae = false;
   @AutoLogOutput public boolean hasCoral = false;
-
-  public ArmSubsystem(RollerIO rollerIO, PivotIO pivotIO, CANcoderIO cancoderIO, String name) {
-    super(rollerIO, pivotIO, name);
-    this.cancoderIO = cancoderIO;
-  }
-
-  @AutoLogOutput(key = "Arm/State")
-  private ArmState state = ArmState.IDLE;
-
-  public void setState(ArmState state) {
-    this.state = state;
-  }
 
   // TODO : change these values to the real ones
   public enum ArmState {
@@ -75,6 +64,25 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     }
   }
 
+  public ArmSubsystem(RollerIO rollerIO, PivotIO pivotIO, CANcoderIO cancoderIO, String name) {
+    super(rollerIO, pivotIO, name);
+    this.cancoderIO = cancoderIO;
+  }
+
+  @AutoLogOutput(key = "Arm/State")
+  private ArmState state = ArmState.IDLE;
+
+  public void setState(ArmState state) {
+    this.state = state;
+  }
+
+  @Override
+  public void periodic() {
+    super.periodic();
+    cancoderIO.updateInputs(cancoderInputs);
+    Logger.processInputs("Arm/CANcoder", cancoderInputs);
+  }
+
   public Rotation2d getCANcoderPosition() {
     return cancoderInputs.cancoderPosition;
   }
@@ -102,11 +110,8 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     return hasAlgae || hasCoral;
   }
 
-  @Override
-  public void periodic() {
-    super.periodic();
-    cancoderIO.updateInputs(cancoderInputs);
-    Logger.processInputs("Arm/CANcoder", cancoderInputs);
+  public boolean isNear(Rotation2d target) {
+    return isNear(target, TOLERANCE_DEGREES);
   }
 
   public Command setStateAngleAndVoltage(ArmState state) {

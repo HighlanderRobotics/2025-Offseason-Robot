@@ -60,9 +60,4 @@ public class PivotIOSim implements PivotIO {
         pivotPid.calculate(pivotSim.getAngleRads(), targetPosition.getRadians())
             + pivotFf.calculate(pivotPid.getSetpoint().position, pivotPid.getSetpoint().velocity));
   }
-
-  @Override
-  public void resetEncoder(double position) {
-    pivotSim.setState(position, 0);
-  }
 }

@@ -4,7 +4,6 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.Robot.RobotType;
@@ -38,7 +37,7 @@ public class RollerPivotSubsystem extends SubsystemBase {
   public Command setPivotAngle(Rotation2d target) {
     return this.runOnce(
         () -> {
-          if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("/Pivot Setpoint", target);
+          Logger.recordOutput(name + "/Pivot Setpoint", target);
           pivotIO.setMotorPosition(target);
         });
   }
@@ -55,15 +54,14 @@ public class RollerPivotSubsystem extends SubsystemBase {
     return pivotInputs.appliedVoltage;
   }
 
-  public boolean isNear(Rotation2d target) {
-    return MathUtil.isNear(target.getDegrees(), getAngle().getDegrees(), 15.0);
+  public boolean isNear(Rotation2d target, double tolerance) {
+    return MathUtil.isNear(target.getDegrees(), getAngle().getDegrees(), tolerance);
   }
 
-  public Command zeroPivot() {
-    return Commands.runOnce(() -> pivotIO.resetEncoder(0.0)).ignoringDisable(true);
-  }
+  // public Command zeroPivot() {
+  // }
 
-  public double getStatorCurrentAmps() {
+  public double getFilteredStatorCurrentAmps() {
     return currentFilterValue;
   }
 

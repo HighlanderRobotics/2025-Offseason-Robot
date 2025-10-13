@@ -89,10 +89,20 @@ public class Robot extends LoggedRobot {
     return config;
   }
 
+  // TODO tune/check these values
+  TalonFXConfiguration armRollerConfig = rollerConfig(20.0);
+  TalonFXConfiguration armPivotConfig = pivotConfig(20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
+
+  TalonFXConfiguration intakeRollerConfig = rollerConfig(20.0);
+  TalonFXConfiguration intakePivotConfig = pivotConfig(20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
+
+  TalonFXConfiguration climberRollerConfig = rollerConfig(20.0);
+  TalonFXConfiguration climberPivotConfig = pivotConfig(20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
+
   private final ArmSubsystem arm =
       new ArmSubsystem(
           ROBOT_TYPE != RobotType.SIM
-              ? new RollerIOReal(14, rollerConfig(20.0))
+              ? new RollerIOReal(14, armRollerConfig)
               : new RollerIOSim(
                   0.01,
                   1.0,
@@ -100,15 +110,15 @@ public class Robot extends LoggedRobot {
                   new ProfiledPIDController(
                       0.5, 0.0, 0.0, new TrapezoidProfile.Constraints(15, 1))),
           ROBOT_TYPE != RobotType.SIM
-              ? new PivotIOReal(15, pivotConfig(20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0))
+              ? new PivotIOReal(15, armPivotConfig)
               : new PivotIOSim((44.0 / 16.0) * 23, 0.0, 180.0, 23.0),
-          ROBOT_TYPE != RobotType.SIM ? new CANcoderIOReal(16) : null,
+          new CANcoderIOReal(0),
           "Arm");
 
   private final IntakeSubsystem intake =
       new IntakeSubsystem(
           ROBOT_TYPE != RobotType.SIM
-              ? new RollerIOReal(17, rollerConfig(20.0))
+              ? new RollerIOReal(17, intakeRollerConfig)
               : new RollerIOSim(
                   0.01,
                   1.0,
@@ -116,16 +126,16 @@ public class Robot extends LoggedRobot {
                   new ProfiledPIDController(
                       0.5, 0.0, 0.0, new TrapezoidProfile.Constraints(15, 1))),
           ROBOT_TYPE != RobotType.SIM
-              ? new PivotIOReal(18, pivotConfig(20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0))
+              ? new PivotIOReal(18, intakePivotConfig)
               : new PivotIOSim((44.0 / 16.0) * 23, 0.0, 90.0, 15),
-          ROBOT_TYPE != RobotType.SIM ? new CANrangeIOReal(19) : null,
-          ROBOT_TYPE != RobotType.SIM ? new CANrangeIOReal(19) : null,
+          new CANrangeIOReal(0),
+          new CANrangeIOReal(1),
           "Intake");
 
   private final ClimberSubsystem climber =
       new ClimberSubsystem(
           ROBOT_TYPE != RobotType.SIM
-              ? new RollerIOReal(20, rollerConfig(20.0))
+              ? new RollerIOReal(20, climberRollerConfig)
               : new RollerIOSim(
                   0.01,
                   1.0,
@@ -133,7 +143,7 @@ public class Robot extends LoggedRobot {
                   new ProfiledPIDController(
                       0.5, 0.0, 0.0, new TrapezoidProfile.Constraints(15, 1))),
           ROBOT_TYPE != RobotType.SIM
-              ? new PivotIOReal(21, pivotConfig(20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0))
+              ? new PivotIOReal(21, climberPivotConfig)
               : new PivotIOSim((44.0 / 16.0) * 23, 0.0, 90.0, 9.25),
           "Climber");
 
