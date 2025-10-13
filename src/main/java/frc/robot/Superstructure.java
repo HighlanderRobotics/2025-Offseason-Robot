@@ -544,7 +544,10 @@ public class Superstructure {
         SuperState.SCORE_BARGE_RIGHT,
         SuperState.IDLE,
         // TODO i don't trust the state timer but i'm not sure if i can use the current check
-        new Trigger(() -> stateTimer.hasElapsed(0.5)).and(arm::hasGamePiece).negate().debounce(0.2));
+        new Trigger(() -> stateTimer.hasElapsed(0.5))
+            .and(arm::hasGamePiece)
+            .negate()
+            .debounce(0.2));
 
     bindTransition(
         SuperState.READY_ALGAE,
@@ -560,7 +563,10 @@ public class Superstructure {
         SuperState.SCORE_BARGE_LEFT,
         SuperState.IDLE,
         // TODO i don't trust the state timer but i'm not sure if i can use the current check
-        new Trigger(() -> stateTimer.hasElapsed(0.5)).and(arm::hasGamePiece).negate().debounce(0.2));
+        new Trigger(() -> stateTimer.hasElapsed(0.5))
+            .and(arm::hasGamePiece)
+            .negate()
+            .debounce(0.2));
 
     // ---Score Processor---
     bindTransition(
@@ -574,7 +580,11 @@ public class Superstructure {
     bindTransition(
         SuperState.SCORE_PROCESSOR,
         SuperState.IDLE,
-        new Trigger(arm::hasGamePiece).negate().debounce(0.2).and(swerve::isNearProcessor).negate());
+        new Trigger(arm::hasGamePiece)
+            .negate()
+            .debounce(0.2)
+            .and(swerve::isNearProcessor)
+            .negate());
 
     // ---Climb---
     bindTransition(SuperState.IDLE, SuperState.PRE_CLIMB, preClimbReq);

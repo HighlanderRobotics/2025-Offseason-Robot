@@ -153,6 +153,6 @@ public class ArmSubsystem extends RollerPivotSubsystem {
         });
   }
 
-   // TODO setSimCoral
-   public void setSimCoral(boolean b) {}
+  // TODO setSimCoral
+  public void setSimCoral(boolean b) {}
 }

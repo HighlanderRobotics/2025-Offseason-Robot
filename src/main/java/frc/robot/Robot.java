@@ -23,7 +23,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Superstructure.SuperState;
 import frc.robot.arm.ArmSubsystem;
-import frc.robot.arm.ArmSubsystem.ArmState;
 import frc.robot.cancoder.CANcoderIOReal;
 import frc.robot.canrange.CANrangeIOReal;
 import frc.robot.climber.ClimberSubsystem;

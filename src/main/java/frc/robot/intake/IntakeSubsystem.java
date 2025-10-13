@@ -3,7 +3,6 @@ package frc.robot.intake;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.arm.ArmSubsystem.ArmState;
 import frc.robot.canrange.CANrangeIO;
 import frc.robot.canrange.CANrangeIOInputsAutoLogged;
 import frc.robot.pivot.PivotIO;
