@@ -20,8 +20,8 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
 
   private final CANrangeIO frontCanrangeIO;
   private final CANrangeIO rearCanrangeIO;
-  private final CANrangeIOInputsAutoLogged frontCanrangeInputs = new CANrangeIOInputsAutoLogged();
-  private final CANrangeIOInputsAutoLogged rearCanrangeInputs = new CANrangeIOInputsAutoLogged();
+  private final CANrangeIOInputsAutoLogged leftCanrangeInputs = new CANrangeIOInputsAutoLogged();
+  private final CANrangeIOInputsAutoLogged rightCanrangeInputs = new CANrangeIOInputsAutoLogged();
   private final double ZEROING_OFFSET = -10;
   private boolean intakeHasZeroed = false;
   private Rotation2d currentPosition = new Rotation2d();
@@ -71,12 +71,12 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   public IntakeSubsystem(
       RollerIO rollerIO,
       PivotIO pivotIO,
-      CANrangeIO frontCanrangeIO,
-      CANrangeIO rearCanrangeIO,
+      CANrangeIO leftCanrangeIO,
+      CANrangeIO rightCanrangeIO,
       String name) {
     super(rollerIO, pivotIO, name);
-    this.frontCanrangeIO = frontCanrangeIO;
-    this.rearCanrangeIO = rearCanrangeIO;
+    this.frontCanrangeIO = leftCanrangeIO;
+    this.rearCanrangeIO = rightCanrangeIO;
   }
 
   @AutoLogOutput(key = "Intake/State")
@@ -89,18 +89,18 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   @Override
   public void periodic() {
     super.periodic();
-    frontCanrangeIO.updateInputs(frontCanrangeInputs);
-    Logger.processInputs("Intake/frontCanrange", frontCanrangeInputs);
-    rearCanrangeIO.updateInputs(rearCanrangeInputs);
-    Logger.processInputs("Intake/rearCanrange", rearCanrangeInputs);
+    frontCanrangeIO.updateInputs(leftCanrangeInputs);
+    Logger.processInputs("Intake/frontCanrange", leftCanrangeInputs);
+    rearCanrangeIO.updateInputs(rightCanrangeInputs);
+    Logger.processInputs("Intake/rearCanrange", rightCanrangeInputs);
   }
 
   public double getfrontCanrangePosition() {
-    return frontCanrangeInputs.distanceCm;
+    return leftCanrangeInputs.distanceCm;
   }
 
   public double getRearCanrangePosition() {
-    return rearCanrangeInputs.distanceCm;
+    return rightCanrangeInputs.distanceCm;
   }
 
   @AutoLogOutput(key = "Intake/HasGamePiece")
