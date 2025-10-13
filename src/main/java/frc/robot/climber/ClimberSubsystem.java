@@ -55,16 +55,29 @@ public class ClimberSubsystem extends RollerPivotSubsystem {
   @AutoLogOutput(key = "Climber/State")
   private ClimberState state = ClimberState.IDLE;
 
+  public void setState(ClimberState state) {
+    this.state = state;
+  }
+
+  public ClimberState getState() {
+    return state;
+  }
+
   @Override
   public void periodic() {
     super.periodic();
   }
 
-  public Command setStateAngleVoltage(ArmState state) {
+  public Command setStateAngleVoltage(ClimberState state) {
     return this.runOnce(
         () -> {
           setPivotAngle(state.position);
           runRollerVoltage(state.volts);
         });
+  }
+
+  // TODO atExtension
+  public boolean atExtension() {
+    return true;
   }
 }

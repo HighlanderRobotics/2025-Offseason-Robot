@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Superstructure.SuperState;
 import frc.robot.arm.ArmSubsystem;
+import frc.robot.arm.ArmSubsystem.ArmState;
 import frc.robot.cancoder.CANcoderIOReal;
 import frc.robot.canrange.CANrangeIOReal;
 import frc.robot.climber.ClimberSubsystem;
@@ -265,9 +266,9 @@ public class Robot extends LoggedRobot {
 
     // Set default commands
     elevator.setDefaultCommand(elevator.setStateExtension());
-    arm.setDefaultCommand(arm.setStateAngleVoltage());
-    intake.setDefaultCommand(intake.setStateAngleVoltage());
-    climber.setDefaultCommand(climber.setStateAngleVoltage());
+    arm.setDefaultCommand(arm.setStateAngleVoltage(arm.getState()));
+    intake.setDefaultCommand(intake.setStateAngleVoltage(intake.getState()));
+    climber.setDefaultCommand(climber.setStateAngleVoltage(climber.getState()));
 
     driver.setDefaultCommand(driver.rumbleCmd(0.0, 0.0));
     operator.setDefaultCommand(operator.rumbleCmd(0.0, 0.0));

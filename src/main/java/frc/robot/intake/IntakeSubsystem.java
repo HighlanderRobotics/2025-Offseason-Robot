@@ -28,44 +28,40 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
 
   // TODO : change these values to the real ones
   public enum IntakeState {
-    IDLE(Rotation2d.fromDegrees(0), 0.0),
-    // coral
-    READY_CORAL(Rotation2d.fromDegrees(180), 0.0),
-    PRE_INTAKE_CORAL_GROUND(Rotation2d.fromDegrees(180), 0.0),
-    INTAKE_CORAL_GROUND(Rotation2d.fromDegrees(180), 0.0),
-    L1(Rotation2d.fromDegrees(100), 10.0),
-    PRE_L2(Rotation2d.fromDegrees(45), 10.0),
-    L2(Rotation2d.fromDegrees(60), 10.0),
-    PRE_L3(Rotation2d.fromDegrees(45), 10.0),
-    L3(Rotation2d.fromDegrees(70), 10.0),
-    PRE_L4(Rotation2d.fromDegrees(60), 10.0),
-    L4(Rotation2d.fromDegrees(90), 10.0),
-    POST_L4(Rotation2d.fromDegrees(90), 0.0),
-    // algae
-    INTAKE_ALGAE_REEF_HIGH(Rotation2d.fromDegrees(90), 0.0),
-    INTAKE_ALGAE_REEF_LOW(Rotation2d.fromDegrees(90), 0.0),
-    INTAKE_ALGAE_GROUND(Rotation2d.fromDegrees(135), 0.0),
-    BARGE(Rotation2d.fromDegrees(30), 0.0),
-    READY_ALGAE(Rotation2d.fromDegrees(0), 0.0),
-    PROCESSOR(Rotation2d.fromDegrees(90), 0.0),
-    // climbing
-    PRE_CLIMB(Rotation2d.fromDegrees(0), 0.0),
-    CLIMB(Rotation2d.fromDegrees(20), 0.0);
+    IDLE(130, 0.0),
+    INTAKE_CORAL(0, 10.0),
+    READY_CORAL_INTAKE(130, 1.0),
+    HANDOFF(130, -5.0),
+    PRE_L1(90, 1.0),
+    SCORE_L1(9, -5.0),
+    CLIMB(0, 0.0);
 
     public final Rotation2d position;
     public final double volts;
 
-    IntakeState(Rotation2d position, double volts) {
-      this.position = position;
+    private IntakeState(double positionDegrees, double volts) {
+      this.position = Rotation2d.fromDegrees(positionDegrees);
       this.volts = volts;
+    }
+
+    public Rotation2d getAngle() {
+      return position;
+    }
+
+    public double getVolts() {
+      return volts;
     }
   }
 
-  private boolean isIntakingState(IntakeState state) {
-    return state == IntakeState.INTAKE_ALGAE_GROUND
-        || state == IntakeState.INTAKE_ALGAE_REEF_HIGH
-        || state == IntakeState.INTAKE_ALGAE_REEF_LOW
-        || state == IntakeState.INTAKE_CORAL_GROUND;
+  // private boolean isIntakingState(IntakeState state) {
+  //   return state == IntakeState.INTAKE_ALGAE_GROUND
+  //       || state == IntakeState.INTAKE_ALGAE_REEF_HIGH
+  //       || state == IntakeState.INTAKE_ALGAE_REEF_LOW
+  //       || state == IntakeState.INTAKE_CORAL_GROUND;
+  // }
+
+  public IntakeState getState() {
+    return state;
   }
 
   public IntakeSubsystem(
@@ -129,11 +125,11 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
     }
   }
 
-  public boolean isNear(Rotation2d target) {
+  public boolean isNearAngle(Rotation2d target) {
     return isNear(target, TOLERANCE_DEGREES);
   }
 
-  public Command setStateAngleVoltage(ArmState state) {
+  public Command setStateAngleVoltage(IntakeState state) {
     return this.runOnce(
         () -> {
           setPivotAngle(state.position);

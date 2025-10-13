@@ -104,6 +104,10 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     this.state = state;
   }
 
+  public ArmState getState() {
+    return state;
+  }
+
   @Override
   public void periodic() {
     super.periodic();
@@ -138,15 +142,18 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     return hasAlgae || hasCoral;
   }
 
-  public boolean isNear(Rotation2d target) {
+  public boolean isNearAngle(Rotation2d target) {
     return isNear(target, TOLERANCE_DEGREES);
   }
 
-  public Command setStateAngleAndVoltage(ArmState state) {
+  public Command setStateAngleVoltage(ArmState state) {
     return this.runOnce(
         () -> {
           setPivotAngle(state.position);
           runRollerVoltage(state.volts);
         });
   }
+
+   // TODO setSimCoral
+   public void setSimCoral(boolean b) {}
 }
