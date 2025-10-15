@@ -212,9 +212,9 @@ public class FieldUtils {
                 })
             .toList();
     private static final List<Pose2d> TRANSFORMED_POSES_L4 =
-                Arrays.stream(values())
-                  .map((CoralTargets target) -> CoralTargets.getRobotTargetLocationL4(target.location))
-                  .toList();
+        Arrays.stream(values())
+            .map((CoralTargets target) -> CoralTargets.getRobotTargetLocationL4(target.location))
+            .toList();
 
     public static Pose2d getRobotTargetLocationL23(Pose2d original) {
       // 0.248 for trough
