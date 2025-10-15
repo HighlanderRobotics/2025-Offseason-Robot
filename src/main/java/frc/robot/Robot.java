@@ -25,7 +25,16 @@ import frc.robot.Robot.AlgaeIntakeTarget;
 import frc.robot.Robot.AlgaeScoreTarget;
 import frc.robot.Robot.CoralScoreTarget;
 import frc.robot.Robot.ScoringSide;
+import frc.robot.arm.ArmIOReal;
+import frc.robot.arm.ArmIOSim;
+import frc.robot.arm.ArmSubsystem;
+import frc.robot.climber.ClimberSubsystem;
+import frc.robot.elevator.ElevatorIOReal;
+import frc.robot.elevator.ElevatorIOSim;
+import frc.robot.elevator.ElevatorSubsystem;
+import frc.robot.intake.IntakeSubsystem;
 import frc.robot.swerve.SwerveSubsystem;
+import frc.robot.swerve.odometry.PhoenixOdometryThread;
 import frc.robot.utils.CommandXboxControllerSubsystem;
 import java.util.Optional;
 import org.ironmaple.simulation.SimulatedArena;
@@ -88,15 +97,15 @@ public class Robot extends LoggedRobot {
   @AutoLogOutput private static ScoringSide scoringSide = ScoringSide.RIGHT;
 
   // Instantiate subsystems
-  // private final ElevatorSubsystem elevator =
-  //     new ElevatorSubsystem(
-  //         ROBOT_TYPE != RobotType.SIM ? new ElevatorIOReal() : new ElevatorIOSim());
+  private final ElevatorSubsystem elevator =
+      new ElevatorSubsystem(
+          ROBOT_TYPE != RobotType.SIM ? new ElevatorIOReal() : new ElevatorIOSim());
 
-  // private final ArmSubsystem arm =
-  // new ArmSubsystem(ROBOT_TYPE != RobotType.SIM ? new ArmIOReal() : new ArmIOSim());
+  private final ArmSubsystem arm =
+      new ArmSubsystem(ROBOT_TYPE != RobotType.SIM ? new ArmIOReal() : new ArmIOSim());
 
-  // private final IntakeSubsystem intake = new IntakeSubsystem();
-  // private final ClimberSubsystem climber = new ClimberSubsystem();
+  private final IntakeSubsystem intake = new IntakeSubsystem();
+  private final ClimberSubsystem climber = new ClimberSubsystem();
 
   // Maple Sim Stuff
   private final DriveTrainSimulationConfig driveTrainSimConfig =
@@ -132,8 +141,8 @@ public class Robot extends LoggedRobot {
 
   // TODO impl autoaiming left vs right
 
-  // private final Superstructure superstructure =
-  //     new Superstructure(elevator, arm, intake, climber, swerve, driver, operator);
+  private final Superstructure superstructure =
+      new Superstructure(elevator, arm, intake, climber, swerve, driver, operator);
 
   // private final Autos autos;
   private Optional<Alliance> lastAlliance = Optional.empty();
@@ -186,6 +195,8 @@ public class Robot extends LoggedRobot {
     Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may
     // be added.
 
+    PhoenixOdometryThread.getInstance().start();
+
     // Set default commands
     // elevator.setDefaultCommand(elevator.setStateExtension());
     // arm.setDefaultCommand(arm.setStateAngleVoltage());
@@ -194,6 +205,10 @@ public class Robot extends LoggedRobot {
 
     driver.setDefaultCommand(driver.rumbleCmd(0.0, 0.0));
     operator.setDefaultCommand(operator.rumbleCmd(0.0, 0.0));
+
+    if (ROBOT_TYPE == RobotType.SIM) {
+      SimulatedArena.getInstance().addDriveTrainSimulation(swerveSimulation);
+    }
 
     swerve.setDefaultCommand(
         swerve.driveOpenLoopFieldRelative(
