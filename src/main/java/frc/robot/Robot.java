@@ -36,6 +36,7 @@ import frc.robot.elevator.ElevatorSubsystem;
 import frc.robot.intake.IntakeIOReal;
 import frc.robot.intake.IntakeSubsystem;
 import frc.robot.swerve.SwerveSubsystem;
+import frc.robot.swerve.odometry.PhoenixOdometryThread;
 import frc.robot.utils.CommandXboxControllerSubsystem;
 import frc.robot.utils.FieldUtils.AlgaeIntakeTargets;
 import java.util.Optional;
@@ -197,6 +198,8 @@ public class Robot extends LoggedRobot {
     Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may
     // be added.
 
+    PhoenixOdometryThread.getInstance().start();
+
     // Set default commands
     // elevator.setDefaultCommand(elevator.setStateExtension());
     // arm.setDefaultCommand(arm.setStateAngleVoltage());
@@ -217,6 +220,11 @@ public class Robot extends LoggedRobot {
                         modifyJoystick(driver.getRightX())
                             * SwerveSubsystem.SWERVE_CONSTANTS.getMaxAngularSpeed())
                     .times(-1)));
+
+    if (ROBOT_TYPE == RobotType.SIM) {
+      SimulatedArena.getInstance().addDriveTrainSimulation(swerveSimulation);
+    }
+
     addControllerBindings();
 
     // autos = new Autos(swerve, arm);
