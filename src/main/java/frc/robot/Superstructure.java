@@ -148,7 +148,9 @@ public class Superstructure {
     }
   }
 
+  @AutoLogOutput(key = "Superstructure/State")
   private SuperState state = SuperState.IDLE;
+
   private SuperState prevState = SuperState.IDLE;
 
   private Timer stateTimer = new Timer();
