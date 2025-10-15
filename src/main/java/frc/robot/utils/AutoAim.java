@@ -18,6 +18,8 @@ public class AutoAim {
   static final double MAX_ANGULAR_ACCELERATION = 10.0;
   static final double MAX_AUTOAIM_SPEED = 3.0;
   static final double MAX_AUTOAIM_ACCELERATION = 4.0;
+  static final Constraints DEFAULT_TRANSLATIONAL_CONSTRAINTS = new Constraints(MAX_AUTOAIM_SPEED, MAX_AUTOAIM_ACCELERATION);
+  static final Constraints DEFAULT_ANGULAR_CONSTRAINTS = new Constraints(MAX_ANGULAR_SPEED, MAX_ANGULAR_ACCELERATION);
 
   public static final Translation2d BLUE_REEF_CENTER =
       new Translation2d(Units.inchesToMeters(176.746), Units.inchesToMeters(158.501));
@@ -55,6 +57,9 @@ public class AutoAim {
   }
 
   public static ChassisSpeeds calculateSpeeds(Pose2d robotPose, Pose2d target) {
+    VX_CONTROLLER.setConstraints(DEFAULT_TRANSLATIONAL_CONSTRAINTS);
+    VY_CONTROLLER.setConstraints(DEFAULT_TRANSLATIONAL_CONSTRAINTS);
+    HEADING_CONTROLLER.setConstraints(DEFAULT_ANGULAR_CONSTRAINTS);
     return new ChassisSpeeds(
         VX_CONTROLLER.calculate(robotPose.getX(), target.getX())
             + VX_CONTROLLER.getSetpoint().velocity,
@@ -63,6 +68,17 @@ public class AutoAim {
         HEADING_CONTROLLER.calculate(
                 robotPose.getRotation().getRadians(), robotPose.getRotation().getRadians())
             + HEADING_CONTROLLER.getSetpoint().velocity);
+  }
+
+  public static ChassisSpeeds calculateSpeeds(Pose2d robotPose, Pose2d target, Constraints constraints) {
+    VX_CONTROLLER.setConstraints(constraints);
+    VY_CONTROLLER.setConstraints(constraints);
+    // Should heading controller be set here as well? Or just translational?
+    return new ChassisSpeeds(
+        VX_CONTROLLER.calculate(robotPose.getX(), target.getX()) + VX_CONTROLLER.getSetpoint().velocity,
+        VY_CONTROLLER.calculate(robotPose.getX(), target.getY()) + VY_CONTROLLER.getSetpoint().velocity,
+        HEADING_CONTROLLER.calculate(robotPose.getRotation().getRadians(), target.getRotation().getRadians()) + HEADING_CONTROLLER.getSetpoint().velocity
+    );
   }
 
   public static double getClosestBargeXCoord(Pose2d pose) {

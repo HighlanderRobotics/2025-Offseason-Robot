@@ -8,11 +8,13 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rectangle2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -49,6 +51,8 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+
+import org.dyn4j.geometry.Transform;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -401,9 +405,13 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public boolean isInAutoAimTolerance(Pose2d target) {
-    return MathUtil.isNear(target.getX(), getPose().getX(), AutoAim.TRANSLATION_TOLERANCE_METERS)
-      && MathUtil.isNear(target.getY(), getPose().getY(), AutoAim.TRANSLATION_TOLERANCE_METERS)
-      && MathUtil.isNear(target.getRotation().getRadians(), target.getRotation().getRadians(), AutoAim.ROTATION_TOLERANCE_RADIANS);
+    return isInTolerance(target, AutoAim.TRANSLATION_TOLERANCE_METERS, AutoAim.ROTATION_TOLERANCE_RADIANS);
+  }
+
+  public boolean isInTolerance(Pose2d target, double translationalToleranceMeters, double angularToleranceRadians) {
+    Transform2d diff = getPose().minus(target);
+    return MathUtil.isNear(0.0, Math.hypot(diff.getX(), diff.getY()), translationalToleranceMeters)
+      && MathUtil.isNear(target.getRotation().getRadians(), getPose().getRotation().getRadians(), angularToleranceRadians);
   }
 
   public Command autoAimToL1(double vxModifier, double vyModifier) {
@@ -510,13 +518,15 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public Command autoAimAuto(Supplier<Pose2d> pose) {
-    // TODO
-    return Commands.none();
+    return Commands.runOnce(() -> AutoAim.resetPIDs(getPose(), getVelocityFieldRelative()))
+      .andThen(driveClosedLoopFieldRelative(() -> {
+        // Are we going to need a seperate one for l4??
+        return AutoAim.calculateSpeeds(getPose(), FieldUtils.CoralTargets.getClosestTargetL23(pose.get()), new Constraints(1.5, 1.0));
+      }));
   }
 
-  public boolean isNearPoseAuto(Supplier<Pose2d> pose) {
-    // TODO
-    return true;
+  public boolean isNearPoseAuto(Pose2d target) {
+    return isInTolerance(target, lastOdometryUpdateTimestamp, lastOdometryUpdateTimestamp);
   }
 
   /**

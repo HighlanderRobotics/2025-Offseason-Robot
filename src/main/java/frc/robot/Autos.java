@@ -189,7 +189,7 @@ public class Autos {
   public Command scoreCoralInAuto(Supplier<Pose2d> trajEndPose) {
     return Commands.sequence(
             Commands.waitUntil(
-                new Trigger(() -> swerve.isNearPoseAuto(trajEndPose))
+                new Trigger(() -> swerve.isNearPoseAuto(trajEndPose.get()))
                     .and(swerve::isNotMoving)
                     .debounce(0.06 * 2)),
             setAutoScoreReqTrue(),
