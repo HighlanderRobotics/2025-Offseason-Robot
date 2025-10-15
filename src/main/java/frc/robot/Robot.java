@@ -22,6 +22,7 @@ import frc.robot.climber.ClimberSubsystem;
 import frc.robot.elevator.ElevatorIOReal;
 import frc.robot.elevator.ElevatorIOSim;
 import frc.robot.elevator.ElevatorSubsystem;
+import frc.robot.intake.IntakeIOReal;
 import frc.robot.intake.IntakeSubsystem;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.utils.CommandXboxControllerSubsystem;
@@ -90,7 +91,7 @@ public class Robot extends LoggedRobot {
   private final ArmSubsystem arm =
       new ArmSubsystem(ROBOT_TYPE != RobotType.SIM ? new ArmIOReal() : new ArmIOSim());
 
-  private final IntakeSubsystem intake = new IntakeSubsystem();
+  private final IntakeSubsystem intake = new IntakeSubsystem(new IntakeIOReal());
   private final ClimberSubsystem climber = new ClimberSubsystem();
   private final SwerveSubsystem swerve = new SwerveSubsystem();
 
@@ -105,7 +106,7 @@ public class Robot extends LoggedRobot {
   private final Superstructure superstructure =
       new Superstructure(elevator, arm, intake, climber, swerve, driver, operator);
 
-  private final Autos autos;
+  // private final Autos autos;
   private Optional<Alliance> lastAlliance = Optional.empty();
   private final LoggedDashboardChooser<Command> autoChooser = new LoggedDashboardChooser<>("Autos");
 
@@ -158,16 +159,16 @@ public class Robot extends LoggedRobot {
 
     // Set default commands
     elevator.setDefaultCommand(elevator.setStateExtension());
-    arm.setDefaultCommand(arm.setStateAngleVoltage());
-    intake.setDefaultCommand(intake.setStateAngleVoltage());
-    climber.setDefaultCommand(climber.setStateAngleVoltage());
+    // arm.setDefaultCommand(arm.setStateAngleVoltage());
+    // intake.setDefaultCommand(intake.setStateAngleVoltage());
+    // climber.setDefaultCommand(climber.setStateAngleVoltage());
 
     driver.setDefaultCommand(driver.rumbleCmd(0.0, 0.0));
     operator.setDefaultCommand(operator.rumbleCmd(0.0, 0.0));
 
     addControllerBindings();
 
-    autos = new Autos(swerve, arm);
+    // autos = new Autos(swerve, arm);
     // autoChooser.addDefaultOption("None", autos.getNoneAuto());
     // TODO add autos trigger
   }
