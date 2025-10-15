@@ -344,46 +344,46 @@ public class SwerveSubsystem extends SubsystemBase {
         });
   }
 
-  /**
-   * Autoailgns to the given pose, ending once it's within a constant tolerence
-   *
-   * @param target the target pose
-   * @return a Command driving to the target
-   */
-  public Command translateToPose(Supplier<Pose2d> target) {
-    return translateToPose(
-        target,
-        AutoAim.TRANSLATION_TOLERANCE_METERS,
-        AutoAim.TRANSLATION_TOLERANCE_METERS,
-        AutoAim.ROTATION_TOLERANCE_RADIANS);
-  }
+  // /**
+  //  * Autoailgns to the given pose, ending once it's within a constant tolerence
+  //  *
+  //  * @param target the target pose
+  //  * @return a Command driving to the target
+  //  */
+  // public Command translateToPose(Supplier<Pose2d> target) {
+  //   return translateToPose(
+  //       target,
+  //       AutoAim.TRANSLATION_TOLERANCE_METERS,
+  //       AutoAim.TRANSLATION_TOLERANCE_METERS,
+  //       AutoAim.ROTATION_TOLERANCE_RADIANS);
+  // }
 
-  /**
-   * Autoaligns to the given pose, stopping when it's within the passed-in tolerance
-   *
-   * @param target the target pose
-   * @param xToleranceMeters the allowed x-direction translational tolerance
-   * @param yToleranceMeters the allowed y-direction translational tolerance
-   * @param headingToleranceRadians the allowed heading tolerance
-   * @return a Command driving to the target pose
-   */
-  public Command translateToPose(
-      Supplier<Pose2d> target,
-      double xToleranceMeters,
-      double yToleranceMeters,
-      double headingToleranceRadians) {
-    return Commands.runOnce(() -> AutoAim.resetPIDs(getPose(), getVelocityFieldRelative()))
-        .andThen(
-            driveClosedLoopFieldRelative(() -> AutoAim.calculateSpeeds(getPose(), target.get())))
-        .until(
-            () ->
-                MathUtil.isNear(target.get().getX(), getPose().getX(), xToleranceMeters)
-                    && MathUtil.isNear(target.get().getY(), getPose().getY(), yToleranceMeters)
-                    && MathUtil.isNear(
-                        target.get().getRotation().getRadians(),
-                        getPose().getRotation().getRadians(),
-                        headingToleranceRadians));
-  }
+  // /**
+  //  * Autoaligns to the given pose, stopping when it's within the passed-in tolerance
+  //  *
+  //  * @param target the target pose
+  //  * @param xToleranceMeters the allowed x-direction translational tolerance
+  //  * @param yToleranceMeters the allowed y-direction translational tolerance
+  //  * @param headingToleranceRadians the allowed heading tolerance
+  //  * @return a Command driving to the target pose
+  //  */
+  // public Command translateToPose(
+  //     Supplier<Pose2d> target,
+  //     double xToleranceMeters,
+  //     double yToleranceMeters,
+  //     double headingToleranceRadians) {
+  //   return Commands.runOnce(() -> AutoAim.resetPIDs(getPose(), getVelocityFieldRelative()))
+  //       .andThen(
+  //           driveClosedLoopFieldRelative(() -> AutoAim.calculateSpeeds(getPose(), target.get())))
+  //       .until(
+  //           () ->
+  //               MathUtil.isNear(target.get().getX(), getPose().getX(), xToleranceMeters)
+  //                   && MathUtil.isNear(target.get().getY(), getPose().getY(), yToleranceMeters)
+  //                   && MathUtil.isNear(
+  //                       target.get().getRotation().getRadians(),
+  //                       getPose().getRotation().getRadians(),
+  //                       headingToleranceRadians));
+  // }
 
   public Command autoAimToL1() {
     // TODO
