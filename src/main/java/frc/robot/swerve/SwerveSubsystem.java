@@ -371,6 +371,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
   /**
    * Autoaligns to the given pose
+   *
    * @param target the target pose
    * @return a Command driving to the target
    */
