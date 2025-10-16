@@ -239,7 +239,8 @@ public class Robot extends LoggedRobot {
             () ->
                 DriverStation.isDSAttached()
                     && DriverStation.getAlliance().isPresent()
-                    && !haveAutosGenerated) // TODO check that the haveautosgenerated doesn't break anything?
+                    && !haveAutosGenerated) // TODO check that the haveautosgenerated doesn't break
+        // anything?
         .onTrue(Commands.print("connected"))
         .onTrue(
             Commands.runOnce(() -> addAutos())
