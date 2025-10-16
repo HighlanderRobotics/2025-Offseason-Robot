@@ -3,6 +3,7 @@ package frc.robot.intake;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.canrange.CANrangeIO;
 import frc.robot.canrange.CANrangeIOInputsAutoLogged;
 import frc.robot.pivot.PivotIO;
@@ -23,6 +24,8 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   private final CANrangeIOInputsAutoLogged rightCanrangeInputs = new CANrangeIOInputsAutoLogged();
   private final double ZEROING_POSITION = -10.0;
   private final double CURRENT_THRESHOLD = 10.0;
+
+  @AutoLogOutput public boolean intakeZeroed = false;
 
   // TODO : change these values to the real ones
   public enum IntakeState {
@@ -96,9 +99,13 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   }
 
   public Command zeroIntake() {
-    return Commands.run(() -> setPivotAngle(Rotation2d.fromDegrees(-80)))
-        .until(() -> Math.abs(currentFilterValue) > CURRENT_THRESHOLD)
-        .andThen(Commands.parallel(Commands.print("Intake Zeroed"), zeroPivot(ZEROING_POSITION)));
+    return this.run(() -> setPivotAngle(Rotation2d.fromDegrees(-80)))
+        .until(new Trigger(() -> Math.abs(currentFilterValue) > CURRENT_THRESHOLD).debounce(0.25))
+        .andThen(
+            Commands.parallel(
+                Commands.runOnce(() -> intakeZeroed = true),
+                Commands.print("Intake Zeroed"),
+                zeroPivot(ZEROING_POSITION)));
   }
 
   public boolean isNearAngle(Rotation2d target) {

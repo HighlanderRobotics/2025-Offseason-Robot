@@ -134,6 +134,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
         .andThen(Commands.runOnce(() -> hasCoral = true));
   }
 
+  // can it distinguish between coral and algae?
   @AutoLogOutput(key = "Arm/Has GamePiece")
   public boolean hasGamePiece() {
     // return (Math.abs(currentFilterValue) > CORAL_CURRENT_THRESHOLD ||
