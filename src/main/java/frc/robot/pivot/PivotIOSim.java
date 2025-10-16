@@ -23,8 +23,8 @@ public class PivotIOSim implements PivotIO {
             PivotRatio,
             0.1,
             length,
-            MinAngleRadians, // min angle
-            MaxAngleRadians, // max angle
+            MinAngleRadians,
+            MaxAngleRadians,
             true,
             0.0);
   }
@@ -62,6 +62,5 @@ public class PivotIOSim implements PivotIO {
   }
 
   @Override
-  public void resetEncoder(double position) {
-  }
+  public void resetEncoder(double position) {}
 }

@@ -98,9 +98,7 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   public Command zeroIntake() {
     return Commands.run(() -> setPivotAngle(Rotation2d.fromDegrees(-80)))
         .until(() -> Math.abs(currentFilterValue) > CURRENT_THRESHOLD)
-        .andThen(Commands.parallel(
-          Commands.print("Intake Zeroed"),
-          zeroPivot(ZEROING_POSITION)));
+        .andThen(Commands.parallel(Commands.print("Intake Zeroed"), zeroPivot(ZEROING_POSITION)));
   }
 
   public boolean isNearAngle(Rotation2d target) {
