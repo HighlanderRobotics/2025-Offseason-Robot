@@ -62,4 +62,9 @@ public class PivotIOReal implements PivotIO {
   public void setMotorPosition(Rotation2d targetPosition) {
     motor.setControl(motionMagic.withPosition(targetPosition.getRotations()));
   }
+
+  @Override
+  public void resetEncoder(double position) {
+    motor.setPosition(position);
+  }
 }

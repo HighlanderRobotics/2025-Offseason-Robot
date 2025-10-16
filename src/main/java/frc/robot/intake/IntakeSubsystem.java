@@ -21,9 +21,8 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   private final CANrangeIO rearCanrangeIO;
   private final CANrangeIOInputsAutoLogged leftCanrangeInputs = new CANrangeIOInputsAutoLogged();
   private final CANrangeIOInputsAutoLogged rightCanrangeInputs = new CANrangeIOInputsAutoLogged();
-  private final double ZEROING_OFFSET = -10;
-  private boolean intakeHasZeroed = false;
-  private Rotation2d currentPosition = new Rotation2d();
+  private final double ZEROING_POSITION = -10.0;
+  private final double CURRENT_THRESHOLD = 10.0;
 
   // TODO : change these values to the real ones
   public enum IntakeState {
@@ -51,13 +50,6 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
       return volts;
     }
   }
-
-  // private boolean isIntakingState(IntakeState state) {
-  //   return state == IntakeState.INTAKE_ALGAE_GROUND
-  //       || state == IntakeState.INTAKE_ALGAE_REEF_HIGH
-  //       || state == IntakeState.INTAKE_ALGAE_REEF_LOW
-  //       || state == IntakeState.INTAKE_CORAL_GROUND;
-  // }
 
   public IntakeState getState() {
     return state;
@@ -103,25 +95,12 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
     return getfrontCanrangePosition() < 10.0 || getRearCanrangePosition() < 10.0;
   }
 
-  public Command zeroPivot() {
-    return Commands.runOnce(
-        () -> {
-          intakeHasZeroed = true;
-          System.out.println("Intake zeroed!");
-          currentPosition = Rotation2d.fromDegrees(ZEROING_OFFSET);
-        });
-  }
-
   public Command zeroIntake() {
-    return Commands.run(() -> setPivotVoltage(-2))
-        .until(() -> Math.abs(currentFilterValue) > 10.0)
-        .andThen(zeroPivot());
-  }
-
-  public void setIntakePosition(Rotation2d target) {
-    if (intakeHasZeroed) {
-      currentPosition = target;
-    }
+    return Commands.run(() -> setPivotAngle(Rotation2d.fromDegrees(-80)))
+        .until(() -> Math.abs(currentFilterValue) > CURRENT_THRESHOLD)
+        .andThen(Commands.parallel(
+          Commands.print("Intake Zeroed"),
+          zeroPivot(ZEROING_POSITION)));
   }
 
   public boolean isNearAngle(Rotation2d target) {
