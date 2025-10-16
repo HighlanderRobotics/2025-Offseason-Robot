@@ -1,4 +1,4 @@
-package frc.robot.arm;
+package frc.robot.pivot;
 
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
@@ -9,21 +9,25 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 
-public class ArmIOSim implements ArmIO {
+public class PivotIOSim implements PivotIO {
+  private final SingleJointedArmSim pivotSim;
+
   // TODO: change to actual values
-  private final SingleJointedArmSim armSim =
-      new SingleJointedArmSim(
-          DCMotor.getKrakenX60Foc(1),
-          ArmSubsystem.PIVOT_RATIO,
-          0.1,
-          Units.inchesToMeters(25), // arm length
-          ArmSubsystem.MIN_ANGLE.getRadians(), // min angle
-          ArmSubsystem.MAX_ANGLE.getRadians(), // max angle
-          true,
-          0.0);
+  public PivotIOSim(
+      double PivotRatio, double MinAngleRadians, double MaxAngleRadians, double length) {
+    pivotSim =
+        new SingleJointedArmSim(
+            DCMotor.getKrakenX60Foc(1),
+            PivotRatio,
+            0.1,
+            length,
+            MinAngleRadians,
+            MaxAngleRadians,
+            true,
+            0.0);
+  }
 
   private final ProfiledPIDController pivotPid =
       // TODO tune these values
@@ -33,13 +37,13 @@ public class ArmIOSim implements ArmIO {
   private double appliedVoltage = 0.0;
 
   @Override
-  public void updateInputs(ArmIOInputs inputs) {
-    armSim.update(0.02);
+  public void updateInputs(PivotIOInputs inputs) {
+    pivotSim.update(0.02);
 
     inputs.angularVelocityRotsPerSec =
-        RadiansPerSecond.of(armSim.getVelocityRadPerSec()).in(RotationsPerSecond);
-    inputs.position = Rotation2d.fromRadians(armSim.getAngleRads());
-    inputs.statorCurrentAmps = armSim.getCurrentDrawAmps();
+        RadiansPerSecond.of(pivotSim.getVelocityRadPerSec()).in(RotationsPerSecond);
+    inputs.position = Rotation2d.fromRadians(pivotSim.getAngleRads());
+    inputs.statorCurrentAmps = pivotSim.getCurrentDrawAmps();
     inputs.supplyCurrentAmps = 0.0;
     inputs.appliedVoltage = appliedVoltage;
   }
@@ -47,18 +51,16 @@ public class ArmIOSim implements ArmIO {
   @Override
   public void setMotorVoltage(double voltage) {
     appliedVoltage = voltage;
-    armSim.setInputVoltage(MathUtil.clamp(voltage, -20, 20));
+    pivotSim.setInputVoltage(MathUtil.clamp(voltage, -12, 12));
   }
 
   @Override
   public void setMotorPosition(Rotation2d targetPosition) {
     setMotorVoltage(
-        pivotPid.calculate(armSim.getAngleRads(), targetPosition.getRadians())
+        pivotPid.calculate(pivotSim.getAngleRads(), targetPosition.getRadians())
             + pivotFf.calculate(pivotPid.getSetpoint().position, pivotPid.getSetpoint().velocity));
   }
 
   @Override
-  public void setRollerVoltage(double voltage) {
-    // not gonna simulate the rollers
-  }
+  public void resetEncoder(double position) {}
 }

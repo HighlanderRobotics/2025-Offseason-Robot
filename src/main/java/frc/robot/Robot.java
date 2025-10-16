@@ -5,6 +5,13 @@
 package frc.robot;
 
 import com.ctre.phoenix6.SignalLogger;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.signals.GravityTypeValue;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -15,14 +22,18 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Superstructure.SuperState;
-import frc.robot.arm.ArmIOReal;
-import frc.robot.arm.ArmIOSim;
 import frc.robot.arm.ArmSubsystem;
+import frc.robot.cancoder.CANcoderIOReal;
+import frc.robot.canrange.CANrangeIOReal;
 import frc.robot.climber.ClimberSubsystem;
 import frc.robot.elevator.ElevatorIOReal;
 import frc.robot.elevator.ElevatorIOSim;
 import frc.robot.elevator.ElevatorSubsystem;
 import frc.robot.intake.IntakeSubsystem;
+import frc.robot.pivot.PivotIOReal;
+import frc.robot.pivot.PivotIOSim;
+import frc.robot.roller.RollerIOReal;
+import frc.robot.roller.RollerIOSim;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.utils.CommandXboxControllerSubsystem;
 import frc.robot.utils.FieldUtils.AlgaeIntakeTargets;
@@ -87,11 +98,107 @@ public class Robot extends LoggedRobot {
       new ElevatorSubsystem(
           ROBOT_TYPE != RobotType.SIM ? new ElevatorIOReal() : new ElevatorIOSim());
 
-  private final ArmSubsystem arm =
-      new ArmSubsystem(ROBOT_TYPE != RobotType.SIM ? new ArmIOReal() : new ArmIOSim());
+  // TODO: fill in correct values for these subsystems
 
-  private final IntakeSubsystem intake = new IntakeSubsystem();
-  private final ClimberSubsystem climber = new ClimberSubsystem();
+  private TalonFXConfiguration rollerConfig(double currentLimit) {
+    TalonFXConfiguration config = new TalonFXConfiguration();
+
+    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    config.CurrentLimits.SupplyCurrentLimit = currentLimit;
+    config.CurrentLimits.SupplyCurrentLimitEnable = true;
+
+    return config;
+  }
+
+  private TalonFXConfiguration pivotConfig(
+      double currentLimit,
+      double sensorToMechRatio,
+      double kV,
+      double kG,
+      double kS,
+      double kP,
+      double kI,
+      double kD) {
+    TalonFXConfiguration config = new TalonFXConfiguration();
+
+    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    config.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
+
+    config.Slot0.kV = kV;
+    config.Slot0.kG = kG;
+    config.Slot0.kS = kS;
+    config.Slot0.kP = kP;
+    config.Slot0.kI = kI;
+    config.Slot0.kD = kD;
+
+    config.CurrentLimits.SupplyCurrentLimit = currentLimit;
+    config.CurrentLimits.SupplyCurrentLimitEnable = true;
+
+    config.Feedback.SensorToMechanismRatio = sensorToMechRatio;
+
+    return config;
+  }
+
+  // TODO tune/check these values
+  TalonFXConfiguration armRollerConfig = rollerConfig(20.0);
+  TalonFXConfiguration armPivotConfig = pivotConfig(20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
+
+  TalonFXConfiguration intakeRollerConfig = rollerConfig(20.0);
+  TalonFXConfiguration intakePivotConfig = pivotConfig(20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
+
+  TalonFXConfiguration climberRollerConfig = rollerConfig(20.0);
+  TalonFXConfiguration climberPivotConfig = pivotConfig(20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
+
+  private final ArmSubsystem arm =
+      new ArmSubsystem(
+          ROBOT_TYPE != RobotType.SIM
+              ? new RollerIOReal(9, armRollerConfig)
+              : new RollerIOSim(
+                  0.01,
+                  1.0,
+                  new SimpleMotorFeedforward(0.0, 0.24),
+                  new ProfiledPIDController(
+                      0.5, 0.0, 0.0, new TrapezoidProfile.Constraints(15, 1))),
+          ROBOT_TYPE != RobotType.SIM
+              ? new PivotIOReal(12, armPivotConfig)
+              : new PivotIOSim((44.0 / 16.0) * 23, 0.0, 180.0, 23.0),
+          new CANcoderIOReal(0),
+          "Arm");
+
+  private final IntakeSubsystem intake =
+      new IntakeSubsystem(
+          ROBOT_TYPE != RobotType.SIM
+              ? new RollerIOReal(13, intakeRollerConfig)
+              : new RollerIOSim(
+                  0.01,
+                  1.0,
+                  new SimpleMotorFeedforward(0.0, 0.24),
+                  new ProfiledPIDController(
+                      0.5, 0.0, 0.0, new TrapezoidProfile.Constraints(15, 1))),
+          ROBOT_TYPE != RobotType.SIM
+              ? new PivotIOReal(12, intakePivotConfig)
+              : new PivotIOSim((44.0 / 16.0) * 23, 0.0, 90.0, 15),
+          new CANrangeIOReal(0),
+          new CANrangeIOReal(1),
+          "Intake");
+
+  private final ClimberSubsystem climber =
+      new ClimberSubsystem(
+          ROBOT_TYPE != RobotType.SIM
+              ? new RollerIOReal(17, climberRollerConfig)
+              : new RollerIOSim(
+                  0.01,
+                  1.0,
+                  new SimpleMotorFeedforward(0.0, 0.24),
+                  new ProfiledPIDController(
+                      0.5, 0.0, 0.0, new TrapezoidProfile.Constraints(15, 1))),
+          ROBOT_TYPE != RobotType.SIM
+              ? new PivotIOReal(16, climberPivotConfig)
+              : new PivotIOSim((44.0 / 16.0) * 23, 0.0, 90.0, 9.25),
+          "Climber");
+
   private final SwerveSubsystem swerve = new SwerveSubsystem();
 
   private final CommandXboxControllerSubsystem driver = new CommandXboxControllerSubsystem(0);
@@ -158,9 +265,9 @@ public class Robot extends LoggedRobot {
 
     // Set default commands
     elevator.setDefaultCommand(elevator.setStateExtension());
-    arm.setDefaultCommand(arm.setStateAngleVoltage());
-    intake.setDefaultCommand(intake.setStateAngleVoltage());
-    climber.setDefaultCommand(climber.setStateAngleVoltage());
+    arm.setDefaultCommand(arm.setStateAngleVoltage(arm.getState()));
+    intake.setDefaultCommand(intake.setStateAngleVoltage(intake.getState()));
+    climber.setDefaultCommand(climber.setStateAngleVoltage(climber.getState()));
 
     driver.setDefaultCommand(driver.rumbleCmd(0.0, 0.0));
     operator.setDefaultCommand(operator.rumbleCmd(0.0, 0.0));
