@@ -18,6 +18,7 @@ import frc.robot.Superstructure.SuperState;
 import frc.robot.arm.ArmIOReal;
 import frc.robot.arm.ArmIOSim;
 import frc.robot.arm.ArmSubsystem;
+import frc.robot.climber.ClimberIOReal;
 import frc.robot.climber.ClimberSubsystem;
 import frc.robot.elevator.ElevatorIOReal;
 import frc.robot.elevator.ElevatorIOSim;
@@ -91,7 +92,7 @@ public class Robot extends LoggedRobot {
       new ArmSubsystem(ROBOT_TYPE != RobotType.SIM ? new ArmIOReal() : new ArmIOSim());
 
   private final IntakeSubsystem intake = new IntakeSubsystem();
-  private final ClimberSubsystem climber = new ClimberSubsystem();
+  private final ClimberSubsystem climber = new ClimberSubsystem(new ClimberIOReal());
   private final SwerveSubsystem swerve = new SwerveSubsystem();
 
   private final CommandXboxControllerSubsystem driver = new CommandXboxControllerSubsystem(0);

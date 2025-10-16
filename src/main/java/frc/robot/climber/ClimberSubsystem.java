@@ -4,13 +4,17 @@
 
 package frc.robot.climber;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 public class ClimberSubsystem extends SubsystemBase {
+
+  private ClimberIO io;
+  private ClimberIOInputsAutoLogged inputs = new ClimberIOInputsAutoLogged();
 
   @AutoLogOutput(key = "Climber/State")
   private ClimberState state = ClimberState.IDLE;
@@ -26,12 +30,16 @@ public class ClimberSubsystem extends SubsystemBase {
     ;
 
     public final Rotation2d position;
-    public final double volts;
+    public final double rollerVolts;
 
-    private ClimberState(double positionDegrees, double volts) {
+    private ClimberState(double positionDegrees, double rollerVolts) {
       this.position = Rotation2d.fromDegrees(positionDegrees);
-      this.volts = volts;
+      this.rollerVolts = rollerVolts;
     }
+  }
+
+  public ClimberSubsystem(ClimberIO io) {
+    this.io = io;
   }
 
   public void setState(ClimberState state) {
@@ -40,16 +48,18 @@ public class ClimberSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    io.updateInputs(inputs);
+    Logger.processInputs("Climber", inputs);
   }
 
-  // TODO setStateAngleVoltage
   public Command setStateAngleVoltage() {
-    return Commands.none();
+    return this.run(() -> {
+      io.setPivotPosition(state.position);
+      io.setRollerVoltage(state.rollerVolts);
+    });
   }
 
-  // TODO atExtension
   public boolean atExtension() {
-    return true;
+    return MathUtil.isNear(state.position.getDegrees(), inputs.pivotPosition.getDegrees(), 5);
   }
 }
