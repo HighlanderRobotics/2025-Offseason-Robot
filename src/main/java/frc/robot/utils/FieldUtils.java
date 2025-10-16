@@ -61,7 +61,9 @@ public class FieldUtils {
     public static Pose2d getRobotTargetLocation(Pose2d original) {
       return original.transformBy(
           new Transform2d(
-              (SwerveSubsystem.constants.getBumperLength() / 2), 0, Rotation2d.fromDegrees(180.0)));
+              (SwerveSubsystem.SWERVE_CONSTANTS.getBumperLength() / 2),
+              0,
+              Rotation2d.fromDegrees(180.0)));
     }
 
     public static Pose2d getOffsetLocation(Pose2d original) {
@@ -140,13 +142,17 @@ public class FieldUtils {
     public static Pose2d getCloseRobotTargetLocation(Pose2d pose) {
       return pose.transformBy(
           new Transform2d(
-              (SwerveSubsystem.constants.getBumperLength() / 2) + 0.087, 0, Rotation2d.kZero));
+              (SwerveSubsystem.SWERVE_CONSTANTS.getBumperLength() / 2) + 0.087,
+              0,
+              Rotation2d.kZero));
     }
 
     public static Pose2d getFarRobotTargetLocation(Pose2d pose) {
       return pose.transformBy(
           new Transform2d(
-              -(SwerveSubsystem.constants.getBumperLength() / 2) - 0.087, 0, Rotation2d.k180deg));
+              -(SwerveSubsystem.SWERVE_CONSTANTS.getBumperLength() / 2) - 0.087,
+              0,
+              Rotation2d.k180deg));
     }
 
     public Pose2d getLocation() {
@@ -210,7 +216,7 @@ public class FieldUtils {
       // 0.248 for trough
       return original.transformBy(
           new Transform2d(
-              0.291 + (SwerveSubsystem.constants.getBumperLength() / 2),
+              0.291 + (SwerveSubsystem.SWERVE_CONSTANTS.getBumperLength() / 2),
               0,
               Rotation2d.fromDegrees(180.0)));
     }
@@ -219,7 +225,7 @@ public class FieldUtils {
       // 0.248 for trough
       return transformed.transformBy(
           new Transform2d(
-                  0.291 + (SwerveSubsystem.constants.getBumperLength() / 2),
+                  0.291 + (SwerveSubsystem.SWERVE_CONSTANTS.getBumperLength() / 2),
                   0,
                   Rotation2d.fromDegrees(180.0))
               .inverse());
@@ -358,7 +364,9 @@ public class FieldUtils {
     public static Rectangle2d getRobotTargetLine(Rectangle2d original) {
       return original.transformBy(
           new Transform2d(
-              SwerveSubsystem.constants.getBumperLength() / 2, 0, Rotation2d.fromDegrees(180.0)));
+              SwerveSubsystem.SWERVE_CONSTANTS.getBumperLength() / 2,
+              0,
+              Rotation2d.fromDegrees(180.0)));
     }
 
     public static Rectangle2d getNearestLine(Pose2d pose) {

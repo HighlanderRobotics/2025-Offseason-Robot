@@ -1,277 +1,554 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.swerve;
 
 import choreo.trajectory.SwerveSample;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.util.Units;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
+import frc.robot.Robot.RobotType;
+import frc.robot.swerve.constants.KelpieSwerveConstants;
+import frc.robot.swerve.constants.SwerveConstants;
+import frc.robot.swerve.gyro.GyroIO;
+import frc.robot.swerve.gyro.GyroIOInputsAutoLogged;
+import frc.robot.swerve.gyro.GyroIOReal;
+import frc.robot.swerve.gyro.GyroIOSim;
+import frc.robot.swerve.module.Module;
+import frc.robot.swerve.module.ModuleIOReal;
+import frc.robot.swerve.module.ModuleIOSim;
+import frc.robot.swerve.odometry.OdometryThreadIO;
+import frc.robot.swerve.odometry.OdometryThreadIO.OdometryThreadIOInputs;
+import frc.robot.swerve.odometry.PhoenixOdometryThread;
+import frc.robot.swerve.odometry.PhoenixOdometryThread.Samples;
+import frc.robot.swerve.odometry.PhoenixOdometryThread.SignalID;
+import frc.robot.swerve.odometry.PhoenixOdometryThread.SignalType;
 import frc.robot.utils.AutoAim;
-import frc.robot.utils.FieldUtils;
-import frc.robot.utils.FieldUtils.AlgaeIntakeTargets;
-import frc.robot.utils.FieldUtils.L1Targets;
+import frc.robot.utils.Tracer;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 public class SwerveSubsystem extends SubsystemBase {
+  public static final SwerveConstants SWERVE_CONSTANTS = new KelpieSwerveConstants();
 
-  // we don't have multiple robots so i kinda don't care
-  public static final SwerveConstants constants = new SwerveConstants();
+  private final Module[] modules; // Front Left, Front Right, Back Left, Back Right
+  private final GyroIO gyroIO;
+  private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
+  private final OdometryThreadIO odometryThread;
+  private final OdometryThreadIOInputs odometryThreadInputs = new OdometryThreadIOInputs();
+  private double lastOdometryUpdateTimestamp = 0.0;
 
-  /** Creates a new SwerveSubsystem. */
-  public SwerveSubsystem() {}
+  private SwerveDriveKinematics kinematics;
+
+  private SwerveDrivePoseEstimator estimator;
+
+  private SwerveModulePosition[] lastModulePositions =
+      new SwerveModulePosition[] {
+        new SwerveModulePosition(),
+        new SwerveModulePosition(),
+        new SwerveModulePosition(),
+        new SwerveModulePosition()
+      };
+  private Rotation2d rawGyroRotation = new Rotation2d();
+
+  private static final SignalID GYRO_SIGNAL_ID =
+      new SignalID(SignalType.GYRO, PhoenixOdometryThread.GYRO_MODULE_ID);
+  private static final SignalID[] DRIVE_SIGNAL_IDS = {
+    new SignalID(SignalType.DRIVE, 0),
+    new SignalID(SignalType.DRIVE, 1),
+    new SignalID(SignalType.DRIVE, 2),
+    new SignalID(SignalType.DRIVE, 3)
+  };
+  private static final SignalID[] TURN_SIGNAL_IDS = {
+    new SignalID(SignalType.TURN, 0),
+    new SignalID(SignalType.TURN, 1),
+    new SignalID(SignalType.TURN, 2),
+    new SignalID(SignalType.TURN, 3)
+  };
+
+  private final SwerveDriveSimulation swerveSimulation;
+
+  private Alert usingSyncOdoAlert = new Alert("Using Sync Odometry", AlertType.kInfo);
+  private Alert missingModuleData = new Alert("Missing Module Data", AlertType.kError);
+  private Alert missingGyroData = new Alert("Missing Gyro Data", AlertType.kWarning);
+
+  public SwerveSubsystem(SwerveDriveSimulation swerveSimulation) {
+    if (Robot.ROBOT_TYPE == RobotType.SIM) {
+      // Add simulated modules
+      modules =
+          new Module[] {
+            new Module(
+                new ModuleIOSim(
+                    SWERVE_CONSTANTS.getFrontLeftModuleConstants(),
+                    swerveSimulation.getModules()[0])),
+            new Module(
+                new ModuleIOSim(
+                    SWERVE_CONSTANTS.getFrontRightModuleConstants(),
+                    swerveSimulation.getModules()[1])),
+            new Module(
+                new ModuleIOSim(
+                    SWERVE_CONSTANTS.getBackLeftModuleConstants(),
+                    swerveSimulation.getModules()[2])),
+            new Module(
+                new ModuleIOSim(
+                    SWERVE_CONSTANTS.getBackRightModuleConstants(),
+                    swerveSimulation.getModules()[3]))
+          };
+    } else {
+      // Add real modules
+      modules =
+          new Module[] {
+            new Module(new ModuleIOReal(SWERVE_CONSTANTS.getFrontLeftModuleConstants())),
+            new Module(new ModuleIOReal(SWERVE_CONSTANTS.getFrontRightModuleConstants())),
+            new Module(new ModuleIOReal(SWERVE_CONSTANTS.getBackLeftModuleConstants())),
+            new Module(new ModuleIOReal(SWERVE_CONSTANTS.getBackRightModuleConstants()))
+          };
+    }
+
+    this.gyroIO =
+        Robot.ROBOT_TYPE != RobotType.SIM
+            ? new GyroIOReal(SWERVE_CONSTANTS.getGyroID())
+            : new GyroIOSim(swerveSimulation.getGyroSimulation());
+
+    this.swerveSimulation = swerveSimulation;
+
+    this.kinematics = new SwerveDriveKinematics(SWERVE_CONSTANTS.getModuleTranslations());
+    // Std devs copied from reefscape
+    this.estimator =
+        new SwerveDrivePoseEstimator(
+            kinematics,
+            rawGyroRotation,
+            lastModulePositions,
+            new Pose2d(),
+            VecBuilder.fill(0.6, 0.6, 0.07),
+            VecBuilder.fill(0.9, 0.9, 0.4));
+
+    this.odometryThread = PhoenixOdometryThread.getInstance();
+  }
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    Tracer.trace(
+        "Swerve Periodic",
+        () -> {
+          Tracer.trace(
+              "Update odo thread inputs",
+              () -> odometryThread.updateInputs(odometryThreadInputs, lastOdometryUpdateTimestamp));
+          Logger.processInputs("AsyncOdo", odometryThreadInputs);
+          if (!odometryThreadInputs.sampledStates.isEmpty()) {
+            lastOdometryUpdateTimestamp =
+                odometryThreadInputs
+                    .sampledStates
+                    .get(odometryThreadInputs.sampledStates.size() - 1)
+                    .timestamp();
+          }
+
+          Tracer.trace("Update gyro inputs", () -> gyroIO.updateInputs(gyroInputs));
+          Logger.processInputs("Swerve/Gyro", gyroInputs);
+
+          for (Module module : modules) {
+            Tracer.trace("Update module inputs for " + module.getPrefix(), module::periodic);
+          }
+
+          Tracer.trace("Update odometry", this::updateOdometry);
+        });
   }
 
-  @AutoLogOutput(key = "Odometry/Robot")
-  public Pose2d getPose() {
-    // return estimator.getEstimatedPosition();
-    return Pose2d.kZero;
+  private void updateOdometry() {
+
+    List<Samples> sampledStates = odometryThreadInputs.sampledStates;
+    // Use sync samples if there aren't any async ones
+    if (sampledStates.size() == 0
+        || Robot.isSimulation()
+        || sampledStates.get(0).values().isEmpty()) {
+      usingSyncOdoAlert.set(true);
+      sampledStates = getSyncSamples();
+    } else {
+      usingSyncOdoAlert.set(false);
+    }
+    // Update for each set of samples
+    for (Samples sample : sampledStates) {
+      SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
+      SwerveModulePosition[] moduleDeltas = new SwerveModulePosition[4];
+      boolean hasNullModulePosition = false;
+      boolean hasNullGyroRotation = false;
+      // Get the positions and deltas for each module
+      for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
+        Double dist = sample.values().get(DRIVE_SIGNAL_IDS[moduleIndex]);
+        if (dist == null) {
+          // No value at timestamp
+          hasNullModulePosition = true;
+          break;
+        }
+
+        Double rot = sample.values().get(TURN_SIGNAL_IDS[moduleIndex]);
+        if (rot == null) {
+          hasNullModulePosition = true;
+          break;
+        }
+
+        // All data exists at this timestamp
+        modulePositions[moduleIndex] =
+            new SwerveModulePosition(dist, Rotation2d.fromRotations(rot)); // Values from thread
+        // Change since last sample
+        moduleDeltas[moduleIndex] =
+            new SwerveModulePosition(
+                modulePositions[moduleIndex].distanceMeters
+                    - lastModulePositions[moduleIndex].distanceMeters,
+                modulePositions[moduleIndex].angle.minus(lastModulePositions[moduleIndex].angle));
+
+        lastModulePositions[moduleIndex] = modulePositions[moduleIndex];
+      }
+
+      hasNullGyroRotation =
+          !gyroInputs.isConnected || (sample.values().get(GYRO_SIGNAL_ID) == null);
+
+      // Set DS alerts
+      missingModuleData.set(hasNullModulePosition);
+      missingGyroData.set(hasNullGyroRotation);
+
+      if (hasNullModulePosition && hasNullGyroRotation) {
+        // Can't really do anything else rn bc theres no data
+        continue;
+      } else if (hasNullModulePosition && !hasNullGyroRotation) {
+        rawGyroRotation = Rotation2d.fromDegrees(sample.values().get(GYRO_SIGNAL_ID));
+
+        // If we're missing data, just update with the gyro and the previous module positions
+        estimator.updateWithTime(sample.timestamp(), rawGyroRotation, lastModulePositions);
+        continue;
+      } else if (!hasNullModulePosition && hasNullGyroRotation) {
+        Twist2d twist = kinematics.toTwist2d(moduleDeltas);
+        // If theres no gyro data, update the rotation with the change in position
+        rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
+      } else if (!hasNullModulePosition && !hasNullGyroRotation) {
+        // We have all of our data
+        rawGyroRotation = Rotation2d.fromDegrees(sample.values().get(GYRO_SIGNAL_ID));
+      }
+
+      // Apply update
+      estimator.updateWithTime(sample.timestamp(), rawGyroRotation, modulePositions);
+    }
   }
 
-  // public boolean isNearPose(Pose2d pose) {
-  //   return
+  /**
+   * Runs the modules to the specified ChassisSpeeds (robot velocity)
+   *
+   * @param speeds the ChassisSpeeds to run the drivetrain at
+   * @param openLoop boolean for if the drivetrain should run with feedforward control (open loop)
+   *     or with feedback control (closed loop)
+   */
+  private void drive(ChassisSpeeds speeds, boolean openLoop) {
+    // Converts time continuous chassis speeds to setpoints after the specified time (dtSeconds)
+    speeds = ChassisSpeeds.discretize(speeds, 0.02);
+
+    // Convert drivetrain setpoint into individual module setpoints
+    final SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
+    // Makes sure each wheel isn't asked to go above its max. Recalcs the states if needed
+    SwerveDriveKinematics.desaturateWheelSpeeds(states, SWERVE_CONSTANTS.getMaxLinearSpeed());
+    if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("SwerveStates/Setpoints", states);
+
+    if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("Swerve/Target Speeds", speeds);
+
+    SwerveModuleState[] optimizedStates = new SwerveModuleState[modules.length];
+
+    for (int i = 0; i < optimizedStates.length; i++) {
+      if (openLoop) {
+        // Heuristic to enable/disable FOC
+        // enables FOC if the robot is moving at 90% of drivetrain max speed
+        final boolean focEnable =
+            Math.sqrt(
+                    Math.pow(this.getVelocityRobotRelative().vxMetersPerSecond, 2)
+                        + Math.pow(this.getVelocityRobotRelative().vyMetersPerSecond, 2))
+                < SWERVE_CONSTANTS.getMaxLinearSpeed() * 0.9; // 0.9 is 90% of drivetrain max speed
+        optimizedStates[i] = modules[i].runOpenLoop(states[i], focEnable);
+      } else {
+        optimizedStates[i] = modules[i].runClosedLoop(states[i]);
+      }
+    }
+
+    if (Robot.ROBOT_TYPE != RobotType.REAL)
+      Logger.recordOutput("SwerveStates/SetpointsOptimized", optimizedStates);
+  }
+
+  /**
+   * Drive closed-loop at robot relative speeds
+   *
+   * @param speeds robot relative speed setpoint
+   * @return a command driving to target speeds
+   */
+  public Command driveClosedLoopRobotRelative(Supplier<ChassisSpeeds> speeds) {
+    return this.run(() -> drive(speeds.get(), false));
+  }
+
+  /**
+   * Drive closed-loop at field relative speeds (i.e. for autoaim)
+   *
+   * @param speeds
+   * @return a Command driving to the target speeds
+   */
+  public Command driveClosedLoopFieldRelative(Supplier<ChassisSpeeds> speeds) {
+    return this.run(
+        () -> drive(ChassisSpeeds.fromFieldRelativeSpeeds(speeds.get(), getRotation()), false));
+  }
+
+  /**
+   * Drives open-loop. Speeds field relative to driver. Used for teleop
+   *
+   * @param speeds the field-relative speeds to drive at
+   * @return a Command driving at those speeds
+   */
+  public Command driveOpenLoopFieldRelative(Supplier<ChassisSpeeds> speeds) {
+    return this.run(
+        () -> {
+          ChassisSpeeds speedRobotRelative =
+              ChassisSpeeds.fromFieldRelativeSpeeds(
+                  speeds.get(),
+                  // Flip so that speeds passed in are always relative to driver
+                  DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+                      ? getPose().getRotation()
+                      : getPose().getRotation().minus(Rotation2d.fromDegrees(180)));
+          this.drive(speedRobotRelative, true);
+        });
+  }
+
+  /**
+   * Stops all the modules
+   *
+   * @return a command stopping all the modules
+   */
+  public Command stop() {
+    return this.run(
+        () -> {
+          for (Module module : modules) {
+            module.stop();
+          }
+        });
+  }
+
+  // /**
+  //  * Autoailgns to the given pose, ending once it's within a constant tolerence
+  //  *
+  //  * @param target the target pose
+  //  * @return a Command driving to the target
+  //  */
+  // public Command translateToPose(Supplier<Pose2d> target) {
+  //   return translateToPose(
+  //       target,
+  //       AutoAim.TRANSLATION_TOLERANCE_METERS,
+  //       AutoAim.TRANSLATION_TOLERANCE_METERS,
+  //       AutoAim.ROTATION_TOLERANCE_RADIANS);
   // }
 
-  // TODO choreoDriveController
-  public Consumer<SwerveSample> choreoDriveController() {
-    return null;
-  }
+  // /**
+  //  * Autoaligns to the given pose, stopping when it's within the passed-in tolerance
+  //  *
+  //  * @param target the target pose
+  //  * @param xToleranceMeters the allowed x-direction translational tolerance
+  //  * @param yToleranceMeters the allowed y-direction translational tolerance
+  //  * @param headingToleranceRadians the allowed heading tolerance
+  //  * @return a Command driving to the target pose
+  //  */
+  // public Command translateToPose(
+  //     Supplier<Pose2d> target,
+  //     double xToleranceMeters,
+  //     double yToleranceMeters,
+  //     double headingToleranceRadians) {
+  //   return Commands.runOnce(() -> AutoAim.resetPIDs(getPose(), getVelocityFieldRelative()))
+  //       .andThen(
+  //           driveClosedLoopFieldRelative(() -> AutoAim.calculateSpeeds(getPose(), target.get())))
+  //       .until(
+  //           () ->
+  //               MathUtil.isNear(target.get().getX(), getPose().getX(), xToleranceMeters)
+  //                   && MathUtil.isNear(target.get().getY(), getPose().getY(), yToleranceMeters)
+  //                   && MathUtil.isNear(
+  //                       target.get().getRotation().getRadians(),
+  //                       getPose().getRotation().getRadians(),
+  //                       headingToleranceRadians));
+  // }
 
-  public void resetPose(Pose2d pose) {}
-
-  public boolean isNearReef() {
-    return getPose()
-            .getTranslation()
-            .minus(
-                DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
-                    ? AutoAim.BLUE_REEF_CENTER
-                    : AutoAim.RED_REEF_CENTER)
-            .getNorm()
-        < 3.25;
-  }
-
-  public boolean isNearReef(double toleranceMeters) {
-    return getPose()
-            .getTranslation()
-            .minus(
-                DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
-                    ? AutoAim.BLUE_REEF_CENTER
-                    : AutoAim.RED_REEF_CENTER)
-            .getNorm()
-        < toleranceMeters;
-  }
-
-  public boolean isNearL1Reef() { // TODO ??
-    return L1Targets.getNearestLine(getPose()).getDistance(getPose().getTranslation()) > 0.3;
-  }
-
-  public boolean isNearProcessor() {
-    return MathUtil.isNear(
-            getPose().getX(),
-            DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
-                ? AutoAim.BLUE_PROCESSOR_POS.getX()
-                : AutoAim.RED_PROCESSOR_POS.getX(),
-            2)
-        || MathUtil.isNear(
-            getPose().getY(),
-            DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
-                ? AutoAim.BLUE_PROCESSOR_POS.getY()
-                : AutoAim.RED_PROCESSOR_POS.getY(),
-            2);
-  }
-
-  // TODO autoAimL23
-  // my naming skills leave much to be desired
-  public Command autoAimToL23() {
-    // return AutoAim.autoAimWithIntermediatePose(
-    //                 this,
-    //                 () -> {
-    //                   var twist = swerve.getVelocityFieldRelative().toTwist2d(0.3);
-    //                   return CoralTargets.getHandedClosestTarget(
-    //                       swerve
-    //                           .getPose()
-    //                           .plus(
-    //                               new Transform2d(
-    //                                   twist.dx, twist.dy, Rotation2d.fromRadians(twist.dtheta))),
-    //                       driver.leftBumper().getAsBoolean());
-    //                 },
-    //                 // Keeps the robot off the reef wall until it's aligned side-side
-    //                 new Transform2d(
-    //                     AutoAim.INITIAL_REEF_KEEPOFF_DISTANCE_METERS, 0.0, Rotation2d.kZero));
-    return Commands.none();
-  }
-
-  public boolean nearL23() {
-    return AutoAim.isInToleranceCoral(getPose());
-  }
-
-  // TODO autoAimL1
   public Command autoAimToL1() {
-    // return AutoAim.alignToLine(
-    //                 this,
-    //                 () ->
-    //                     modifyJoystick(driver.getLeftY())
-    //                         * ROBOT_HARDWARE.swerveConstants.getMaxLinearSpeed(),
-    //                 () ->
-    //                     modifyJoystick(driver.getLeftX())
-    //                         * ROBOT_HARDWARE.swerveConstants.getMaxLinearSpeed(),
-    //                 () -> L1Targets.getNearestLine(getPose()));
+    // TODO
     return Commands.none();
   }
 
   public boolean nearL1() {
-    return AutoAim.isInTolerance(
-        getPose(),
-        new Pose2d(
-            L1Targets.getNearestLine(getPose()).nearest(getPose().getTranslation()),
-            L1Targets.getNearestLine(getPose()).getRotation()));
+    // TODO
+    return true;
   }
 
-  // TODO autoAimL4
-  public Command autoAimToL4() {
+  public boolean isNearL1Reef() {
+    // TODO
+    // Not sure why this is different from near l1??
+    return true;
+  }
+
+  public boolean isNearReef(double toleranceMeters) {
+    // TODO
+    return true;
+  }
+
+  public Command autoAimToL23() {
+    // TODO
     return Commands.none();
   }
 
-  // TODO isInToleranceL4
+  public boolean nearL23() {
+    // TODO
+    return true;
+  }
+
+  public Command autoAimToL4() {
+    // TODO
+    return Commands.none();
+  }
+
   public boolean nearL4() {
+    // TODO
     return true;
   }
 
   public Command autoAimToOffsetAlgae() {
-    // return AutoAim.translateToPose(
-    //   this,
-    //   () ->
-    //       AlgaeIntakeTargets.getOffsetLocation(
-    //           AlgaeIntakeTargets.getClosestTargetPose(getPose())));
+    // TODO
     return Commands.none();
   }
 
   public boolean nearIntakeAlgaeOffsetPose() {
-    // return AutoAim.isInTolerance(
-    //   getPose(),
-    //   AlgaeIntakeTargets.getOffsetLocation(
-    //       AlgaeIntakeTargets.getClosestTargetPose(
-    //           getPose())),
-    //   getVelocityFieldRelative(),
-    //   Units.inchesToMeters(1.0),
-    //   Units.degreesToRadians(1.0));
+    // TODO
     return true;
   }
 
   public Command approachAlgae() {
-    // return AutoAim.approachAlgae(
-    //   this,
-    //   () -> AlgaeIntakeTargets.getClosestTargetPose(swerve.getPose()),
-    //   1);
+    // TODO
     return Commands.none();
   }
 
   public boolean nearAlgaeIntakePose() {
-    return AutoAim.isInToleranceAlgaeIntake(getPose());
-  }
-
-  // TODO rename this lmao
-  public boolean isNotMoving() {
-    // return MathUtil.isNear(
-    //   0,
-    //   Math.hypot(
-    //       getVelocityRobotRelative().vxMetersPerSecond,
-    //       getVelocityRobotRelative()
-    //           .vyMetersPerSecond),
-    //   AutoAim.VELOCITY_TOLERANCE_METERSPERSECOND)
-    //   && MathUtil.isNear(
-    //       0.0,
-    //       getVelocityRobotRelative().omegaRadiansPerSecond,
-    //       3.0);
+    // TODO
     return true;
   }
 
   public Command autoAimToProcessor() {
-    // return AutoAim.autoAimWithIntermediatePose(
-    //                 this,
-    //                 () -> getPose().nearest(AutoAim.PROCESSOR_POSES),
-    //                 new Transform2d(
-    //                     -(constants.getBumperLength() / 2) - 0.5,
-    //                     0.0,
-    //                     Rotation2d.kZero));
+    // TODO
     return Commands.none();
   }
 
   public boolean nearProcessor() {
-    return AutoAim.isInTolerance(
-        getPose()
-            .nearest(AutoAim.PROCESSOR_POSES)
-            // Moves the target pose inside the field, with the bumpers
-            // aligned with the wall
-            .transformBy(
-                new Transform2d(-(constants.getBumperLength() / 2), 0.0, Rotation2d.kZero)),
-        getPose());
+    // TODO
+    return true;
   }
 
   public Command autoAimToBarge() {
-    // return AutoAim.translateToXCoord(
-    //                 this,
-    //                 () ->
-    //                     Math.abs(getPose().getX() - AutoAim.BLUE_NET_X)
-    //                             > Math.abs(getPose().getX() - AutoAim.RED_NET_X)
-    //                         ? AutoAim.RED_NET_X
-    //                         : AutoAim.BLUE_NET_X,
-    //                 () ->
-    //                     modifyJoystick(driver.getLeftX())
-    //                         * ROBOT_HARDWARE.swerveConstants.getMaxLinearSpeed(),
-    //                 () ->
-    //                     (Math.abs(getPose().getX() - AutoAim.BLUE_NET_X)
-    //                                 > Math.abs(getPose().getX() - AutoAim.RED_NET_X)
-    //                             ? Rotation2d.kZero
-    //                             : Rotation2d.k180deg)
-    //                         .plus(Rotation2d.fromDegrees(20.0)));
+    // TODO
     return Commands.none();
   }
 
-  // TODO so this is not correct LMAO
-  public boolean isNearBarge() {
-    final var diff = getPose().minus(AlgaeIntakeTargets.getClosestTargetPose(getPose()));
-    return MathUtil.isNear(0.0, diff.getX(), Units.inchesToMeters(1.0))
-        && MathUtil.isNear(0.0, diff.getY(), Units.inchesToMeters(1.0))
-        && MathUtil.isNear(0.0, diff.getRotation().getDegrees(), 2.0);
+  public boolean nearBarge() {
+    // TODO
+    return true;
   }
 
-  public boolean isNearPoseAuto(Supplier<Pose2d> poseSupplier) {
-    return AutoAim.isInTolerance(
-        getPose(),
-        FieldUtils.CoralTargets.getClosestTarget(poseSupplier.get()),
-        getVelocityFieldRelative(),
-        Units.inchesToMeters(1.0),
-        Units.degreesToRadians(1.0));
+  public Command autoAimAuto(Supplier<Pose2d> pose) {
+    // TODO
+    return Commands.none();
   }
 
+  public boolean isNearPoseAuto(Supplier<Pose2d> pose) {
+    // TODO
+    return true;
+  }
+
+  /**
+   * Generates a set of samples without using the async thread. Makes lots of Objects, so be careful
+   * when using it irl!
+   */
+  private List<Samples> getSyncSamples() {
+    return List.of(
+        new Samples(
+            Logger.getTimestamp() / 1.0e6,
+            Map.of(
+                new SignalID(SignalType.DRIVE, 0), modules[0].getPosition().distanceMeters,
+                new SignalID(SignalType.TURN, 0), modules[0].getPosition().angle.getRotations(),
+                new SignalID(SignalType.DRIVE, 1), modules[1].getPosition().distanceMeters,
+                new SignalID(SignalType.TURN, 1), modules[1].getPosition().angle.getRotations(),
+                new SignalID(SignalType.DRIVE, 2), modules[2].getPosition().distanceMeters,
+                new SignalID(SignalType.TURN, 2), modules[2].getPosition().angle.getRotations(),
+                new SignalID(SignalType.DRIVE, 3), modules[3].getPosition().distanceMeters,
+                new SignalID(SignalType.TURN, 3), modules[3].getPosition().angle.getRotations(),
+                new SignalID(SignalType.GYRO, PhoenixOdometryThread.GYRO_MODULE_ID),
+                    gyroInputs.yaw.getDegrees())));
+  }
+
+  @AutoLogOutput(key = "Odometry/Robot")
+  public Pose2d getPose() {
+    return estimator.getEstimatedPosition();
+  }
+
+  public Pose3d getPose3d() {
+    return new Pose3d(getPose());
+  }
+
+  /** Returns the pose estimator rotation, as returned by {@link #getPose()} */
+  public Rotation2d getRotation() {
+    return getPose().getRotation();
+  }
+
+  public void resetPose(Pose2d newPose) {
+    estimator.resetPose(newPose);
+    if (Robot.ROBOT_TYPE == RobotType.SIM) {
+      swerveSimulation.setSimulationWorldPose(newPose);
+      swerveSimulation.setRobotSpeeds(new ChassisSpeeds());
+    }
+  }
+
+  @AutoLogOutput(key = "Odometry/Velocity Robot Relative")
+  public ChassisSpeeds getVelocityRobotRelative() {
+    ChassisSpeeds speeds = kinematics.toChassisSpeeds(getModuleStates());
+    return speeds;
+  }
+
+  @AutoLogOutput(key = "Odometry/Velocity Field Relative")
   public ChassisSpeeds getVelocityFieldRelative() {
-    return null;
+    return ChassisSpeeds.fromRobotRelativeSpeeds(getVelocityRobotRelative(), getRotation());
   }
 
-  // TODO autoAimAuto
-  // im realizing the limitations of our naming conventions
-  public Command autoAimAuto(Supplier<Pose2d> poseSupplier) {
-    // return AutoAim.translateToPose(
-    //                   this,
-    //                   () -> FieldUtils.CoralTargets.getClosestTarget(poseSupplier.get()),
-    //                   ChassisSpeeds::new,
-    //                   new Constraints(1.5, 1.0));
-    return Commands.none();
+  public boolean isNotMoving() {
+    return MathUtil.isNear(
+        0,
+        Math.hypot(
+            getVelocityRobotRelative().vxMetersPerSecond,
+            getVelocityRobotRelative().vyMetersPerSecond),
+        AutoAim.VELOCITY_TOLERANCE_METERSPERSECOND);
+  }
+
+  /** Returns the module states (turn angles and drive velocities) for all of the modules. */
+  @AutoLogOutput(key = "SwerveStates/Measured")
+  private SwerveModuleState[] getModuleStates() {
+    SwerveModuleState[] states =
+        Arrays.stream(modules).map(Module::getState).toArray(SwerveModuleState[]::new);
+    return states;
+  }
+
+  public Consumer<SwerveSample> choreoDriveController() {
+    // TODO
+    return null;
   }
 }

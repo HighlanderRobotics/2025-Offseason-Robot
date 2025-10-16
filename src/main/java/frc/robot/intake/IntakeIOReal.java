@@ -28,7 +28,7 @@ public class IntakeIOReal implements IntakeIO {
   private final MotionMagicTorqueCurrentFOC motionMagic = new MotionMagicTorqueCurrentFOC(0.0);
 
   public IntakeIOReal() {
-    motor = new TalonFX(14, "*");
+    motor = new TalonFX(13, "*");
 
     angularVelocityRotsPerSec = motor.getVelocity();
     supplyCurrentAmps = motor.getSupplyCurrent();
