@@ -314,8 +314,8 @@ public class Superstructure {
     bindTransition(
         SuperState.READY_CORAL_INTAKE,
         SuperState.PRE_HANDOFF,
-        // TODO maybe make the hasGamePieces and stuff triggers inside intake?
-        preScoreReq);
+        // TODO maybe make the hascorals and stuff triggers inside intake?
+        preScoreReq.and(() -> Robot.getCoralScoreTarget() != CoralScoreTarget.L1));
 
     bindTransition(
         SuperState.PRE_HANDOFF,
