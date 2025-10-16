@@ -218,17 +218,22 @@ public class FieldUtils {
 
     public static Pose2d getRobotTargetLocationL23(Pose2d original) {
       // 0.248 for trough
-      // TODO: UPDATE FOR NEW ROBOT
+      // -7.879 in for arm offset
       return original.transformBy(
           new Transform2d(
               0.291 + (SwerveSubsystem.SWERVE_CONSTANTS.getBumperLength() / 2),
-              0,
+              Units.inchesToMeters(-7.879),
               Rotation2d.fromDegrees(180.0)));
     }
 
     public static Pose2d getRobotTargetLocationL4(Pose2d original) {
-      // TODO
-      return original;
+      // Additional 4.7 inches to make scoring ling up.
+      return original.transformBy(
+        new Transform2d(
+          0.291 + (SwerveSubsystem.SWERVE_CONSTANTS.getBumperLength() / 2) + Units.inchesToMeters(4.7), 
+          Units.inchesToMeters(-7.879), 
+          Rotation2d.fromDegrees(180))
+      );
     }
 
     public static Pose2d getBranchLocation(Pose2d transformed) {
