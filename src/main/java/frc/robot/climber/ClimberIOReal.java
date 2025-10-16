@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
@@ -42,6 +43,9 @@ public class ClimberIOReal implements ClimberIO {
 
     public ClimberIOReal() {
         // TODO: CONFIGS
+        TalonFXConfiguration pivotConfig = new TalonFXConfiguration();
+
+        
 
         BaseStatusSignal.setUpdateFrequencyForAll(50.0, pivotPosition, pivotVelocity, pivotVoltage, pivotStatorCurrent, pivotSupplyCurrent, pivotTemp, rollerVelocity, rollerVoltage, rollerStatorCurrent, rollerSupplyCurrent, rollerTemp);
         pivot.optimizeBusUtilization();
@@ -84,6 +88,11 @@ public class ClimberIOReal implements ClimberIO {
     @Override
     public void setRollerVoltage(double volts) {
         roller.setControl(rollerVoltageOut.withOutput(volts));
+    }
+
+    @Override
+    public void resetEncoder(Rotation2d position) {
+       pivot.setPosition(position.getMeasure());
     }
 
 }

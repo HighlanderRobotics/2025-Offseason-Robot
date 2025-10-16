@@ -28,6 +28,8 @@ public interface ClimberIO {
 
     void setPivotVoltage(double volts);
 
+    void resetEncoder(Rotation2d position);
+
     void setRollerVelocity(double rotationsPerSecond);
 
     void setRollerVoltage(double volts);
