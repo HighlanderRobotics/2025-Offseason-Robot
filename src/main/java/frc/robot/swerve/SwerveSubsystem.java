@@ -3,6 +3,7 @@ package frc.robot.swerve;
 import choreo.trajectory.SwerveSample;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -622,7 +623,25 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public Consumer<SwerveSample> choreoDriveController() {
-    // TODO
-    return null;
+    // TODO: TUNE
+    final PIDController xController = new PIDController(5.0, 0.0, 0.0);
+    final PIDController yController = new PIDController(5.0, 0.0, 0.0);
+    final PIDController headingController = new PIDController(6.0, 0.0, 0.0);
+    headingController.enableContinuousInput(-Math.PI, Math.PI);
+    return (sample) -> {
+      Pose2d pose = getPose();
+
+      Logger.recordOutput("Choreo/Target Pose", sample.getPose());
+      Logger.recordOutput("Choreo/Target Speeds Field Relative", sample.getChassisSpeeds());
+
+      ChassisSpeeds feedback = new ChassisSpeeds(
+        xController.calculate(pose.getX(), sample.x), 
+        yController.calculate(pose.getY(), sample.y), 
+        headingController.calculate(pose.getRotation().getRadians(), sample.heading));
+
+      ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(sample.getChassisSpeeds().plus(feedback), getPose().getRotation());
+      
+      this.drive(speeds, false);
+    };
   }
 }
