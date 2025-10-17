@@ -622,6 +622,7 @@ public class SwerveSubsystem extends SubsystemBase {
     return states;
   }
 
+  @SuppressWarnings("resource")
   public Consumer<SwerveSample> choreoDriveController() {
     // TODO: TUNE
     final PIDController xController = new PIDController(5.0, 0.0, 0.0);
