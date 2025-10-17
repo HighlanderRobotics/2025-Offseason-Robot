@@ -13,6 +13,8 @@ import org.littletonrobotics.junction.Logger;
 
 public class ClimberSubsystem extends SubsystemBase {
 
+  public static final double CLIMBER_GEAR_RATIO = 45.0 / 1;
+
   private ClimberIO io;
   private ClimberIOInputsAutoLogged inputs = new ClimberIOInputsAutoLogged();
 

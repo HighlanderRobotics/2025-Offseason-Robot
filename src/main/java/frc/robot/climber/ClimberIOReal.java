@@ -10,6 +10,8 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Angle;
@@ -42,10 +44,21 @@ public class ClimberIOReal implements ClimberIO {
     private VoltageOut rollerVoltageOut = new VoltageOut(0.0).withEnableFOC(true);
 
     public ClimberIOReal() {
-        // TODO: CONFIGS
         TalonFXConfiguration pivotConfig = new TalonFXConfiguration();
 
+        pivotConfig.Slot0.kP = 100.0;
+
+        pivotConfig.MotionMagic.MotionMagicCruiseVelocity = (5800 / 60) / ClimberSubsystem.CLIMBER_GEAR_RATIO;
         
+        pivotConfig.Feedback.SensorToMechanismRatio = ClimberSubsystem.CLIMBER_GEAR_RATIO;
+
+        pivotConfig.CurrentLimits.StatorCurrentLimit = 40.0;
+        pivotConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+
+        pivotConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        pivotConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+
+        pivot.getConfigurator().apply(pivotConfig);
 
         BaseStatusSignal.setUpdateFrequencyForAll(50.0, pivotPosition, pivotVelocity, pivotVoltage, pivotStatorCurrent, pivotSupplyCurrent, pivotTemp, rollerVelocity, rollerVoltage, rollerStatorCurrent, rollerSupplyCurrent, rollerTemp);
         pivot.optimizeBusUtilization();
