@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Robot.CoralIntakeTarget;
 import frc.robot.Robot.CoralScoreTarget;
 import frc.robot.arm.ArmSubsystem;
 import frc.robot.swerve.SwerveSubsystem;
@@ -60,7 +61,16 @@ public class Autos {
     PROtoC("PRO", "C", PathEndType.SCORE_CORAL),
     CtoPRM("C", "PRM", PathEndType.INTAKE_CORAL_GROUND),
     PRMtoB("PRM", "B", PathEndType.SCORE_CORAL),
-    BtoPRO("B", "PRO", PathEndType.INTAKE_CORAL_GROUND);
+    BtoPRO("B", "PRO", PathEndType.INTAKE_CORAL_GROUND),
+    
+    LOtoI4("LO", "I4", PathEndType.SCORE_CORAL),
+    I4toSLM("I4", "SLM", PathEndType.INTAKE_CORAL_STACK),
+    SLMtoL4("SLM", "L4", PathEndType.SCORE_CORAL),
+    L4toSML("L4", "SML", PathEndType.INTAKE_CORAL_STACK),
+    SMLtoA4("SML", "A4", PathEndType.SCORE_CORAL),
+    A4toSRL("A4", "SRL", PathEndType.INTAKE_CORAL_STACK),
+    SRLtoC4("SRL", "C4", PathEndType.SCORE_CORAL)
+    ;
 
     private final String start;
     private final String end;
@@ -96,6 +106,35 @@ public class Autos {
             //             : traj.flipped().getPoses());
             // }
             );
+  }
+
+  public Command getLeftStackAuto() {
+    final AutoRoutine routine = factory.newRoutine("Left Stack Auto");
+    bindCoralElevatorExtension(routine);
+    Path[] paths = {
+      Path.LOtoI4,
+      Path.I4toSLM,
+      Path.SLMtoL4,
+      Path.L4toSML,
+      Path.SMLtoA4,
+      Path.A4toSRL,
+      Path.SRLtoC4
+    };
+
+    Command autoCommand = paths[0].getTrajectory(routine).resetOdometry();
+
+    for (Path path : paths) {
+      autoCommand = autoCommand.andThen(runPath(path, routine));
+    }
+
+    routine.active()
+      .onTrue(Commands.runOnce(() -> {
+        Robot.setCoralScoreTarget(CoralScoreTarget.L4);
+        Robot.setCoralIntakeTarget(CoralIntakeTarget.STACK);
+      }))
+      .whileTrue(autoCommand);
+
+    return routine.cmd();
   }
 
   public Command getRightOutsideAuto() {
