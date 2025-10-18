@@ -27,25 +27,25 @@
     },
     "y":{
      "exp":"4.182002544403076 m + (-7.879 in * sin(A23.heading))",
-     "val":4.382129144403076
+     "val":3.981875944403076
     },
     "heading":{
-     "exp":"270 deg",
-     "val":4.71238898038469
+     "exp":"90 deg",
+     "val":1.5707963267948966
     }
    },
    "A4":{
     "x":{
-     "exp":"A23.x - (-4.7 in * sin(A4.heading))",
+     "exp":"A23.x - (-4.7 in * sin(A4.heading + 180 deg))",
      "val":3.0457706423950195
     },
     "y":{
-     "exp":"A23.y + (-4.7 in * cos(A4.heading))",
-     "val":4.382129144403076
+     "exp":"A23.y + (-4.7 in * cos(A4.heading + 180 deg))",
+     "val":3.981875944403076
     },
     "heading":{
      "exp":"A23.heading",
-     "val":4.71238898038469
+     "val":1.5707963267948966
     }
    },
    "B23":{
@@ -695,15 +695,15 @@
    "SML":{
     "x":{
      "exp":"SM.x + ((stack_offset.x * cos(SLM.heading)) - (stack_offset.y * sin(SML.heading)))",
-     "val":1.2049252
+     "val":1.7084155688674387
     },
     "y":{
      "exp":"SM.y + ((stack_offset.x * sin(SLM.heading)) + (stack_offset.y * cos(SML.heading)))",
-     "val":4.413504
+     "val":4.122813699999999
     },
     "heading":{
      "exp":"120 deg",
-     "val":3.141592653589793
+     "val":2.0943951023931953
     }
    },
    "SR":{
@@ -723,15 +723,15 @@
    "SRL":{
     "x":{
      "exp":"SR.x + ((stack_offset.x * cos(SLM.heading)) - (stack_offset.y * sin(SRL.heading)))",
-     "val":1.2049252
+     "val":1.578616746192126
     },
     "y":{
      "exp":"SR.y + ((stack_offset.x * sin(SLM.heading)) + (stack_offset.y * cos(SRL.heading)))",
-     "val":4.413504
+     "val":2.4486867779671773
     },
     "heading":{
      "exp":"140 deg",
-     "val":3.141592653589793
+     "val":2.443460952792061
     }
    },
    "stack_offset":{
