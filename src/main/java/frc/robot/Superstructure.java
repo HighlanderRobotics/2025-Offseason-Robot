@@ -132,7 +132,30 @@ public class Superstructure {
           || this == PRE_L3_RIGHT
           || this == SCORE_L3_RIGHT
           || this == PRE_L4_RIGHT
-          || this == SCORE_L4_RIGHT;
+          || this == SCORE_L4_RIGHT
+          || this == PRE_L2_LEFT
+          || this == SCORE_L2_LEFT
+          || this == PRE_L3_LEFT
+          || this == SCORE_L3_LEFT
+          || this == PRE_L4_LEFT
+          || this == SCORE_L4_LEFT;
+    }
+
+    public boolean isScoreCoral() {
+        return this == PRE_L1
+          || this == L1
+          || this == PRE_L2_RIGHT
+          || this == SCORE_L2_RIGHT
+          || this == PRE_L3_RIGHT
+          || this == SCORE_L3_RIGHT
+          || this == PRE_L4_RIGHT
+          || this == SCORE_L4_RIGHT
+          || this == PRE_L2_LEFT
+          || this == SCORE_L2_LEFT
+          || this == PRE_L3_LEFT
+          || this == SCORE_L3_LEFT
+          || this == PRE_L4_LEFT
+          || this == SCORE_L4_LEFT;
     }
 
     public boolean isAlgae() {

@@ -134,7 +134,7 @@ public class Robot extends LoggedRobot {
   private final SwerveDriveSimulation swerveSimulation =
       new SwerveDriveSimulation(driveTrainSimConfig, new Pose2d(3, 3, Rotation2d.kZero));
   // Subsystem initialization
-  private final SwerveSubsystem swerve = new SwerveSubsystem(swerveSimulation);
+  private final SwerveSubsystem swerve = new SwerveSubsystem(swerveSimulation, this::getSuperstructureState);
 
   private final CommandXboxControllerSubsystem driver = new CommandXboxControllerSubsystem(0);
   private final CommandXboxControllerSubsystem operator = new CommandXboxControllerSubsystem(1);
@@ -209,6 +209,10 @@ public class Robot extends LoggedRobot {
     driver.setDefaultCommand(driver.rumbleCmd(0.0, 0.0));
     operator.setDefaultCommand(operator.rumbleCmd(0.0, 0.0));
 
+    if (ROBOT_TYPE == RobotType.SIM) {
+      SimulatedArena.getInstance().addDriveTrainSimulation(swerveSimulation);
+    }
+
     swerve.setDefaultCommand(
         swerve.driveOpenLoopFieldRelative(
             () ->
@@ -230,6 +234,10 @@ public class Robot extends LoggedRobot {
     // autos = new Autos(swerve, arm);
     // autoChooser.addDefaultOption("None", autos.getNoneAuto());
     // TODO add autos trigger
+  }
+
+  private SuperState getSuperstructureState() {
+    return superstructure.getState();
   }
 
   /** Scales a joystick value for teleop driving */

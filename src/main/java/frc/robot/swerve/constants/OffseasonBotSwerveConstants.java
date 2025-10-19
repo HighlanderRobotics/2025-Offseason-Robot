@@ -9,9 +9,20 @@ import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
+
+import edu.wpi.first.math.MatBuilder;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.numbers.N8;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Mass;
+import frc.robot.camera.Camera.CameraConstants;
 import frc.robot.swerve.module.Module.ModuleConstants;
 
 public class OffseasonBotSwerveConstants extends SwerveConstants {
@@ -180,5 +191,83 @@ public class OffseasonBotSwerveConstants extends SwerveConstants {
   @Override
   public double getTrackWidthY() {
     return Units.inchesToMeters(23.729);
+  }
+
+  // TODO: NEW CONSTANTS
+  @Override
+  public CameraConstants[] getCameraConstants() {
+    final Matrix<N3, N3> BACK_LEFT_CAMERA_MATRIX =
+        MatBuilder.fill(
+            Nat.N3(), Nat.N3(), 906.46, 0.0, 675.30, 0.0, 907.49, 394.45, 0.0, 0.0, 1.0);
+    final Matrix<N8, N1> BACK_LEFT_DIST_COEFFS =
+        MatBuilder.fill(
+            Nat.N8(), Nat.N1(), 0.039, -0.057, -0.005, 0.001, -0.004, -0.001, 0.003, 0.001);
+    final Matrix<N3, N3> BACK_RIGHT_CAMERA_MATRIX =
+        MatBuilder.fill(
+            Nat.N3(), Nat.N3(), 925.82, 0.0, 633.65, 0.0, 927.87, 386.90, 0.0, 0.0, 1.0);
+    final Matrix<N8, N1> BACK_RIGHT_DIST_COEFFS =
+        MatBuilder.fill(
+            Nat.N8(), Nat.N1(), 0.058, -0.09, 0.006, -0.003, 0.022, -0.002, 0.004, -0.001);
+    final Matrix<N3, N3> FRONT_RIGHT_CAMERA_MATRIX =
+        MatBuilder.fill(
+            Nat.N3(), Nat.N3(), 911.67, 0.0, 663.03, 0.0, 909.82, 408.72, 0.0, 0.0, 1.0);
+    final Matrix<N8, N1> FRONT_RIGHT_DIST_COEFFS =
+        MatBuilder.fill(
+            Nat.N8(), Nat.N1(), 0.044, -0.069, 0.001, 0.001, 0.013, -0.002, 0.004, 0.001);
+    final Matrix<N3, N3> FRONT_LEFT_CAMERA_MATRIX =
+        MatBuilder.fill(
+            Nat.N3(), Nat.N3(), 920.37, 0.0, 657.16, 0.0, 921.82, 412.98, 0.0, 0.0, 1.0);
+    final Matrix<N8, N1> FRONT_LEFT_DIST_COEFFS =
+        MatBuilder.fill(
+            Nat.N8(), Nat.N1(), 0.057, -0.09, -0.001, 0.002, 0.043, -0.002, 0.004, -0.002);
+    final CameraConstants backLeftCamConstants =
+        new CameraConstants(
+            "Back_Left",
+            new Transform3d(
+                new Translation3d(
+                    Units.inchesToMeters(-11.600),
+                    Units.inchesToMeters(11.400),
+                    Units.inchesToMeters(9.052)),
+                new Rotation3d(
+                    Units.degreesToRadians(0.0),
+                    Units.degreesToRadians(-(90 - 76.875000)),
+                    Units.degreesToRadians(150))),
+            BACK_LEFT_CAMERA_MATRIX,
+            BACK_LEFT_DIST_COEFFS);
+    final CameraConstants backRightCamConstants =
+        new CameraConstants(
+            "Back_Right",
+            new Transform3d(
+                new Translation3d(
+                    Units.inchesToMeters(-11.600),
+                    Units.inchesToMeters(-11.416),
+                    Units.inchesToMeters(9.061)),
+                new Rotation3d(
+                    0, Units.degreesToRadians(-(90 - 76.875000)), Units.degreesToRadians(210))),
+            BACK_RIGHT_CAMERA_MATRIX,
+            BACK_RIGHT_DIST_COEFFS);
+    final CameraConstants frontRightCamConstants =
+        new CameraConstants(
+            "Front_Right_Camera",
+            new Transform3d(
+                new Translation3d(
+                    Units.inchesToMeters(6.664129),
+                    Units.inchesToMeters(-12.320709),
+                    Units.inchesToMeters(8.885504)),
+                new Rotation3d(0, Units.degreesToRadians(-10), Units.degreesToRadians(30))),
+            FRONT_RIGHT_CAMERA_MATRIX,
+            FRONT_RIGHT_DIST_COEFFS);
+    final CameraConstants frontLeftCamConstants =
+        new CameraConstants(
+            "Front_Left_Camera",
+            new Transform3d(
+                new Translation3d(
+                    Units.inchesToMeters(6.664129),
+                    Units.inchesToMeters(12.320709),
+                    Units.inchesToMeters(8.885504)),
+                new Rotation3d(0, Units.degreesToRadians(-10), Units.degreesToRadians(-30))),
+            FRONT_LEFT_CAMERA_MATRIX,
+            FRONT_LEFT_DIST_COEFFS);
+    return new CameraConstants[] {frontRightCamConstants, frontLeftCamConstants};
   }
 }
