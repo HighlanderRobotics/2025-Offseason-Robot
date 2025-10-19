@@ -64,13 +64,11 @@ public class Autos {
     PRMtoB("PRM", "B", PathEndType.SCORE_CORAL),
     BtoPRO("B", "PRO", PathEndType.INTAKE_CORAL_GROUND),
     
-    LOtoI4("LO", "I4", PathEndType.SCORE_CORAL),
-    I4toSLM("I4", "SLM", PathEndType.INTAKE_CORAL_STACK),
-    SLMtoL4("SLM", "L4", PathEndType.SCORE_CORAL),
-    L4toSML("L4", "SML", PathEndType.INTAKE_CORAL_STACK),
-    SMLtoA4("SML", "A4", PathEndType.SCORE_CORAL),
-    A4toSRL("A4", "SRL", PathEndType.INTAKE_CORAL_STACK),
-    SRLtoC4("SRL", "C4", PathEndType.SCORE_CORAL),
+    LOtoA4("LO", "A4", PathEndType.SCORE_CORAL),
+    A4toSMM("A4", "SMM", PathEndType.INTAKE_CORAL_STACK),
+    SMMtoB4("SMM", "B4", PathEndType.SCORE_CORAL),
+    B4toSRL("B4", "SRL", PathEndType.INTAKE_CORAL_STACK),
+    SRLtoB23("SRL", "B23", PathEndType.SCORE_CORAL),
 
     CMtoH4("CM", "H4", PathEndType.SCORE_CORAL),
     H4toGH("H4", "GH", PathEndType.INTAKE_ALGAE),
@@ -115,17 +113,19 @@ public class Autos {
             );
   }
 
+  /**
+   * This auto starts at Left Outside, hits an L4 on branch A, then goes to the middle stack and hits an L4 on B. Then, goes to the right stack and hits an L2 on B.
+   * @return a Command running the auto
+   */
   public Command getLeftStackAuto() {
     final AutoRoutine routine = factory.newRoutine("Left Stack Auto");
     bindCoralElevatorExtension(routine);
     Path[] paths = {
-      Path.LOtoI4,
-      Path.I4toSLM,
-      Path.SLMtoL4,
-      Path.L4toSML,
-      Path.SMLtoA4,
-      Path.A4toSRL,
-      Path.SRLtoC4
+      Path.LOtoA4,
+      Path.A4toSMM,
+      Path.SMMtoB4,
+      Path.B4toSRL,
+      Path.SRLtoB23
     };
 
     Command autoCommand = paths[0].getTrajectory(routine).resetOdometry();
@@ -140,6 +140,7 @@ public class Autos {
         Robot.setCoralIntakeTarget(CoralIntakeTarget.STACK);
       }))
       .whileTrue(autoCommand);
+    routine.observe(paths[4].getTrajectory(routine).active()).onTrue(Commands.runOnce(() -> Robot.setCoralScoreTarget(CoralScoreTarget.L2)));
 
     return routine.cmd();
   }

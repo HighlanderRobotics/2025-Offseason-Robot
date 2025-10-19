@@ -27,25 +27,25 @@
     },
     "y":{
      "exp":"4.182002544403076 m + (-7.879 in * sin(A23.heading))",
-     "val":3.981875944403076
+     "val":4.382129144403076
     },
     "heading":{
-     "exp":"90 deg",
-     "val":1.5707963267948966
+     "exp":"270 deg",
+     "val":4.71238898038469
     }
    },
    "A4":{
     "x":{
-     "exp":"A23.x - (-4.7 in * sin(A4.heading + 180 deg))",
+     "exp":"A23.x - (-4.7 in * sin(A4.heading))",
      "val":3.0457706423950195
     },
     "y":{
-     "exp":"A23.y + (-4.7 in * cos(A4.heading + 180 deg))",
-     "val":3.981875944403076
+     "exp":"A23.y + (-4.7 in * cos(A4.heading))",
+     "val":4.382129144403076
     },
     "heading":{
      "exp":"A23.heading",
-     "val":1.5707963267948966
+     "val":4.71238898038469
     }
    },
    "B23":{
@@ -734,6 +734,20 @@
      "val":2.0943951023931953
     }
    },
+   "SMM":{
+    "x":{
+     "exp":"SM.x - ((stack_offset.x * cos(SMM.heading)) - (stack_offset.y * sin(SMM.heading)))",
+     "val":1.7863057999999998
+    },
+    "y":{
+     "exp":"SM.y + ((stack_offset.x * sin(SMM.heading)) + (stack_offset.y * cos(SMM.heading)))",
+     "val":4.232376599999999
+    },
+    "heading":{
+     "exp":"270 deg",
+     "val":4.71238898038469
+    }
+   },
    "SR":{
     "x":{
      "exp":"47.4375 in",
@@ -750,16 +764,16 @@
    },
    "SRL":{
     "x":{
-     "exp":"SR.x + ((stack_offset.x * cos(SRL.heading)) - (stack_offset.y * sin(SRL.heading)))",
-     "val":1.7319226160424206
+     "exp":"SR.x + ((stack_offset.x * cos(SRL.heading)) + (stack_offset.y * sin(SRL.heading)))",
+     "val":1.4253108763418318
     },
     "y":{
-     "exp":"SR.y + ((stack_offset.x * sin(SRL.heading)) + (stack_offset.y * cos(SRL.heading)))",
-     "val":2.520174479118483
+     "exp":"SR.y + ((stack_offset.x * sin(SRL.heading)) - (stack_offset.y * cos(SRL.heading)))",
+     "val":2.7774522768158714
     },
     "heading":{
-     "exp":"140 deg",
-     "val":2.443460952792061
+     "exp":"320 deg",
+     "val":5.585053606381854
     }
    },
    "stack_offset":{
