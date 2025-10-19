@@ -24,6 +24,10 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.Robot.RobotType;
+import frc.robot.Superstructure.SuperState;
+import frc.robot.camera.Camera;
+import frc.robot.camera.CameraIOReal;
+import frc.robot.camera.CameraIOSim;
 import frc.robot.swerve.constants.KelpieSwerveConstants;
 import frc.robot.swerve.constants.SwerveConstants;
 import frc.robot.swerve.gyro.GyroIO;
@@ -59,6 +63,8 @@ public class SwerveSubsystem extends SubsystemBase {
   private final Module[] modules; // Front Left, Front Right, Back Left, Back Right
   private final GyroIO gyroIO;
   private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
+  private final Camera[] cameras;
+  private final Pose3d[] cameraPoses;
   private final OdometryThreadIO odometryThread;
   private final OdometryThreadIOInputs odometryThreadInputs = new OdometryThreadIOInputs();
   private double lastOdometryUpdateTimestamp = 0.0;
@@ -97,7 +103,9 @@ public class SwerveSubsystem extends SubsystemBase {
   private Alert missingModuleData = new Alert("Missing Module Data", AlertType.kError);
   private Alert missingGyroData = new Alert("Missing Gyro Data", AlertType.kWarning);
 
-  public SwerveSubsystem(SwerveDriveSimulation swerveSimulation) {
+  boolean hasFrontTags = false;
+
+  public SwerveSubsystem(SwerveDriveSimulation swerveSimulation, Supplier<SuperState> stateSupplier) {
     if (Robot.ROBOT_TYPE == RobotType.SIM) {
       // Add simulated modules
       modules =
@@ -119,6 +127,7 @@ public class SwerveSubsystem extends SubsystemBase {
                     SWERVE_CONSTANTS.getBackRightModuleConstants(),
                     swerveSimulation.getModules()[3]))
           };
+      cameras = Arrays.stream(SWERVE_CONSTANTS.getCameraConstants()).map((constants) -> new Camera(new CameraIOSim(constants), stateSupplier)).toArray(Camera[]::new);
     } else {
       // Add real modules
       modules =
@@ -128,7 +137,11 @@ public class SwerveSubsystem extends SubsystemBase {
             new Module(new ModuleIOReal(SWERVE_CONSTANTS.getBackLeftModuleConstants())),
             new Module(new ModuleIOReal(SWERVE_CONSTANTS.getBackRightModuleConstants()))
           };
+          cameras = Arrays.stream(SWERVE_CONSTANTS.getCameraConstants()).map((constants) -> new Camera(new CameraIOReal(constants), stateSupplier)).toArray(Camera[]::new);
+
     }
+
+    this.cameraPoses = new Pose3d[cameras.length];
 
     this.gyroIO =
         Robot.ROBOT_TYPE != RobotType.SIM
@@ -175,7 +188,12 @@ public class SwerveSubsystem extends SubsystemBase {
             Tracer.trace("Update module inputs for " + module.getPrefix(), module::periodic);
           }
 
+          for (Camera camera : cameras) {
+            Tracer.trace("Camera " + camera.getName() + " Periodic", () -> camera.periodic(estimator));
+          }
+
           Tracer.trace("Update odometry", this::updateOdometry);
+          Tracer.trace("Update vision", this::updateVision);
         });
   }
 
@@ -253,6 +271,23 @@ public class SwerveSubsystem extends SubsystemBase {
       // Apply update
       estimator.updateWithTime(sample.timestamp(), rawGyroRotation, modulePositions);
     }
+  }
+
+  private void updateVision() {
+      hasFrontTags = false;
+      for (int i = 0; i < cameras.length; i++) {
+        if (cameras[i].hasFrontTags()) hasFrontTags = true;
+        cameras[i].updateCamera(estimator);
+        cameraPoses[i] = cameras[i].getPose();
+      }
+      Logger.recordOutput("Vision/Front Cameras Have Tags", hasFrontTags);
+      if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("Vision/Camera Poses", cameraPoses);
+      Pose3d[] arr = new Pose3d[cameras.length];
+      for (int k = 0; k < cameras.length; k++) {
+        arr[k] = getPose3d().transformBy(cameras[k].getCameraConstants().robotToCamera());
+      }
+      if (Robot.ROBOT_TYPE != RobotType.REAL)
+        Logger.recordOutput("Vision/Camera Poses on Robot", arr);
   }
 
   /**
