@@ -147,8 +147,9 @@ public class Robot extends LoggedRobot {
   private final Superstructure superstructure =
       new Superstructure(elevator, arm, intake, climber, swerve, driver, operator);
 
-  // private final Autos autos;
+  private final Autos autos;
   private Optional<Alliance> lastAlliance = Optional.empty();
+  @AutoLogOutput boolean haveAutosGenerated = false; 
   private final LoggedDashboardChooser<Command> autoChooser = new LoggedDashboardChooser<>("Autos");
 
   @SuppressWarnings("resource")
@@ -231,9 +232,22 @@ public class Robot extends LoggedRobot {
 
     addControllerBindings();
 
-    // autos = new Autos(swerve, arm);
-    // autoChooser.addDefaultOption("None", autos.getNoneAuto());
-    // TODO add autos trigger
+    autos = new Autos(swerve, arm);
+    autoChooser.addDefaultOption("None", Commands.none());
+
+    // Generates autos on connected
+    new Trigger(() -> 
+      DriverStation.isDSAttached() && DriverStation.getAlliance().isPresent() && !haveAutosGenerated
+    )
+    .onTrue(Commands.print("Connected"))
+    .onTrue(Commands.runOnce(this::addAutos).ignoringDisable(true));
+
+    new Trigger(() -> {
+      boolean allianceChanged = !DriverStation.getAlliance().equals(lastAlliance);
+      lastAlliance = DriverStation.getAlliance();
+      return allianceChanged && DriverStation.getAlliance().isPresent();
+    })
+    .onTrue(Commands.runOnce(this::addAutos).ignoringDisable(true));
   }
 
   private SuperState getSuperstructureState() {
@@ -400,17 +414,11 @@ public class Robot extends LoggedRobot {
     System.out.println("------- Regenerating Autos");
     System.out.println(
         "Regenerating Autos on " + DriverStation.getAlliance().map((a) -> a.toString()));
-    // autoChooser.addOption("Triangle Test", autos.getTestTriangle());
-    // autoChooser.addOption("Sprint Test", autos.getTestSprint());
-    // autoChooser.addOption("LM to H", autos.LMtoH());
-    // autoChooser.addOption("RM to G", autos.RMtoG());
-    // autoChooser.addOption("4.5 L Outside", autos.LOtoJ());
-    // autoChooser.addOption("4.5 R Outside", autos.ROtoE());
-    // autoChooser.addOption("4.5 L Inside", autos.LItoK());
-    // autoChooser.addOption("4.5 R Inside", autos.RItoD());
-    // autoChooser.addOption("Push Auto", autos.PMtoPL());
-    // autoChooser.addOption("Algae auto", autos.CMtoGH());
-    // autoChooser.addOption("!!! DO NOT RUN!! 2910 auto", autos.LOtoA());
+    
+    autoChooser.addOption("Left stack auto", autos.getLeftStackAuto());
+    autoChooser.addOption("Right stack auto", autos.getRightStackAuto());
+    autoChooser.addOption("Algae auto", autos.getAlgaeAuto());
+    haveAutosGenerated = true;
   }
 
   @Override
