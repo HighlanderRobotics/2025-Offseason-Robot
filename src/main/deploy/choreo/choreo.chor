@@ -706,6 +706,20 @@
      "val":4.71238898038469
     }
    },
+   "SLR":{
+    "x":{
+     "exp":"SL.x + ((stack_offset.x * cos(SLR.heading)) - (stack_offset.y * sin(SLR.heading)))",
+     "val":1.21571158689579
+    },
+    "y":{
+     "exp":"SL.y + ((stack_offset.x * sin(SLR.heading)) + (stack_offset.y * cos(SLR.heading)))",
+     "val":5.246283611896637
+    },
+    "heading":{
+     "exp":"20 deg",
+     "val":0.3490658503988659
+    }
+   },
    "SM":{
     "x":{
      "exp":"47.438 in",
