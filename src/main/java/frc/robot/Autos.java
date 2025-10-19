@@ -189,7 +189,7 @@ public class Autos {
       case INTAKE_CORAL_GROUND:
         return runPathThenIntakeCoralGround(path, routine);
       case INTAKE_CORAL_STACK:
-        return null; // lol
+        return runPathThenIntakeStackCoral(path, routine);
       case SCORE_ALGAE:
         return null; // lol
       case INTAKE_ALGAE:
@@ -212,19 +212,6 @@ public class Autos {
         scoreCoralInAuto(() -> path.getTrajectory(routine).getFinalPose().get()));
   }
 
-  public Command runPathThenIntakeCoralGround(Path path, AutoRoutine routine) {
-    return Commands.sequence(
-        path.getTrajectory(routine)
-            .cmd()
-            .until(
-                routine.observe(
-                    path.getTrajectory(routine)
-                        .atTime(
-                            path.getTrajectory(routine).getRawTrajectory().getTotalTime()
-                                - (path.end.length() == 1 ? 0.3 : 0.0)))),
-        intakeCoralInAuto(() -> path.getTrajectory(routine).getFinalPose()));
-  }
-
   public Command scoreCoralInAuto(Supplier<Pose2d> trajEndPose) {
     return Commands.sequence(
             Commands.waitUntil(
@@ -237,10 +224,39 @@ public class Autos {
         .raceWith(swerve.autoAimAuto(trajEndPose));
   }
 
+  public Command runPathThenIntakeCoralGround(Path path, AutoRoutine routine) {
+    return Commands.sequence(
+        path.getTrajectory(routine)
+            .cmd()
+            .until(
+                routine.observe(
+                    path.getTrajectory(routine)
+                        .atTime(
+                            path.getTrajectory(routine).getRawTrajectory().getTotalTime()
+                                - (path.end.length() == 1 ? 0.3 : 0.0)))),
+        intakeGroundCoralInAuto(() -> path.getTrajectory(routine).getFinalPose()));
+  }
+
   // bruh why was i inconsistent on this
   // TODO intakeCoralInAuto (cause ground/stack intake)
-  public Command intakeCoralInAuto(Supplier<Optional<Pose2d>> pose) {
+  public Command intakeGroundCoralInAuto(Supplier<Optional<Pose2d>> pose) {
     return Commands.none();
+  }
+
+  // TODO: SHOULD THIS AUTOALIGN??
+  public Command runPathThenIntakeStackCoral(Path path, AutoRoutine routine) {
+    return Commands.sequence(
+      path.getTrajectory(routine).cmd().until(routine.idle()),
+      intakeStackCoralInAuto()
+    );
+  }
+
+  public Command intakeStackCoralInAuto() {
+    return Commands.sequence(
+      Commands.runOnce(() -> autoIntakeCoral = true),
+      Commands.waitUntil(arm::hasCoral),
+      Commands.runOnce(() -> autoIntakeCoral = false)
+    );
   }
 
   public Command setAutoScoreReqTrue() {
