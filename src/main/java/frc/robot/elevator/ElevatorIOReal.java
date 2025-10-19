@@ -142,7 +142,8 @@ public class ElevatorIOReal implements ElevatorIO {
 
   @Override
   public void setPositionSetpoint(double positionMeters, double acceleration) {
-    leader.setControl(motionMagicVoltage.withPosition(positionMeters).withAcceleration(acceleration));
+    leader.setControl(
+        motionMagicVoltage.withPosition(positionMeters).withAcceleration(acceleration));
   }
 
   @Override
