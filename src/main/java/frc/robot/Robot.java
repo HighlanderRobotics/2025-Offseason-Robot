@@ -134,7 +134,8 @@ public class Robot extends LoggedRobot {
   private final SwerveDriveSimulation swerveSimulation =
       new SwerveDriveSimulation(driveTrainSimConfig, new Pose2d(3, 3, Rotation2d.kZero));
   // Subsystem initialization
-  private final SwerveSubsystem swerve = new SwerveSubsystem(swerveSimulation, this::getSuperstructureState);
+  private final SwerveSubsystem swerve =
+      new SwerveSubsystem(swerveSimulation, this::getSuperstructureState);
 
   private final CommandXboxControllerSubsystem driver = new CommandXboxControllerSubsystem(0);
   private final CommandXboxControllerSubsystem operator = new CommandXboxControllerSubsystem(1);

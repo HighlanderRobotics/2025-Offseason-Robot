@@ -1,10 +1,7 @@
 package frc.robot.swerve.constants;
 
-import java.io.File;
-
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -16,6 +13,7 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.Filesystem;
 import frc.robot.camera.Camera;
 import frc.robot.swerve.module.Module.ModuleConstants;
+import java.io.File;
 
 public abstract class SwerveConstants {
 
