@@ -186,5 +186,4 @@ public class ElevatorSubsystem extends SubsystemBase {
     return Commands.sequence(
         runCurrentZeroing(), runSysid.apply(voltageSysid), runSysid.apply(currentSysid));
   }
-
 }
