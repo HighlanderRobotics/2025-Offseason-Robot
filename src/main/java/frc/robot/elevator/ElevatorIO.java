@@ -23,7 +23,7 @@ public interface ElevatorIO {
 
   void updateInputs(ElevatorIOInputs inputs);
 
-  void setPositionSetpoint(double positionMeters);
+  void setPositionSetpoint(double positionMeters, double acceleration);
 
   void setVoltage(double volts);
 

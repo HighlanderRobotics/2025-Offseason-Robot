@@ -56,7 +56,7 @@ public class ElevatorIOSim implements ElevatorIO {
   }
 
   @Override
-  public void setPositionSetpoint(double meters) {
+  public void setPositionSetpoint(double meters, double acceleration) {
     setVoltage(
         pid.calculate(physicsSim.getPositionMeters(), meters)
             + ff.calculate(pid.getSetpoint().velocity));
