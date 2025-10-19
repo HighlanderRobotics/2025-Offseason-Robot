@@ -666,16 +666,16 @@
    },
    "SLM":{
     "x":{
-     "exp":"SL.x + ((stack_offset.x * cos(SLM.heading)) - (stack_offset.y * sin(SLM.heading)))",
+     "exp":"SL.x - ((stack_offset.x * cos(SLM.heading)) - (stack_offset.y * sin(SLM.heading)))",
      "val":1.7863057999999998
     },
     "y":{
      "exp":"SL.y + ((stack_offset.x * sin(SLM.heading)) + (stack_offset.y * cos(SLM.heading)))",
-     "val":5.6609234
+     "val":6.0611766
     },
     "heading":{
-     "exp":"90 deg",
-     "val":1.5707963267948966
+     "exp":"270 deg",
+     "val":4.71238898038469
     }
    },
    "SM":{
@@ -694,12 +694,12 @@
    },
    "SML":{
     "x":{
-     "exp":"SM.x + ((stack_offset.x * cos(SLM.heading)) - (stack_offset.y * sin(SML.heading)))",
-     "val":1.7084155688674387
+     "exp":"SM.x + ((stack_offset.x * cos(SML.heading)) - (stack_offset.y * sin(SML.heading)))",
+     "val":1.808478868867439
     },
     "y":{
-     "exp":"SM.y + ((stack_offset.x * sin(SLM.heading)) + (stack_offset.y * cos(SML.heading)))",
-     "val":4.122813699999999
+     "exp":"SM.y + ((stack_offset.x * sin(SML.heading)) + (stack_offset.y * cos(SML.heading)))",
+     "val":4.149625580426992
     },
     "heading":{
      "exp":"120 deg",
@@ -722,12 +722,12 @@
    },
    "SRL":{
     "x":{
-     "exp":"SR.x + ((stack_offset.x * cos(SLM.heading)) - (stack_offset.y * sin(SRL.heading)))",
-     "val":1.578616746192126
+     "exp":"SR.x + ((stack_offset.x * cos(SRL.heading)) - (stack_offset.y * sin(SRL.heading)))",
+     "val":1.7319226160424206
     },
     "y":{
-     "exp":"SR.y + ((stack_offset.x * sin(SLM.heading)) + (stack_offset.y * cos(SRL.heading)))",
-     "val":2.4486867779671773
+     "exp":"SR.y + ((stack_offset.x * sin(SRL.heading)) + (stack_offset.y * cos(SRL.heading)))",
+     "val":2.520174479118483
     },
     "heading":{
      "exp":"140 deg",
