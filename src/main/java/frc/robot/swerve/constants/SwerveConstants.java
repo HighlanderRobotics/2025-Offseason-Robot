@@ -1,16 +1,50 @@
 package frc.robot.swerve.constants;
 
+import java.io.File;
+
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Mass;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.Filesystem;
+import frc.robot.camera.Camera;
 import frc.robot.swerve.module.Module.ModuleConstants;
 
 public abstract class SwerveConstants {
 
-  public SwerveConstants() {}
+  protected static final Alert multipleInstancesAlert =
+      new Alert("Multiple Swerve Constants Files", AlertType.kError);
+  private static final Alert tagLoadFailureAlert =
+      new Alert("Failed to load custom tag map", AlertType.kWarning);
+  protected AprilTagFieldLayout fieldTags;
+
+  public SwerveConstants() {
+    try {
+      fieldTags =
+          new AprilTagFieldLayout(
+              Filesystem.getDeployDirectory()
+                  .toPath()
+                  .resolve("vision" + File.separator + "2025-reefscape.json"));
+      System.out.println("Successfully loaded tag map");
+    } catch (Exception e) {
+      System.err.println("Failed to load custom tag map");
+      tagLoadFailureAlert.set(true);
+      fieldTags = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+    }
+  }
+
+  public AprilTagFieldLayout getFieldTagLayout() {
+    return fieldTags;
+  }
+
+  public abstract Camera.CameraConstants[] getCameraConstants();
 
   public abstract String getName();
 

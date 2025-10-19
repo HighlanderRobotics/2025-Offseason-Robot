@@ -25,6 +25,7 @@ import frc.robot.Robot.AlgaeIntakeTarget;
 import frc.robot.Robot.AlgaeScoreTarget;
 import frc.robot.Robot.CoralScoreTarget;
 import frc.robot.Robot.ScoringSide;
+import frc.robot.Superstructure.SuperState;
 import frc.robot.arm.ArmIOReal;
 import frc.robot.arm.ArmIOSim;
 import frc.robot.arm.ArmSubsystem;
@@ -131,7 +132,7 @@ public class Robot extends LoggedRobot {
   private final SwerveDriveSimulation swerveSimulation =
       new SwerveDriveSimulation(driveTrainSimConfig, new Pose2d(3, 3, Rotation2d.kZero));
   // Subsystem initialization
-  private final SwerveSubsystem swerve = new SwerveSubsystem(swerveSimulation);
+  private final SwerveSubsystem swerve = new SwerveSubsystem(swerveSimulation, this::getSuperstructureState);
 
   private final CommandXboxControllerSubsystem driver = new CommandXboxControllerSubsystem(0);
   private final CommandXboxControllerSubsystem operator = new CommandXboxControllerSubsystem(1);
@@ -226,6 +227,10 @@ public class Robot extends LoggedRobot {
     // autos = new Autos(swerve, arm);
     // autoChooser.addDefaultOption("None", autos.getNoneAuto());
     // TODO add autos trigger
+  }
+
+  private SuperState getSuperstructureState() {
+    return superstructure.getState();
   }
 
   /** Scales a joystick value for teleop driving */
