@@ -47,11 +47,11 @@ public class ElevatorIOSim implements ElevatorIO {
     inputs.leaderStatorCurrentAmps = physicsSim.getCurrentDrawAmps();
     inputs.leaderTempC = 20.0;
 
+    // Assume leader and follower are in perfect sync
     inputs.followerPositionMeters = inputs.leaderPositionMeters;
-    inputs.followerVelocityMetersPerSec = inputs.followerVelocityMetersPerSec;
+    inputs.followerVelocityMetersPerSec = inputs.leaderVelocityMetersPerSec;
     inputs.followerVoltage = inputs.leaderVoltage;
     inputs.followerStatorCurrentAmps = inputs.leaderStatorCurrentAmps;
-    inputs.followerSupplyCurrentAmps = inputs.leaderSupplyCurrentAmps;
     inputs.followerTempC = inputs.leaderTempC;
   }
 

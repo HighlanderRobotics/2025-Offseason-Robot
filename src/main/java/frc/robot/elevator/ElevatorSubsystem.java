@@ -24,13 +24,9 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   public static final double MAX_ACCELERATION = 10.0;
 
-  private ElevatorIO io;
-  private ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
+  public static final double EXTENSION_TOLERANCE_METERS = 0.05;
 
-  private LinearFilter currentFilter = LinearFilter.movingAverage(5);
-  private double currentFilterValue = 0.0;
-
-  private boolean hasZeroed = false;
+  public static final double ZEROING_CURRENT_THRESHOLD_AMPS = 50;
 
   public enum ElevatorState {
     // Although the motor takes it in terms of meters, we usually measure extension in terms of
@@ -70,9 +66,19 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
   }
 
+  private ElevatorIO io;
+  private ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
+
+  private LinearFilter currentFilter = LinearFilter.movingAverage(5);
+  private double currentFilterValue = 0.0;
+
+  @AutoLogOutput(key = "Elevator/Has Zeroed")
+  private boolean hasZeroed = false;
+
   @AutoLogOutput(key = "Elevator/State")
   private ElevatorState state = ElevatorState.IDLE;
 
+  @AutoLogOutput(key = "Elevator/Setpoint")
   private double setpoint = 0.0;
 
   private final SysIdRoutine voltageSysid;
@@ -132,7 +138,7 @@ public class ElevatorSubsystem extends SubsystemBase {
             () -> {
               io.setVoltage(-2.0);
             })
-        .until(() -> Math.abs(currentFilterValue) > 50)
+        .until(() -> Math.abs(currentFilterValue) > ZEROING_CURRENT_THRESHOLD_AMPS)
         .finallyDo(
             (interrupted) -> {
               if (!interrupted) {
@@ -143,11 +149,19 @@ public class ElevatorSubsystem extends SubsystemBase {
   }
 
   public boolean atExtension(double expected) {
-    return MathUtil.isNear(expected, inputs.leaderPositionMeters, 0.05);
+    return MathUtil.isNear(expected, inputs.leaderPositionMeters, EXTENSION_TOLERANCE_METERS);
   }
 
   public double getExtensionMeters() {
     return inputs.leaderPositionMeters;
+  }
+
+  public boolean atExtension() {
+    return atExtension(setpoint);
+  }
+
+  public Command setStateExtension() {
+    return setExtensionMeters(() -> state.getExtensionMeters());
   }
 
   public Command runSysid() {
@@ -173,11 +187,4 @@ public class ElevatorSubsystem extends SubsystemBase {
         runCurrentZeroing(), runSysid.apply(voltageSysid), runSysid.apply(currentSysid));
   }
 
-  public boolean atExtension() {
-    return atExtension(setpoint);
-  }
-
-  public Command setStateExtension() {
-    return setExtensionMeters(() -> state.getExtensionMeters());
-  }
 }
