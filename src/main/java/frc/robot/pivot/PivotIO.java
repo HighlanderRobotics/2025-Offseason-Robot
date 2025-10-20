@@ -12,6 +12,7 @@ public interface PivotIO {
     public double supplyCurrentAmps = 0.0;
     public double appliedVoltage = 0.0;
     public double statorCurrentAmps = 0.0;
+    public double motorTemperatureCelsius = 0.0;
   }
 
   public void updateInputs(PivotIOInputs inputs);
@@ -20,5 +21,5 @@ public interface PivotIO {
 
   public void setMotorPosition(Rotation2d targetPosition);
 
-  public void resetEncoder(double position);
+  public void resetEncoder(double rotations);
 }

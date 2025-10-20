@@ -18,6 +18,7 @@ public class CANcoderIOReal implements CANcoderIO {
 
     cancoderAbsolutePosition = cancoder.getAbsolutePosition();
 
+    // only the arm has this
     // TODO: adjust config vlaues and may change depending on if we have multiple cancoders
     final CANcoderConfiguration config = new CANcoderConfiguration();
     config.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;

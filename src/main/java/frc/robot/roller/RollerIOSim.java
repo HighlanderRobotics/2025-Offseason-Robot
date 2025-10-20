@@ -33,6 +33,8 @@ public class RollerIOSim implements RollerIO {
     motorSim.update(0.02);
     inputs.statorCurrentAmps = motorSim.getCurrentDrawAmps();
     inputs.supplyCurrentAmps = 0.0;
+    inputs.velocityRotsPerSec = motorSim.getAngularVelocityRPM() / 60.0;
+    inputs.appliedVoltage = appliedVolts;
   }
 
   @Override

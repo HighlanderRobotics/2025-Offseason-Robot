@@ -11,6 +11,8 @@ import frc.robot.pivot.PivotIO;
 import frc.robot.pivot.PivotIOInputsAutoLogged;
 import frc.robot.roller.RollerIO;
 import frc.robot.roller.RollerIOInputsAutoLogged;
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -30,27 +32,27 @@ public class RollerPivotSubsystem extends SubsystemBase {
     this.name = name;
   }
 
-  public Command runRollerVoltage(double volts) {
-    return this.run(() -> rollerIO.setRollerVoltage(volts));
+  public Command runRollerVoltage(DoubleSupplier volts) {
+    return this.run(() -> rollerIO.setRollerVoltage(volts.getAsDouble()));
   }
 
-  public Command setPivotAngle(Rotation2d target) {
-    return this.runOnce(
+  public Command setPivotAngle(Supplier<Rotation2d> target) {
+    return this.run(
         () -> {
-          Logger.recordOutput(name + "/Pivot Setpoint", target);
-          pivotIO.setMotorPosition(target);
+          Logger.recordOutput(name + "/Pivot Setpoint", target.get());
+          pivotIO.setMotorPosition(target.get());
         });
   }
 
-  public Command setPivotVoltage(double volts) {
-    return this.run(() -> pivotIO.setMotorVoltage(volts));
+  public Command setPivotVoltage(DoubleSupplier volts) {
+    return this.run(() -> pivotIO.setMotorVoltage(volts.getAsDouble()));
   }
 
   public Rotation2d getAngle() {
     return pivotInputs.position;
   }
 
-  public double getVoltage() {
+  public double getPivotVoltage() {
     return pivotInputs.appliedVoltage;
   }
 

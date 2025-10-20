@@ -13,26 +13,39 @@ import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 
 public class PivotIOSim implements PivotIO {
   private final SingleJointedArmSim pivotSim;
+  private final ProfiledPIDController pivotPid;
+  private final ArmFeedforward pivotFf;
 
-  // TODO: change to actual values
   public PivotIOSim(
-      double PivotRatio, double MinAngleRadians, double MaxAngleRadians, double length) {
+      double pivotRatio,
+      double minAngleRadians,
+      double maxAngleRadians,
+      double length,
+      double Kp,
+      double Ki,
+      double Kd,
+      double Ks,
+      double Kg,
+      double Kv,
+      double maxVelocity,
+      double maxAcceleration) {
     pivotSim =
         new SingleJointedArmSim(
             DCMotor.getKrakenX60Foc(1),
-            PivotRatio,
+            pivotRatio,
             0.1,
             length,
-            MinAngleRadians,
-            MaxAngleRadians,
+            minAngleRadians,
+            maxAngleRadians,
             true,
             0.0);
-  }
 
-  private final ProfiledPIDController pivotPid =
-      // TODO tune these values
-      new ProfiledPIDController(2.0, 0.0, 0.0, new TrapezoidProfile.Constraints(10.0, 10.0));
-  private final ArmFeedforward pivotFf = new ArmFeedforward(0.2, 0.2, 0.2);
+    pivotPid =
+        new ProfiledPIDController(
+            Kp, Ki, Kp, new TrapezoidProfile.Constraints(maxVelocity, maxAcceleration));
+
+    pivotFf = new ArmFeedforward(Ks, Kg, Kv);
+  }
 
   private double appliedVoltage = 0.0;
 

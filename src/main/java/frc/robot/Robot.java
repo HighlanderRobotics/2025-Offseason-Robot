@@ -141,7 +141,7 @@ public class Robot extends LoggedRobot {
     return config;
   }
 
-  // TODO tune/check these values
+  // TODO tune these config values
   TalonFXConfiguration armRollerConfig = rollerConfig(20.0);
   TalonFXConfiguration armPivotConfig = pivotConfig(20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
 
@@ -151,6 +151,7 @@ public class Robot extends LoggedRobot {
   TalonFXConfiguration climberRollerConfig = rollerConfig(20.0);
   TalonFXConfiguration climberPivotConfig = pivotConfig(20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
 
+  // TODO tuning sim values espicall for pivot sims
   private final ArmSubsystem arm =
       new ArmSubsystem(
           ROBOT_TYPE != RobotType.SIM
@@ -163,7 +164,8 @@ public class Robot extends LoggedRobot {
                       0.5, 0.0, 0.0, new TrapezoidProfile.Constraints(15, 1))),
           ROBOT_TYPE != RobotType.SIM
               ? new PivotIOReal(12, armPivotConfig)
-              : new PivotIOSim((44.0 / 16.0) * 23, 0.0, 180.0, 23.0),
+              : new PivotIOSim(
+                  (44.0 / 16.0) * 23, 0.0, 180.0, 23.0, 2.0, 0.0, 0.0, 0.1, 0.1, 0.1, 10.0, 10.0),
           new CANcoderIOReal(0),
           "Arm");
 
@@ -179,7 +181,8 @@ public class Robot extends LoggedRobot {
                       0.5, 0.0, 0.0, new TrapezoidProfile.Constraints(15, 1))),
           ROBOT_TYPE != RobotType.SIM
               ? new PivotIOReal(12, intakePivotConfig)
-              : new PivotIOSim((44.0 / 16.0) * 23, 0.0, 90.0, 15),
+              : new PivotIOSim(
+                  (44.0 / 16.0) * 23, 0.0, 90.0, 15, 2.0, 0.0, 0.0, 0.1, 0.1, 0.1, 10.0, 10.0),
           new CANrangeIOReal(0),
           new CANrangeIOReal(1),
           "Intake");
@@ -196,7 +199,8 @@ public class Robot extends LoggedRobot {
                       0.5, 0.0, 0.0, new TrapezoidProfile.Constraints(15, 1))),
           ROBOT_TYPE != RobotType.SIM
               ? new PivotIOReal(16, climberPivotConfig)
-              : new PivotIOSim((44.0 / 16.0) * 23, 0.0, 90.0, 9.25),
+              : new PivotIOSim(
+                  (44.0 / 16.0) * 23, 0.0, 90.0, 9.25, 2.0, 0.0, 0.0, 0.1, 0.1, 0.1, 10.0, 10.0),
           "Climber");
 
   private final SwerveSubsystem swerve = new SwerveSubsystem();
@@ -265,9 +269,9 @@ public class Robot extends LoggedRobot {
 
     // Set default commands
     elevator.setDefaultCommand(elevator.setStateExtension());
-    arm.setDefaultCommand(arm.setStateAngleVoltage(arm.getState()));
-    intake.setDefaultCommand(intake.setStateAngleVoltage(intake.getState()));
-    climber.setDefaultCommand(climber.setStateAngleVoltage(climber.getState()));
+    arm.setDefaultCommand(arm.setStateAngleVoltage(arm::getState));
+    intake.setDefaultCommand(intake.setStateAngleVoltage(intake::getState));
+    climber.setDefaultCommand(climber.setStateAngleVoltage(climber::getState));
 
     driver.setDefaultCommand(driver.rumbleCmd(0.0, 0.0));
     operator.setDefaultCommand(operator.rumbleCmd(0.0, 0.0));

@@ -9,6 +9,7 @@ import frc.robot.cancoder.CANcoderIOInputsAutoLogged;
 import frc.robot.pivot.PivotIO;
 import frc.robot.roller.RollerIO;
 import frc.robot.rollerpivot.RollerPivotSubsystem;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -119,7 +120,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   }
 
   public Command intakeAlgae() {
-    return this.run(() -> runRollerVoltage(ALGAE_INTAKE_VOLTAGE))
+    return this.run(() -> runRollerVoltage(() -> ALGAE_INTAKE_VOLTAGE))
         .until(
             new Trigger(() -> Math.abs(currentFilterValue) > ALGAE_CURRENT_THRESHOLD)
                 .debounce(0.25))
@@ -127,7 +128,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   }
 
   public Command intakeCoral() {
-    return this.run(() -> runRollerVoltage(CORAL_INTAKE_VOLTAGE))
+    return this.run(() -> runRollerVoltage(() -> CORAL_INTAKE_VOLTAGE))
         .until(
             new Trigger(() -> Math.abs(currentFilterValue) > CORAL_CURRENT_THRESHOLD)
                 .debounce(0.25))
@@ -146,11 +147,12 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     return isNear(target, TOLERANCE_DEGREES);
   }
 
-  public Command setStateAngleVoltage(ArmState state) {
-    return this.runOnce(
+  public Command setStateAngleVoltage(Supplier<ArmState> stateSupplier) {
+    return this.run(
         () -> {
-          setPivotAngle(state.position);
-          runRollerVoltage(state.volts);
+          ArmState state = stateSupplier.get();
+          setPivotAngle(() -> state.position);
+          runRollerVoltage(() -> state.volts);
         });
   }
 

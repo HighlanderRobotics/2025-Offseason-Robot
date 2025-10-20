@@ -8,6 +8,7 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
 
 public class RollerIOReal implements RollerIO {
@@ -19,6 +20,7 @@ public class RollerIOReal implements RollerIO {
   private final StatusSignal<Current> supplyCurrentAmps;
   private final StatusSignal<Voltage> appliedVoltage;
   private final StatusSignal<Current> statorCurrentAmps;
+  private final StatusSignal<Temperature> motorTemperatureCelsius;
 
   private final VoltageOut voltageOut = new VoltageOut(0.0).withEnableFOC(true);
 
@@ -29,6 +31,7 @@ public class RollerIOReal implements RollerIO {
     supplyCurrentAmps = rollerMotor.getSupplyCurrent();
     appliedVoltage = rollerMotor.getMotorVoltage();
     statorCurrentAmps = rollerMotor.getStatorCurrent();
+    motorTemperatureCelsius = rollerMotor.getDeviceTemp();
 
     rollerMotor.getConfigurator().apply(config);
     rollerMotor.optimizeBusUtilization();
@@ -36,12 +39,17 @@ public class RollerIOReal implements RollerIO {
 
   public void updateInputs(RollerIOInputs inputs) {
     BaseStatusSignal.refreshAll(
-        velocityRotsPerSec, supplyCurrentAmps, appliedVoltage, statorCurrentAmps);
+        velocityRotsPerSec,
+        supplyCurrentAmps,
+        appliedVoltage,
+        statorCurrentAmps,
+        motorTemperatureCelsius);
 
     inputs.velocityRotsPerSec = velocityRotsPerSec.getValueAsDouble();
     inputs.supplyCurrentAmps = supplyCurrentAmps.getValueAsDouble();
     inputs.appliedVoltage = appliedVoltage.getValueAsDouble();
     inputs.statorCurrentAmps = statorCurrentAmps.getValueAsDouble();
+    inputs.motorTemperatureCelsius = motorTemperatureCelsius.getValueAsDouble();
   }
 
   public void setRollerVoltage(double volts) {

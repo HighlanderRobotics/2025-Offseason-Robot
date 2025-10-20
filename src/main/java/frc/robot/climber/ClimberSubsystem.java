@@ -5,35 +5,18 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.pivot.PivotIO;
 import frc.robot.roller.RollerIO;
 import frc.robot.rollerpivot.RollerPivotSubsystem;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 
 public class ClimberSubsystem extends RollerPivotSubsystem {
   public static final double PIVOT_RATIO = (44.0 / 16.0) * 23;
   public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(180);
   public static final Rotation2d MIN_ANGLE = Rotation2d.fromDegrees(0);
+  public static final double TOLERANCE_DEGREES = 5.0;
 
   // TODO : change these values to the real ones
   public enum ClimberState {
     IDLE(Rotation2d.fromDegrees(0), 0.0),
-    // coral
-    READY_CORAL(Rotation2d.fromDegrees(180), 0.0),
-    PRE_INTAKE_CORAL_GROUND(Rotation2d.fromDegrees(180), 0.0),
-    INTAKE_CORAL_GROUND(Rotation2d.fromDegrees(180), 0.0),
-    L1(Rotation2d.fromDegrees(100), 10.0),
-    PRE_L2(Rotation2d.fromDegrees(45), 10.0),
-    L2(Rotation2d.fromDegrees(60), 10.0),
-    PRE_L3(Rotation2d.fromDegrees(45), 10.0),
-    L3(Rotation2d.fromDegrees(70), 10.0),
-    PRE_L4(Rotation2d.fromDegrees(60), 10.0),
-    L4(Rotation2d.fromDegrees(90), 10.0),
-    POST_L4(Rotation2d.fromDegrees(90), 0.0),
-    // algae
-    INTAKE_ALGAE_REEF_HIGH(Rotation2d.fromDegrees(90), 0.0),
-    INTAKE_ALGAE_REEF_LOW(Rotation2d.fromDegrees(90), 0.0),
-    INTAKE_ALGAE_GROUND(Rotation2d.fromDegrees(135), 0.0),
-    BARGE(Rotation2d.fromDegrees(30), 0.0),
-    READY_ALGAE(Rotation2d.fromDegrees(0), 0.0),
-    PROCESSOR(Rotation2d.fromDegrees(90), 0.0),
     // climbing
     PRE_CLIMB(Rotation2d.fromDegrees(0), 0.0),
     CLIMB(Rotation2d.fromDegrees(20), 0.0);
@@ -67,16 +50,20 @@ public class ClimberSubsystem extends RollerPivotSubsystem {
     super.periodic();
   }
 
-  public Command setStateAngleVoltage(ClimberState state) {
-    return this.runOnce(
+  public Command setStateAngleVoltage(Supplier<ClimberState> stateSupplier) {
+    return this.run(
         () -> {
-          setPivotAngle(state.position);
-          runRollerVoltage(state.volts);
+          ClimberState state = stateSupplier.get();
+          setPivotAngle(() -> state.position);
+          runRollerVoltage(() -> state.volts);
         });
   }
 
-  // TODO atExtension
+  public boolean isNearAngle(Rotation2d target) {
+    return isNear(target, TOLERANCE_DEGREES);
+  }
+
   public boolean atExtension() {
-    return true;
+    return isNearAngle(super.getAngle());
   }
 }
