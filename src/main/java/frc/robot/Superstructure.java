@@ -142,7 +142,7 @@ public class Superstructure {
     }
 
     public boolean isScoreCoral() {
-        return this == PRE_L1
+      return this == PRE_L1
           || this == L1
           || this == PRE_L2_RIGHT
           || this == SCORE_L2_RIGHT

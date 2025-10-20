@@ -120,7 +120,10 @@ public class SwerveSubsystem extends SubsystemBase {
                     SWERVE_CONSTANTS.getBackRightModuleConstants(),
                     swerveSimulation.getModules()[3]))
           };
-      cameras = Arrays.stream(SWERVE_CONSTANTS.getCameraConstants()).map((constants) -> new Camera(new CameraIOSim(constants))).toArray(Camera[]::new);
+      cameras =
+          Arrays.stream(SWERVE_CONSTANTS.getCameraConstants())
+              .map((constants) -> new Camera(new CameraIOSim(constants)))
+              .toArray(Camera[]::new);
     } else {
       // Add real modules
       modules =
@@ -130,8 +133,10 @@ public class SwerveSubsystem extends SubsystemBase {
             new Module(new ModuleIOReal(SWERVE_CONSTANTS.getBackLeftModuleConstants())),
             new Module(new ModuleIOReal(SWERVE_CONSTANTS.getBackRightModuleConstants()))
           };
-          cameras = Arrays.stream(SWERVE_CONSTANTS.getCameraConstants()).map((constants) -> new Camera(new CameraIOReal(constants))).toArray(Camera[]::new);
-
+      cameras =
+          Arrays.stream(SWERVE_CONSTANTS.getCameraConstants())
+              .map((constants) -> new Camera(new CameraIOReal(constants)))
+              .toArray(Camera[]::new);
     }
 
     this.cameraPoses = new Pose3d[cameras.length];
@@ -182,7 +187,8 @@ public class SwerveSubsystem extends SubsystemBase {
           }
 
           for (Camera camera : cameras) {
-            Tracer.trace("Camera " + camera.getName() + " Periodic", () -> camera.periodic(estimator));
+            Tracer.trace(
+                "Camera " + camera.getName() + " Periodic", () -> camera.periodic(estimator));
           }
 
           Tracer.trace("Update odometry", this::updateOdometry);
@@ -267,20 +273,20 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   private void updateVision() {
-      hasFrontTags = false;
-      for (int i = 0; i < cameras.length; i++) {
-        if (cameras[i].hasFrontTags()) hasFrontTags = true;
-        cameras[i].updateCamera(estimator);
-        cameraPoses[i] = cameras[i].getPose();
-      }
-      Logger.recordOutput("Vision/Front Cameras Have Tags", hasFrontTags);
-      if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("Vision/Camera Poses", cameraPoses);
-      Pose3d[] arr = new Pose3d[cameras.length];
-      for (int k = 0; k < cameras.length; k++) {
-        arr[k] = getPose3d().transformBy(cameras[k].getCameraConstants().robotToCamera());
-      }
-      if (Robot.ROBOT_TYPE != RobotType.REAL)
-        Logger.recordOutput("Vision/Camera Poses on Robot", arr);
+    hasFrontTags = false;
+    for (int i = 0; i < cameras.length; i++) {
+      if (cameras[i].hasFrontTags()) hasFrontTags = true;
+      cameras[i].updateCamera(estimator);
+      cameraPoses[i] = cameras[i].getPose();
+    }
+    Logger.recordOutput("Vision/Front Cameras Have Tags", hasFrontTags);
+    if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("Vision/Camera Poses", cameraPoses);
+    Pose3d[] arr = new Pose3d[cameras.length];
+    for (int k = 0; k < cameras.length; k++) {
+      arr[k] = getPose3d().transformBy(cameras[k].getCameraConstants().robotToCamera());
+    }
+    if (Robot.ROBOT_TYPE != RobotType.REAL)
+      Logger.recordOutput("Vision/Camera Poses on Robot", arr);
   }
 
   /**
