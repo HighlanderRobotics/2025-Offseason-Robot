@@ -426,6 +426,9 @@ public class SwerveSubsystem extends SubsystemBase {
     return translateToPose(target, () -> new ChassisSpeeds());
   }
 
+  private Command translateWithIntermediatePose(Supplier<Pose2d> target, Supplier<Pose2d> intermediate) {
+    return translateToPose(intermediate).until(() -> isInAutoAimTolerance(intermediate.get())).andThen(translateToPose(target));
+  }
   public boolean isInAutoAimTolerance(Pose2d target) {
     return isInTolerance(
         target, AutoAim.TRANSLATION_TOLERANCE_METERS, AutoAim.ROTATION_TOLERANCE_RADIANS);
@@ -527,7 +530,8 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public Command autoAimToProcessor() {
-    return translateToPose(() -> getPose().nearest(FieldUtils.PROCESSOR_POSES));
+    // -0.3 meters transformed needs tuning
+    return translateWithIntermediatePose(() -> getPose().nearest(FieldUtils.PROCESSOR_POSES).plus(new Transform2d(0, -0.3, Rotation2d.kZero)), () -> getPose().nearest(FieldUtils.PROCESSOR_POSES));
   }
 
   public boolean nearProcessor() {
