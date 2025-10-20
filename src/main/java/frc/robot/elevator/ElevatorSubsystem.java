@@ -71,6 +71,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   private ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
 
   private LinearFilter currentFilter = LinearFilter.movingAverage(5);
+
   @AutoLogOutput(key = "Elevator/Current Filter Value")
   private double currentFilterValue = 0.0;
 
