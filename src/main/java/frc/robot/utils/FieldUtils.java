@@ -36,7 +36,6 @@ public class FieldUtils {
 
   public static final double L1_TROUGH_WIDTH_METERS = 0.935;
 
-
   public enum AlgaeIntakeTargets {
     // All coordinates are global coordinates from the lower, blue alliance side corner, if the
     // walls

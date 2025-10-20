@@ -395,17 +395,18 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   /**
-   * Autoailgns to the given pose 
-   * <p>
-   * <b>DOES NOT END</b>; Must add <code>.until()</code> with end condition
-   * 
+   * Autoailgns to the given pose
+   *
+   * <p><b>DOES NOT END</b>; Must add <code>.until()</code> with end condition
+   *
    * @param target the target pose
    * @param speedsModifier Field relative speeds to be added onto the PID calculated speeds. i.e.
    *     driver requested speeds to drive along a line.
    * @return a Command driving to the target
    */
   private Command translateToPose(Supplier<Pose2d> target, Supplier<ChassisSpeeds> speedsModifier) {
-    return Commands.runOnce(() -> AutoAim.resetPIDControllers(getPose(), getVelocityFieldRelative()))
+    return Commands.runOnce(
+            () -> AutoAim.resetPIDControllers(getPose(), getVelocityFieldRelative()))
         .andThen(
             driveClosedLoopFieldRelative(
                 () -> {
@@ -417,8 +418,9 @@ public class SwerveSubsystem extends SubsystemBase {
 
   /**
    * Autoaligns to the given pose
-   *<p>
-   * <b>DOES NOT END</b>; Must add <code>.until()</code> with end condition
+   *
+   * <p><b>DOES NOT END</b>; Must add <code>.until()</code> with end condition
+   *
    * @param target the target pose
    * @return a Command driving to the target
    */
@@ -426,9 +428,13 @@ public class SwerveSubsystem extends SubsystemBase {
     return translateToPose(target, () -> new ChassisSpeeds());
   }
 
-  private Command translateWithIntermediatePose(Supplier<Pose2d> target, Supplier<Pose2d> intermediate) {
-    return translateToPose(intermediate).until(() -> isInAutoAimTolerance(intermediate.get())).andThen(translateToPose(target));
+  private Command translateWithIntermediatePose(
+      Supplier<Pose2d> target, Supplier<Pose2d> intermediate) {
+    return translateToPose(intermediate)
+        .until(() -> isInAutoAimTolerance(intermediate.get()))
+        .andThen(translateToPose(target));
   }
+
   public boolean isInAutoAimTolerance(Pose2d target) {
     return isInTolerance(
         target, AutoAim.TRANSLATION_TOLERANCE_METERS, AutoAim.ROTATION_TOLERANCE_RADIANS);
@@ -436,7 +442,8 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public boolean isInTolerance(
       Pose2d target, double translationalToleranceMeters, double angularToleranceRadians) {
-    return AutoAim.isInTolerance(getPose(), target, translationalToleranceMeters, angularToleranceRadians);
+    return AutoAim.isInTolerance(
+        getPose(), target, translationalToleranceMeters, angularToleranceRadians);
   }
 
   public Command autoAimToL1(DoubleSupplier vxModifier, DoubleSupplier vyModifier) {
@@ -448,10 +455,12 @@ public class SwerveSubsystem extends SubsystemBase {
         },
         () -> {
           ChassisSpeeds speedsModifierRobotRelative =
-              ChassisSpeeds.fromFieldRelativeSpeeds(vxModifier.getAsDouble(), vyModifier.getAsDouble(), 0.0, getRotation());
+              ChassisSpeeds.fromFieldRelativeSpeeds(
+                  vxModifier.getAsDouble(), vyModifier.getAsDouble(), 0.0, getRotation());
           // Kill all front-back requested velocity (because we want the robot to strafe)
           speedsModifierRobotRelative.vxMetersPerSecond = 0.0;
-          return ChassisSpeeds.fromRobotRelativeSpeeds(speedsModifierRobotRelative, getRotation()).times(1.5);
+          return ChassisSpeeds.fromRobotRelativeSpeeds(speedsModifierRobotRelative, getRotation())
+              .times(1.5);
         });
   }
 
@@ -480,11 +489,14 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public Command autoAimToL23(BooleanSupplier leftHanded) {
-    return translateToPose(() -> {
-      Twist2d twist = getVelocityFieldRelative().toTwist2d(0.3);
-      Transform2d twistTransform = new Transform2d(twist.dx, twist.dy, Rotation2d.fromRadians(twist.dtheta));
-      return FieldUtils.CoralTargets.getHandedClosestTargetL23(getPose().plus(twistTransform), leftHanded.getAsBoolean());
-    });
+    return translateToPose(
+        () -> {
+          Twist2d twist = getVelocityFieldRelative().toTwist2d(0.3);
+          Transform2d twistTransform =
+              new Transform2d(twist.dx, twist.dy, Rotation2d.fromRadians(twist.dtheta));
+          return FieldUtils.CoralTargets.getHandedClosestTargetL23(
+              getPose().plus(twistTransform), leftHanded.getAsBoolean());
+        });
   }
 
   public boolean nearL23() {
@@ -492,11 +504,14 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public Command autoAimToL4(BooleanSupplier leftHanded) {
-    return translateToPose(() -> {
-      Twist2d twist = getVelocityFieldRelative().toTwist2d(0.3);
-      Transform2d twistTransform = new Transform2d(twist.dx, twist.dy, Rotation2d.fromRadians(twist.dtheta));
-      return FieldUtils.CoralTargets.getHandedClosestTargetL4(getPose().plus(twistTransform), leftHanded.getAsBoolean());
-    });
+    return translateToPose(
+        () -> {
+          Twist2d twist = getVelocityFieldRelative().toTwist2d(0.3);
+          Transform2d twistTransform =
+              new Transform2d(twist.dx, twist.dy, Rotation2d.fromRadians(twist.dtheta));
+          return FieldUtils.CoralTargets.getHandedClosestTargetL4(
+              getPose().plus(twistTransform), leftHanded.getAsBoolean());
+        });
   }
 
   public boolean nearL4() {
@@ -517,14 +532,23 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public Command approachAlgae() {
-    return driveClosedLoopRobotRelative(() -> {
-      AutoAim.resetPIDControllers(getPose(), getVelocityFieldRelative());
-      ChassisSpeeds calculatedSpeedsRobotRelative = ChassisSpeeds.fromFieldRelativeSpeeds(AutoAim.calculateSpeeds(getPose(), FieldUtils.AlgaeIntakeTargets.getClosestTargetPose(getPose())), getRotation());
-      calculatedSpeedsRobotRelative.vxMetersPerSecond = isInAutoAimTolerance(FieldUtils.AlgaeIntakeTargets.getClosestTargetPose(getPose())) ? AutoAim.ALGAE_APPROACH_SPEED_METERS_PER_SECOND : 0.0;
-      // IDK why we have to do this but it was in reefscape so...
-      calculatedSpeedsRobotRelative.vyMetersPerSecond = -calculatedSpeedsRobotRelative.vyMetersPerSecond;
-      return calculatedSpeedsRobotRelative;
-    });
+    return driveClosedLoopRobotRelative(
+        () -> {
+          AutoAim.resetPIDControllers(getPose(), getVelocityFieldRelative());
+          ChassisSpeeds calculatedSpeedsRobotRelative =
+              ChassisSpeeds.fromFieldRelativeSpeeds(
+                  AutoAim.calculateSpeeds(
+                      getPose(), FieldUtils.AlgaeIntakeTargets.getClosestTargetPose(getPose())),
+                  getRotation());
+          calculatedSpeedsRobotRelative.vxMetersPerSecond =
+              isInAutoAimTolerance(FieldUtils.AlgaeIntakeTargets.getClosestTargetPose(getPose()))
+                  ? AutoAim.ALGAE_APPROACH_SPEED_METERS_PER_SECOND
+                  : 0.0;
+          // IDK why we have to do this but it was in reefscape so...
+          calculatedSpeedsRobotRelative.vyMetersPerSecond =
+              -calculatedSpeedsRobotRelative.vyMetersPerSecond;
+          return calculatedSpeedsRobotRelative;
+        });
   }
 
   public boolean nearAlgaeIntakePose() {
@@ -533,7 +557,12 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public Command autoAimToProcessor() {
     // -0.3 meters transformed needs tuning
-    return translateWithIntermediatePose(() -> getPose().nearest(FieldUtils.PROCESSOR_POSES).plus(new Transform2d(0, -0.3, Rotation2d.kZero)), () -> getPose().nearest(FieldUtils.PROCESSOR_POSES));
+    return translateWithIntermediatePose(
+        () ->
+            getPose()
+                .nearest(FieldUtils.PROCESSOR_POSES)
+                .plus(new Transform2d(0, -0.3, Rotation2d.kZero)),
+        () -> getPose().nearest(FieldUtils.PROCESSOR_POSES));
   }
 
   public boolean nearProcessor() {
@@ -541,7 +570,8 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public Command autoAimToBarge(DoubleSupplier vyModifier) {
-    return Commands.runOnce(() -> AutoAim.resetPIDControllers(getPose(), getVelocityFieldRelative()))
+    return Commands.runOnce(
+            () -> AutoAim.resetPIDControllers(getPose(), getVelocityFieldRelative()))
         .andThen(
             driveClosedLoopFieldRelative(
                 () -> {
@@ -570,14 +600,17 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public Command autoAimAuto(Supplier<Pose2d> pose) {
-    return Commands.runOnce(() -> AutoAim.resetPIDControllers(getPose(), getVelocityFieldRelative()))
+    return Commands.runOnce(
+            () -> AutoAim.resetPIDControllers(getPose(), getVelocityFieldRelative()))
         .andThen(
             driveClosedLoopFieldRelative(
                 () -> {
                   return AutoAim.calculateSpeeds(
                       getPose(),
                       // TODO TUNE THIS. IT SHOULD BE LIKE HALFWAY BETWEEN l2 and l4
-                      isNearReef(Units.inchesToMeters(42)) ? FieldUtils.CoralTargets.getClosestTargetL23(pose.get()) : FieldUtils.CoralTargets.getClosestTargetL4(pose.get()),
+                      isNearReef(Units.inchesToMeters(42))
+                          ? FieldUtils.CoralTargets.getClosestTargetL23(pose.get())
+                          : FieldUtils.CoralTargets.getClosestTargetL4(pose.get()),
                       new Constraints(1.5, 1.0),
                       new Constraints(1.5, 1.0),
                       AutoAim.DEFAULT_ANGULAR_CONSTRAINTS);

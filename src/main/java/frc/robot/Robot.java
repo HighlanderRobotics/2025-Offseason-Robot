@@ -254,10 +254,12 @@ public class Robot extends LoggedRobot {
         .whileTrue(
             Commands.parallel(
                 swerve.autoAimToL1(
-                    () -> modifyJoystick(driver.getLeftY())
-                        * SwerveSubsystem.SWERVE_CONSTANTS.getMaxLinearSpeed(),
-                    () -> modifyJoystick(driver.getLeftX())
-                        * SwerveSubsystem.SWERVE_CONSTANTS.getMaxLinearSpeed()),
+                    () ->
+                        modifyJoystick(driver.getLeftY())
+                            * SwerveSubsystem.SWERVE_CONSTANTS.getMaxLinearSpeed(),
+                    () ->
+                        modifyJoystick(driver.getLeftX())
+                            * SwerveSubsystem.SWERVE_CONSTANTS.getMaxLinearSpeed()),
                 Commands.waitUntil(swerve::nearL1)
                     .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy())));
 
