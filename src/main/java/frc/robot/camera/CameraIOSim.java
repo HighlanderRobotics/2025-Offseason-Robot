@@ -7,7 +7,6 @@ package frc.robot.camera;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout.OriginPosition;
 import edu.wpi.first.math.geometry.Pose3d;
-import frc.robot.Robot;
 import frc.robot.camera.Camera.CameraConstants;
 import frc.robot.swerve.SwerveSubsystem;
 

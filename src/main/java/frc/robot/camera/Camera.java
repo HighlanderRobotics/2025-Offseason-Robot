@@ -23,7 +23,6 @@ import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.utils.Tracer;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.EstimatedRobotPose;

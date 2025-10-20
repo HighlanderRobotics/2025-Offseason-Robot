@@ -21,7 +21,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.Robot.RobotType;
-import frc.robot.Superstructure.SuperState;
 import frc.robot.camera.Camera;
 import frc.robot.camera.CameraIOReal;
 import frc.robot.camera.CameraIOSim;
@@ -508,6 +507,10 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public boolean isNearPoseAuto(Supplier<Pose2d> pose) {
     // TODO
+    return true;
+  }
+
+  public boolean isNearProcessor() {
     return true;
   }
 
