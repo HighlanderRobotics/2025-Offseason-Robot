@@ -16,6 +16,17 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public static final double PIVOT_RATIO = (44.0 / 16.0) * 23;
   public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(180);
   public static final Rotation2d MIN_ANGLE = Rotation2d.fromDegrees(0);
+  public static final double LENGTH_METERS = 0.659;
+  public static final double MAX_ACCELERATION = 10.0;
+  public static final double MAX_VELOCITY = 10.0;
+  // TODO tune
+  public static final double KP = 0.2;
+  public static final double KI = 0.0;
+  public static final double KD = 0.0;
+  public static final double KS = 0.0;
+  public static final double KG = 0.1;
+  public static final double KV = 0.1;
+  public static final double jKgMetersSquared = 0.01;
   // public static final double GAME_PIECE_CURRENT_THRESHOLD = 20.0;
   public static final double ALGAE_INTAKE_VOLTAGE = 8.0;
   public static final double CORAL_INTAKE_VOLTAGE = 5.0;

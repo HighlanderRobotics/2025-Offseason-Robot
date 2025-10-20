@@ -127,15 +127,30 @@ public class Robot extends LoggedRobot {
           ROBOT_TYPE != RobotType.SIM
               ? new RollerIOReal(9, armRollerConfig)
               : new RollerIOSim(
-                  0.01,
-                  1.0,
-                  new SimpleMotorFeedforward(0.0, 0.24),
+                  ArmSubsystem.jKgMetersSquared,
+                  ArmSubsystem.PIVOT_RATIO,
+                  new SimpleMotorFeedforward(ArmSubsystem.KS, ArmSubsystem.KV),
                   new ProfiledPIDController(
-                      0.5, 0.0, 0.0, new TrapezoidProfile.Constraints(15, 1))),
+                      ArmSubsystem.KP,
+                      ArmSubsystem.KI,
+                      ArmSubsystem.KD,
+                      new TrapezoidProfile.Constraints(
+                          ArmSubsystem.MAX_VELOCITY, ArmSubsystem.MAX_ACCELERATION))),
           ROBOT_TYPE != RobotType.SIM
               ? new PivotIOReal(12, armPivotConfig)
               : new PivotIOSim(
-                  (44.0 / 16.0) * 23, 0.0, 180.0, 0.659, 2.0, 0.0, 0.0, 0.1, 0.1, 0.1, 10.0, 10.0),
+                  ArmSubsystem.PIVOT_RATIO,
+                  ArmSubsystem.MIN_ANGLE.getRadians(),
+                  ArmSubsystem.MAX_ANGLE.getRadians(),
+                  ArmSubsystem.LENGTH_METERS,
+                  ArmSubsystem.KP,
+                  ArmSubsystem.KI,
+                  ArmSubsystem.KD,
+                  ArmSubsystem.KI,
+                  ArmSubsystem.KG,
+                  ArmSubsystem.KV,
+                  ArmSubsystem.MAX_VELOCITY,
+                  ArmSubsystem.MAX_ACCELERATION),
           new CANcoderIOReal(0, armCANcoderConfig),
           "Arm");
 
@@ -144,15 +159,30 @@ public class Robot extends LoggedRobot {
           ROBOT_TYPE != RobotType.SIM
               ? new RollerIOReal(13, intakeRollerConfig)
               : new RollerIOSim(
-                  0.01,
-                  1.0,
-                  new SimpleMotorFeedforward(0.0, 0.24),
+                  IntakeSubsystem.jKgMetersSquared,
+                  IntakeSubsystem.PIVOT_RATIO,
+                  new SimpleMotorFeedforward(IntakeSubsystem.KS, IntakeSubsystem.KV),
                   new ProfiledPIDController(
-                      0.5, 0.0, 0.0, new TrapezoidProfile.Constraints(15, 1))),
+                      IntakeSubsystem.KP,
+                      IntakeSubsystem.KI,
+                      IntakeSubsystem.KD,
+                      new TrapezoidProfile.Constraints(
+                          IntakeSubsystem.MAX_VELOCITY, IntakeSubsystem.MAX_ACCELERATION))),
           ROBOT_TYPE != RobotType.SIM
               ? new PivotIOReal(12, intakePivotConfig)
               : new PivotIOSim(
-                  (15.0 / 1), 0.0, 90.0, 0.325, 2.0, 0.0, 0.0, 0.1, 0.1, 0.1, 10.0, 10.0),
+                  IntakeSubsystem.PIVOT_RATIO,
+                  IntakeSubsystem.MIN_ANGLE.getRadians(),
+                  IntakeSubsystem.MAX_ANGLE.getRadians(),
+                  IntakeSubsystem.LENGTH_METERS,
+                  IntakeSubsystem.KP,
+                  IntakeSubsystem.KI,
+                  IntakeSubsystem.KD,
+                  IntakeSubsystem.KI,
+                  IntakeSubsystem.KG,
+                  IntakeSubsystem.KV,
+                  IntakeSubsystem.MAX_VELOCITY,
+                  IntakeSubsystem.MAX_ACCELERATION),
           new CANrangeIOReal(0),
           new CANrangeIOReal(1),
           "Intake");
@@ -162,15 +192,30 @@ public class Robot extends LoggedRobot {
           ROBOT_TYPE != RobotType.SIM
               ? new RollerIOReal(17, climberRollerConfig)
               : new RollerIOSim(
-                  0.01,
-                  1.0,
-                  new SimpleMotorFeedforward(0.0, 0.24),
+                  ClimberSubsystem.jKgMetersSquared,
+                  ClimberSubsystem.PIVOT_RATIO,
+                  new SimpleMotorFeedforward(ClimberSubsystem.KS, ClimberSubsystem.KV),
                   new ProfiledPIDController(
-                      0.5, 0.0, 0.0, new TrapezoidProfile.Constraints(15, 1))),
+                      ClimberSubsystem.KP,
+                      ClimberSubsystem.KI,
+                      ClimberSubsystem.KD,
+                      new TrapezoidProfile.Constraints(
+                          ClimberSubsystem.MAX_VELOCITY, ClimberSubsystem.MAX_ACCELERATION))),
           ROBOT_TYPE != RobotType.SIM
               ? new PivotIOReal(16, climberPivotConfig)
               : new PivotIOSim(
-                  (45.0 / 1), 0.0, 90.0, 0.179, 2.0, 0.0, 0.0, 0.1, 0.1, 0.1, 10.0, 10.0),
+                  ClimberSubsystem.PIVOT_RATIO,
+                  ClimberSubsystem.MIN_ANGLE.getRadians(),
+                  ClimberSubsystem.MAX_ANGLE.getRadians(),
+                  ClimberSubsystem.LENGTH_METERS,
+                  ClimberSubsystem.KP,
+                  ClimberSubsystem.KI,
+                  ClimberSubsystem.KD,
+                  ClimberSubsystem.KI,
+                  ClimberSubsystem.KG,
+                  ClimberSubsystem.KV,
+                  ClimberSubsystem.MAX_VELOCITY,
+                  ClimberSubsystem.MAX_ACCELERATION),
           "Climber");
 
   private final SwerveSubsystem swerve = new SwerveSubsystem();
