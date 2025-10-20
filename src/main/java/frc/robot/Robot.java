@@ -135,7 +135,7 @@ public class Robot extends LoggedRobot {
           ROBOT_TYPE != RobotType.SIM
               ? new PivotIOReal(12, armPivotConfig)
               : new PivotIOSim(
-                  (44.0 / 16.0) * 23, 0.0, 180.0, 23.0, 2.0, 0.0, 0.0, 0.1, 0.1, 0.1, 10.0, 10.0),
+                  (44.0 / 16.0) * 23, 0.0, 180.0, 0.659, 2.0, 0.0, 0.0, 0.1, 0.1, 0.1, 10.0, 10.0),
           new CANcoderIOReal(0, armCANcoderConfig),
           "Arm");
 
@@ -152,7 +152,7 @@ public class Robot extends LoggedRobot {
           ROBOT_TYPE != RobotType.SIM
               ? new PivotIOReal(12, intakePivotConfig)
               : new PivotIOSim(
-                  (44.0 / 16.0) * 23, 0.0, 90.0, 15, 2.0, 0.0, 0.0, 0.1, 0.1, 0.1, 10.0, 10.0),
+                  (15.0 / 1), 0.0, 90.0, 0.325, 2.0, 0.0, 0.0, 0.1, 0.1, 0.1, 10.0, 10.0),
           new CANrangeIOReal(0),
           new CANrangeIOReal(1),
           "Intake");
@@ -170,7 +170,7 @@ public class Robot extends LoggedRobot {
           ROBOT_TYPE != RobotType.SIM
               ? new PivotIOReal(16, climberPivotConfig)
               : new PivotIOSim(
-                  (44.0 / 16.0) * 23, 0.0, 90.0, 9.25, 2.0, 0.0, 0.0, 0.1, 0.1, 0.1, 10.0, 10.0),
+                  (45.0 / 1), 0.0, 90.0, 0.179, 2.0, 0.0, 0.0, 0.1, 0.1, 0.1, 10.0, 10.0),
           "Climber");
 
   private final SwerveSubsystem swerve = new SwerveSubsystem();

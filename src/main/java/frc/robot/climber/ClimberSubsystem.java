@@ -9,7 +9,7 @@ import frc.robot.rollerpivot.RollerPivotSubsystem;
 import org.littletonrobotics.junction.AutoLogOutput;
 
 public class ClimberSubsystem extends RollerPivotSubsystem {
-  public static final double PIVOT_RATIO = (44.0 / 16.0) * 23;
+  public static final double PIVOT_RATIO = (45.0 / 16.0);
   public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(180);
   public static final Rotation2d MIN_ANGLE = Rotation2d.fromDegrees(0);
   public static final double TOLERANCE_DEGREES = 5.0;

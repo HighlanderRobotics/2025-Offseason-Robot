@@ -13,7 +13,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class IntakeSubsystem extends RollerPivotSubsystem {
-  public static final double PIVOT_RATIO = (44.0 / 16.0) * 23;
+  public static final double PIVOT_RATIO = (15.0 / 1);
   public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(180);
   public static final Rotation2d MIN_ANGLE = Rotation2d.fromDegrees(0);
   public static final double TOLERANCE_DEGREES = 10.0;
