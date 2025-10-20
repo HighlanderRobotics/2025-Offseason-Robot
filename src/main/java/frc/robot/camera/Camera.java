@@ -178,8 +178,7 @@ public class Camera {
                           .times(
                               (getName().equals("Front_Left_Camera")
                                           || getName().equals("Front_Right_Camera"))
-                                      && (Superstructure.getState().toString().startsWith("PRE_L")
-                                          || Superstructure.getState().isScoreCoral()
+                                      && (Superstructure.getState().isScoreCoral()
                                           || Superstructure.getState() == SuperState.INTAKE_ALGAE_HIGH_LEFT
                                           || Superstructure.getState() == SuperState.INTAKE_ALGAE_HIGH_RIGHT
                                           || Superstructure.getState() == SuperState.INTAKE_ALGAE_LOW_LEFT
