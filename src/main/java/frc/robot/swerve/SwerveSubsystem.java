@@ -517,7 +517,14 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public Command approachAlgae() {
-    return translateToPose(() -> FieldUtils.AlgaeIntakeTargets.getClosestTargetPose(getPose()));
+    return driveClosedLoopRobotRelative(() -> {
+      AutoAim.resetPIDControllers(getPose(), getVelocityFieldRelative());
+      ChassisSpeeds calculatedSpeedsRobotRelative = ChassisSpeeds.fromFieldRelativeSpeeds(AutoAim.calculateSpeeds(getPose(), FieldUtils.AlgaeIntakeTargets.getClosestTargetPose(getPose())), getRotation());
+      calculatedSpeedsRobotRelative.vxMetersPerSecond = isInAutoAimTolerance(FieldUtils.AlgaeIntakeTargets.getClosestTargetPose(getPose())) ? AutoAim.ALGAE_APPROACH_SPEED_METERS_PER_SECOND : 0.0;
+      // IDK why we have to do this but it was in reefscape so...
+      calculatedSpeedsRobotRelative.vyMetersPerSecond = -calculatedSpeedsRobotRelative.vyMetersPerSecond;
+      return calculatedSpeedsRobotRelative;
+    });
   }
 
   public boolean nearAlgaeIntakePose() {

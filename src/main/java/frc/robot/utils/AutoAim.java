@@ -29,6 +29,8 @@ public class AutoAim {
   public static final double VELOCITY_TOLERANCE_METERSPERSECOND = 0.5;
   public static final double INITIAL_REEF_KEEPOFF_DISTANCE_METERS = -0.1;
 
+  public static final double ALGAE_APPROACH_SPEED_METERS_PER_SECOND = 1.0;
+
   // Velocity controllers
   static final ProfiledPIDController VX_CONTROLLER =
       new ProfiledPIDController(
@@ -59,7 +61,7 @@ public class AutoAim {
     VX_CONTROLLER.setConstraints(xConstraints);
     VY_CONTROLLER.setConstraints(yConstraints);
     HEADING_CONTROLLER.setConstraints(headingConstraints);
-    
+
     if (isInTolerance(robotPose, target, TRANSLATION_TOLERANCE_METERS, ROTATION_TOLERANCE_RADIANS))
         return new ChassisSpeeds();
     
