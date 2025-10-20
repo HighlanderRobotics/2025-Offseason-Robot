@@ -28,6 +28,7 @@ import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 /** Add your docs here. */
 public class Camera {
@@ -114,14 +115,14 @@ public class Camera {
 
   public static Matrix<N3, N1> findVisionMeasurementStdDevs(EstimatedRobotPose estimation) {
     double sumDistance = 0;
-    for (var target : estimation.targetsUsed) {
-      var t3d = target.getBestCameraToTarget();
+    for (PhotonTrackedTarget target : estimation.targetsUsed) {
+      Transform3d t3d = target.getBestCameraToTarget();
       sumDistance +=
           Math.sqrt(Math.pow(t3d.getX(), 2) + Math.pow(t3d.getY(), 2) + Math.pow(t3d.getZ(), 2));
     }
     double avgDistance = sumDistance / estimation.targetsUsed.size();
 
-    var deviation = visionPointBlankDevs.times(Math.max(avgDistance, 0.0) * distanceFactor);
+    Matrix<N3,N1> deviation = visionPointBlankDevs.times(Math.max(avgDistance, 0.0) * distanceFactor);
     if (estimation.targetsUsed.size() == 1) {
       deviation = deviation.times(3);
     }
@@ -141,11 +142,11 @@ public class Camera {
   }
 
   public void updateCamera(SwerveDrivePoseEstimator swerveEstimator) {
-    var hasFutureData = false;
+    boolean hasFutureData = false;
     try {
       if (!inputs.stale) {
-        var estPose = Tracer.trace("Update Camera", () -> update(inputs.result));
-        var visionPose = estPose.get().estimatedPose;
+        Optional<EstimatedRobotPose> estPose = Tracer.trace("Update Camera", () -> update(inputs.result));
+        Pose3d visionPose = estPose.get().estimatedPose;
         pose = visionPose;
         // Sets the pose on the sim field
         setSimPose(estPose, !inputs.stale);
@@ -154,68 +155,64 @@ public class Camera {
         Logger.recordOutput("Vision/Vision Pose From " + getName(), visionPose);
         // if (Robot.ROBOT_TYPE != RobotType.REAL)
         Logger.recordOutput("Vision/Vision Pose2d From " + getName(), visionPose.toPose2d());
-        final var deviations = findVisionMeasurementStdDevs(estPose.get());
+        final Matrix<N3,N1> deviations = findVisionMeasurementStdDevs(estPose.get());
         // if (Robot.ROBOT_TYPE != RobotType.REAL)
         Logger.recordOutput("Vision/" + getName() + "/Deviations", deviations.getData());
 
         Tracer.trace(
             "Add Measurement From " + getName(),
             () -> {
-              swerveEstimator.addVisionMeasurement(
-                  // if it's an issue
-                  visionPose.toPose2d(),
-                  inputs.result.metadata.captureTimestampMicros / 1.0e6,
-                  deviations
-                      // .times(DriverStation.isAutonomous() ? 2.0 : 1.0)
-                      .times(
-                          getName().equals("Front_Left_Camera")
-                                  || getName().equals("Front_Right_Camera")
-                              ? 0.75
-                              : 2.0)
-                      // reef positions
-                      .times(
-                          (getName().equals("Front_Left_Camera")
-                                      || getName().equals("Front_Right_Camera"))
-                                  && (stateSupplier.get().toString().startsWith("PRE_L")
-                                      || stateSupplier.get().isScoreCoral()
-                                      || stateSupplier.get() == SuperState.INTAKE_ALGAE_HIGH_LEFT
-                                      || stateSupplier.get() == SuperState.INTAKE_ALGAE_HIGH_RIGHT
-                                      || stateSupplier.get() == SuperState.INTAKE_ALGAE_LOW_LEFT
-                                      || stateSupplier.get() == SuperState.INTAKE_ALGAE_LOW_RIGHT)
-                              ? 0.5
-                              : 1.5) // TODO tune these sorts of numbers
-                      // hp tags
-                      .times(
-                          // !camera.getName().equals("Front_Camera")
-                          // &&
-                          estPose.get().targetsUsed.stream()
-                                  .anyMatch(
-                                      t ->
-                                          t.getFiducialId() == 12
-                                              || t.getFiducialId() == 13
-                                              || t.getFiducialId() == 2
-                                              || t.getFiducialId() == 1)
-                              ? 1.5
-                              : 1.0)
-                      // barge tags
-                      .times(
-                          // !camera.getName().equals("Front_Right_Camera")
-                          // &&
-                          estPose.get().targetsUsed.stream()
-                                  .anyMatch(
-                                      t ->
-                                          t.getFiducialId() == 4
-                                              || t.getFiducialId() == 5
-                                              || t.getFiducialId() == 15
-                                              || t.getFiducialId() == 14)
-                              ? 1.2
-                              : 1.0)
-                      .times(
-                          stateSupplier.get() == SuperState.PRE_BARGE_LEFT
-                                  || stateSupplier.get() == SuperState.PRE_BARGE_RIGHT
-                              ? 0.5
-                              : 1.0));
-              // the sussifier
+              swerveEstimator
+                  .addVisionMeasurement(
+                      // if it's an issue
+                      visionPose.toPose2d(),
+                      inputs.result.metadata.captureTimestampMicros / 1.0e6,
+                      deviations
+                          // .times(DriverStation.isAutonomous() ? 2.0 : 1.0)
+                          .times(
+                              getName().equals("Front_Left_Camera")
+                                      || getName().equals("Front_Right_Camera")
+                                  ? 0.75
+                                  : 2.0)
+                          // reef positions
+                          .times(
+                              (getName().equals("Front_Left_Camera")
+                                          || getName().equals("Front_Right_Camera"))
+                                      && (stateSupplier.get().toString().startsWith("PRE_L")
+                                          || stateSupplier.get().isScoreCoral()
+                                          || stateSupplier.get() == SuperState.INTAKE_ALGAE_HIGH_LEFT
+                                          || stateSupplier.get() == SuperState.INTAKE_ALGAE_HIGH_RIGHT
+                                          || stateSupplier.get() == SuperState.INTAKE_ALGAE_LOW_LEFT
+                                          || stateSupplier.get() == SuperState.INTAKE_ALGAE_LOW_RIGHT)
+                                  ? 0.5
+                                  : 1.5) // TODO tune these sorts of numbers
+                          // hp tags
+                          .times(
+                              // !camera.getName().equals("Front_Camera")
+                              // &&
+                              estPose.get().targetsUsed.stream()
+                                      .anyMatch(
+                                          t ->
+                                              t.getFiducialId() == 12
+                                                  || t.getFiducialId() == 13
+                                                  || t.getFiducialId() == 2
+                                                  || t.getFiducialId() == 1)
+                                  ? 1.5
+                                  : 1.0)
+                          // barge tags
+                          .times(
+                              // !camera.getName().equals("Front_Right_Camera")
+                              // &&
+                              estPose.get().targetsUsed.stream()
+                                      .anyMatch(
+                                          t ->
+                                              t.getFiducialId() == 4
+                                                  || t.getFiducialId() == 5
+                                                  || t.getFiducialId() == 15
+                                                  || t.getFiducialId() == 14)
+                                  ? 1.2
+                                  : 1.0)
+                          .times(stateSupplier.get() == SuperState.PRE_BARGE_LEFT || stateSupplier.get() == SuperState.PRE_BARGE_RIGHT ? 0.5 : 1.0));
             });
 
         hasFutureData |= inputs.result.metadata.captureTimestampMicros > RobotController.getTime();
