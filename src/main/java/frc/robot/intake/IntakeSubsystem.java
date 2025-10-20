@@ -1,34 +1,44 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.intake;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.canrange.CANrangeIO;
+import frc.robot.canrange.CANrangeIOInputsAutoLogged;
+import frc.robot.pivot.PivotIO;
+import frc.robot.roller.RollerIO;
+import frc.robot.rollerpivot.RollerPivotSubsystem;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-public class IntakeSubsystem extends SubsystemBase {
-  // TODO incorporate roller pivot stuff
-  private IntakeIO io;
-  private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
+public class IntakeSubsystem extends RollerPivotSubsystem {
+  public static final double PIVOT_RATIO = (15.0 / 1);
+  public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(180);
+  public static final Rotation2d MIN_ANGLE = Rotation2d.fromDegrees(0);
+  public static final double LENGTH_METERS = 0.325;
+  public static final double MAX_ACCELERATION = 10.0;
+  public static final double MAX_VELOCITY = 10.0;
+  // TODO tune
+  public static final double KP = 0.2;
+  public static final double KI = 0.0;
+  public static final double KD = 0.0;
+  public static final double KS = 0.0;
+  public static final double KG = 0.1;
+  public static final double KV = 0.1;
+  public static final double jKgMetersSquared = 0.01;
+  public static final Rotation2d CLIMB_EXTENSION_DEGREES = Rotation2d.fromDegrees(70);
+  public static final double TOLERANCE_DEGREES = 10.0;
+  private final CANrangeIO leftCanrangeIO;
+  private final CANrangeIO rightCanrangeIO;
+  private final CANrangeIOInputsAutoLogged leftCanrangeInputs = new CANrangeIOInputsAutoLogged();
+  private final CANrangeIOInputsAutoLogged rightCanrangeInputs = new CANrangeIOInputsAutoLogged();
+  private final double ZEROING_POSITION = -10.0;
+  private final double CURRENT_THRESHOLD = 10.0;
 
-  @AutoLogOutput(key = "Intake/State")
-  private IntakeState state = IntakeState.IDLE;
+  @AutoLogOutput public boolean intakeZeroed = false;
 
-  public IntakeSubsystem(IntakeIO io) {
-    this.io = io;
-  }
-
-  /**
-   * 0 for position is horizontal against bumper, positive is upwards. we're in real life!! use
-   * degrees. degrees -> Rotation2d gets handled in the constructor Positive voltage is intaking,
-   * negative is outtaking. (TODO)
-   */
+  // TODO : change these values to the real ones
   public enum IntakeState {
     IDLE(130, 0.0),
     INTAKE_CORAL(0, 10.0),
@@ -55,38 +65,66 @@ public class IntakeSubsystem extends SubsystemBase {
     }
   }
 
-  /** Creates a new IntakeSubsystem. */
-  public IntakeSubsystem() {}
-
-  @Override
-  public void periodic() {
-    io.updateInputs(inputs);
-    Logger.processInputs("Arm", inputs);
+  public IntakeState getState() {
+    return state;
   }
+
+  public IntakeSubsystem(
+      RollerIO rollerIO,
+      PivotIO pivotIO,
+      CANrangeIO leftCanrangeIO,
+      CANrangeIO rightCanrangeIO,
+      String name) {
+    super(rollerIO, pivotIO, name);
+    this.leftCanrangeIO = leftCanrangeIO;
+    this.rightCanrangeIO = rightCanrangeIO;
+  }
+
+  @AutoLogOutput(key = "Intake/State")
+  private IntakeState state = IntakeState.IDLE;
 
   public void setState(IntakeState state) {
     this.state = state;
   }
 
-  public void setMotorVoltage(double voltage) {
-    io.setMotorVoltage(voltage);
+  @Override
+  public void periodic() {
+    super.periodic();
+    leftCanrangeIO.updateInputs(leftCanrangeInputs);
+    Logger.processInputs("Intake/left CANrange", leftCanrangeInputs);
+    rightCanrangeIO.updateInputs(rightCanrangeInputs);
+    Logger.processInputs("Intake/right CANrange", rightCanrangeInputs);
   }
 
-  public void setMotorPosition(Rotation2d targetPosition) {
-    io.setMotorPosition(targetPosition);
+  public double getleftCanrangeDistanceMeters() {
+    return leftCanrangeInputs.distanceMeters;
+  }
+
+  public double getRightCanrangeDistanceMeters() {
+    return rightCanrangeInputs.distanceMeters;
+  }
+
+  @AutoLogOutput(key = "Intake/HasGamePiece")
+  public boolean hasGamePiece() {
+    return getleftCanrangeDistanceMeters() < 0.05 || getRightCanrangeDistanceMeters() < 0.05;
+  }
+
+  public Command zeroIntake() {
+    return this.run(() -> setPivotAngle(() -> Rotation2d.fromDegrees(-80)))
+        .until(new Trigger(() -> Math.abs(currentFilterValue) > CURRENT_THRESHOLD).debounce(0.25))
+        .andThen(
+            Commands.parallel(
+                Commands.runOnce(() -> intakeZeroed = true),
+                Commands.print("Intake Zeroed"),
+                zeroPivot(ZEROING_POSITION)));
   }
 
   public boolean isNearAngle(Rotation2d target) {
-    return MathUtil.isNear(target.getDegrees(), inputs.position.getDegrees(), 10.0);
+    return isNear(target, TOLERANCE_DEGREES);
   }
 
-  // TODO setStateAngleVoltage
   public Command setStateAngleVoltage() {
-    return Commands.none();
-  }
-
-  // TODO hasCoral
-  public boolean hasCoral() {
-    return true;
+    return Commands.parallel(
+        setPivotAngle(() -> state.position), runRollerVoltage(() -> state.volts));
   }
 }

@@ -1,32 +1,44 @@
 package frc.robot.arm;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Robot;
-import frc.robot.Robot.RobotType;
-import java.util.function.Supplier;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.cancoder.CANcoderIO;
+import frc.robot.cancoder.CANcoderIOInputsAutoLogged;
+import frc.robot.pivot.PivotIO;
+import frc.robot.roller.RollerIO;
+import frc.robot.rollerpivot.RollerPivotSubsystem;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-public class ArmSubsystem extends SubsystemBase {
-  // constants
-  // TODO: change to real values
+public class ArmSubsystem extends RollerPivotSubsystem {
   public static final double PIVOT_RATIO = (44.0 / 16.0) * 23;
   public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(180);
   public static final Rotation2d MIN_ANGLE = Rotation2d.fromDegrees(0);
+  public static final double LENGTH_METERS = 0.659;
+  public static final double MAX_ACCELERATION = 10.0;
+  public static final double MAX_VELOCITY = 10.0;
+  // TODO tune
+  public static final double KP = 0.2;
+  public static final double KI = 0.0;
+  public static final double KD = 0.0;
+  public static final double KS = 0.0;
+  public static final double KG = 0.1;
+  public static final double KV = 0.1;
+  public static final double jKgMetersSquared = 0.01;
+  // public static final double GAME_PIECE_CURRENT_THRESHOLD = 20.0;
+  public static final double ALGAE_INTAKE_VOLTAGE = 8.0;
+  public static final double CORAL_INTAKE_VOLTAGE = 5.0;
+  public static final double ALGAE_CURRENT_THRESHOLD = 20.0;
+  public static final double CORAL_CURRENT_THRESHOLD = 20.0;
+  public static final double TOLERANCE_DEGREES = 10.0;
 
-  private ArmIO io;
-  private ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
+  private final CANcoderIO cancoderIO;
+  private final CANcoderIOInputsAutoLogged cancoderInputs = new CANcoderIOInputsAutoLogged();
 
-  @AutoLogOutput(key = "Arm/State")
-  private ArmState state = ArmState.IDLE;
-
-  public ArmSubsystem(ArmIO io) {
-    this.io = io;
-  }
+  @AutoLogOutput public boolean hasAlgae = false;
+  @AutoLogOutput public boolean hasCoral = false;
 
   /**
    * 0 for position is vertical with the EE up. We consider the front of the robot to be the intake,
@@ -90,50 +102,70 @@ public class ArmSubsystem extends SubsystemBase {
     }
   }
 
-  @Override
-  public void periodic() {
-    io.updateInputs(inputs);
-    Logger.processInputs("Arm", inputs);
+  public ArmSubsystem(RollerIO rollerIO, PivotIO pivotIO, CANcoderIO cancoderIO, String name) {
+    super(rollerIO, pivotIO, name);
+    this.cancoderIO = cancoderIO;
   }
 
-  public Command setTargetAngle(Rotation2d target) {
-    return setTargetAngle(() -> target);
-  }
-
-  public Command setTargetAngle(Supplier<Rotation2d> target) {
-    return this.runOnce(
-        () -> {
-          if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("Arm", target.get());
-          io.setMotorPosition(target.get());
-        });
-  }
+  @AutoLogOutput(key = "Arm/State")
+  private ArmState state = ArmState.IDLE;
 
   public void setState(ArmState state) {
     this.state = state;
   }
 
+  public ArmState getState() {
+    return state;
+  }
+
+  @Override
+  public void periodic() {
+    super.periodic();
+    cancoderIO.updateInputs(cancoderInputs);
+    Logger.processInputs("Arm/CANcoder", cancoderInputs);
+  }
+
+  public Rotation2d getCANcoderPosition() {
+    return cancoderInputs.cancoderPosition;
+  }
+
+  public Command intakeAlgae() {
+    return this.run(() -> runRollerVoltage(() -> ALGAE_INTAKE_VOLTAGE))
+        .until(
+            new Trigger(() -> Math.abs(currentFilterValue) > ALGAE_CURRENT_THRESHOLD)
+                .debounce(0.25))
+        .andThen(Commands.runOnce(() -> hasAlgae = true));
+  }
+
+  public Command intakeCoral() {
+    return this.run(() -> runRollerVoltage(() -> CORAL_INTAKE_VOLTAGE))
+        .until(
+            new Trigger(() -> Math.abs(currentFilterValue) > CORAL_CURRENT_THRESHOLD)
+                .debounce(0.25))
+        .andThen(Commands.runOnce(() -> hasCoral = true));
+  }
+
+  // can it distinguish between coral and algae?
+  @AutoLogOutput(key = "Arm/Has GamePiece")
+  public boolean hasGamePiece() {
+    // return (Math.abs(currentFilterValue) > CORAL_CURRENT_THRESHOLD ||
+    // Math.abs(currentFilterValue) > ALGAE_CURRENT_THRESHOLD);
+    return hasAlgae || hasCoral;
+  }
+
   public boolean isNearAngle(Rotation2d target) {
-    return MathUtil.isNear(target.getDegrees(), inputs.position.getDegrees(), 10.0);
+    return isNear(target, TOLERANCE_DEGREES);
   }
 
-  // TODO setStateAngleVoltage
   public Command setStateAngleVoltage() {
-    return Commands.none();
-  }
-
-  // TODO hasCoral
-  // current spike
-  public boolean hasCoral() {
-    return true;
-  }
-
-  // TODO hasAlgae
-  // current spike
-  // Unclear if this will be distinct from the coral current spike?
-  public boolean hasAlgae() {
-    return true;
+    return Commands.parallel(
+        setPivotAngle(() -> state.position), runRollerVoltage(() -> state.volts));
   }
 
   // TODO setSimCoral
   public void setSimCoral(boolean b) {}
+
+  public Command rezeroFromEncoder() {
+    return this.runOnce(() -> zeroPivot(cancoderInputs.cancoderPosition.getDegrees()));
+  }
 }
