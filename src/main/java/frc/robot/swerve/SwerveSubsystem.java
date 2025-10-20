@@ -436,12 +436,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public boolean isInTolerance(
       Pose2d target, double translationalToleranceMeters, double angularToleranceRadians) {
-    Transform2d diff = getPose().minus(target);
-    return MathUtil.isNear(0.0, Math.hypot(diff.getX(), diff.getY()), translationalToleranceMeters)
-        && MathUtil.isNear(
-            target.getRotation().getRadians(),
-            getPose().getRotation().getRadians(),
-            angularToleranceRadians);
+    return AutoAim.isInTolerance(getPose(), target, translationalToleranceMeters, angularToleranceRadians);
   }
 
   public Command autoAimToL1(DoubleSupplier vxModifier, DoubleSupplier vyModifier) {

@@ -1,13 +1,17 @@
 package frc.robot.utils;
 
 import choreo.util.ChoreoAllianceFlipUtil;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
+import frc.robot.swerve.SwerveSubsystem;
+
 import java.util.List;
 
 public class AutoAim {
@@ -47,17 +51,7 @@ public class AutoAim {
   }
 
   public static ChassisSpeeds calculateSpeeds(Pose2d robotPose, Pose2d target) {
-    VX_CONTROLLER.setConstraints(DEFAULT_TRANSLATIONAL_CONSTRAINTS);
-    VY_CONTROLLER.setConstraints(DEFAULT_TRANSLATIONAL_CONSTRAINTS);
-    HEADING_CONTROLLER.setConstraints(DEFAULT_ANGULAR_CONSTRAINTS);
-    return new ChassisSpeeds(
-        VX_CONTROLLER.calculate(robotPose.getX(), target.getX())
-            + VX_CONTROLLER.getSetpoint().velocity,
-        VY_CONTROLLER.calculate(robotPose.getY(), target.getY())
-            + VY_CONTROLLER.getSetpoint().velocity,
-        HEADING_CONTROLLER.calculate(
-                robotPose.getRotation().getRadians(), target.getRotation().getRadians())
-            + HEADING_CONTROLLER.getSetpoint().velocity);
+    return calculateSpeeds(robotPose, target, DEFAULT_TRANSLATIONAL_CONSTRAINTS, DEFAULT_TRANSLATIONAL_CONSTRAINTS, DEFAULT_ANGULAR_CONSTRAINTS);
   }
 
   public static ChassisSpeeds calculateSpeeds(
@@ -65,6 +59,10 @@ public class AutoAim {
     VX_CONTROLLER.setConstraints(xConstraints);
     VY_CONTROLLER.setConstraints(yConstraints);
     HEADING_CONTROLLER.setConstraints(headingConstraints);
+    
+    if (isInTolerance(robotPose, target, TRANSLATION_TOLERANCE_METERS, ROTATION_TOLERANCE_RADIANS))
+        return new ChassisSpeeds();
+    
     return new ChassisSpeeds(
         VX_CONTROLLER.calculate(robotPose.getX(), target.getX())
             + VX_CONTROLLER.getSetpoint().velocity,
@@ -87,5 +85,15 @@ public class AutoAim {
             : Rotation2d.k180deg)
         // TODO: TUNE
         .plus(Rotation2d.fromDegrees(20.0));
+  }
+
+  public static boolean isInTolerance(
+      Pose2d current, Pose2d target, double translationalToleranceMeters, double angularToleranceRadians) {
+    Transform2d diff = current.minus(target);
+    return MathUtil.isNear(0.0, Math.hypot(diff.getX(), diff.getY()), translationalToleranceMeters)
+        && MathUtil.isNear(
+            target.getRotation().getRadians(),
+            current.getRotation().getRadians(),
+            angularToleranceRadians);
   }
 }
