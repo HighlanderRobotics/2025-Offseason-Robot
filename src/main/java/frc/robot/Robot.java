@@ -254,9 +254,9 @@ public class Robot extends LoggedRobot {
         .whileTrue(
             Commands.parallel(
                 swerve.autoAimToL1(
-                    modifyJoystick(driver.getLeftY())
+                    () -> modifyJoystick(driver.getLeftY())
                         * SwerveSubsystem.SWERVE_CONSTANTS.getMaxLinearSpeed(),
-                    modifyJoystick(driver.getLeftX())
+                    () -> modifyJoystick(driver.getLeftX())
                         * SwerveSubsystem.SWERVE_CONSTANTS.getMaxLinearSpeed()),
                 Commands.waitUntil(swerve::nearL1)
                     .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy())));
@@ -295,7 +295,7 @@ public class Robot extends LoggedRobot {
                             Robot.setAlgaeIntakeTarget(
                                 AlgaeIntakeTargets.getClosestTarget(swerve.getPose()).height)),
                     swerve
-                        .autoAimToOffsetAlgae()
+                        .autoAimToOffsetAlgaePose()
                         .until(
                             new Trigger(swerve::nearIntakeAlgaeOffsetPose)
                                 // TODO figure out trigger order of operations? also this is just
@@ -417,7 +417,7 @@ public class Robot extends LoggedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
-    // superstructure.periodic();
+    superstructure.periodic();
   }
 
   @Override
