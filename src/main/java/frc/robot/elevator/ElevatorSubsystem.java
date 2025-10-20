@@ -23,6 +23,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   public static final double MAX_EXTENSION_METERS = Units.inchesToMeters(68.0);
 
   public static final double MAX_ACCELERATION = 10.0;
+  public static final double SLOW_ACCELERATION = 5.0;
 
   public static final double EXTENSION_TOLERANCE_METERS = 0.05;
 
@@ -70,6 +71,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   private ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
 
   private LinearFilter currentFilter = LinearFilter.movingAverage(5);
+  @AutoLogOutput(key = "Elevator/Current Filter Value")
   private double currentFilterValue = 0.0;
 
   @AutoLogOutput(key = "Elevator/Has Zeroed")
@@ -120,7 +122,11 @@ public class ElevatorSubsystem extends SubsystemBase {
   public Command setExtensionMeters(DoubleSupplier meters) {
     return this.run(
         () -> {
-          io.setPositionSetpoint(meters.getAsDouble(), ElevatorSubsystem.MAX_ACCELERATION);
+          if ((getExtensionMeters() - meters.getAsDouble()) > Units.inchesToMeters(6)) {
+            io.setPositionSetpoint(meters.getAsDouble(), SLOW_ACCELERATION);
+          } else {
+            io.setPositionSetpoint(meters.getAsDouble(), MAX_ACCELERATION);
+          }
           setpoint = meters.getAsDouble();
           Logger.recordOutput("Elevator/Setpoint", meters.getAsDouble());
         });

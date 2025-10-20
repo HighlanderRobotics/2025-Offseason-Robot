@@ -67,6 +67,8 @@ public class ElevatorIOReal implements ElevatorIO {
     config.CurrentLimits.SupplyCurrentLowerTime = 0.25;
 
     config.MotionMagic.MotionMagicAcceleration = ElevatorSubsystem.MAX_ACCELERATION;
+    // This is what's set in sim but idk.
+    config.MotionMagic.MotionMagicCruiseVelocity = 5.0;
 
     motionMagicVoltage =
         new DynamicMotionMagicVoltage(
