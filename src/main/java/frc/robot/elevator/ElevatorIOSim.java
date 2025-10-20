@@ -19,7 +19,7 @@ public class ElevatorIOSim implements ElevatorIO {
           // Carriage weighs 8.863
           // Arm weighs 5.625
           Units.lbsToKilograms((3.345 / 2) + 8.863 + 5.625),
-          ElevatorSubsystem.SPROCKET_DIAMETER_METERS,
+          ElevatorSubsystem.SPROCKET_DIAMETER_METERS / 2,
           0.0,
           ElevatorSubsystem.MAX_EXTENSION_METERS,
           true,
@@ -32,7 +32,7 @@ public class ElevatorIOSim implements ElevatorIO {
           0.0,
           0.06,
           (DCMotor.getKrakenX60Foc(1).KvRadPerSecPerVolt
-                  * ElevatorSubsystem.SPROCKET_DIAMETER_METERS)
+                  * (ElevatorSubsystem.SPROCKET_DIAMETER_METERS / 2))
               / ElevatorSubsystem.GEAR_RATIO);
 
   @Override
