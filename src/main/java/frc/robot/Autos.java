@@ -136,7 +136,7 @@ public class Autos {
 
   public void bindCoralElevatorExtension(AutoRoutine routine, double toleranceMeters) {
     routine
-        .observe(arm::hasCoral)
+        .observe(arm::hasGamePiece)
         .and(() -> swerve.isNearReef(toleranceMeters))
         .whileTrue(Commands.run(() -> autoPreScore = true))
         .whileFalse(Commands.run(() -> autoPreScore = false));
@@ -224,6 +224,6 @@ public class Autos {
   }
 
   public Command waitUntilNoCoral() {
-    return Commands.waitUntil(() -> !arm.hasCoral()).alongWith(setSimHasCoralFalse());
+    return Commands.waitUntil(() -> !arm.hasGamePiece()).alongWith(setSimHasCoralFalse());
   }
 }

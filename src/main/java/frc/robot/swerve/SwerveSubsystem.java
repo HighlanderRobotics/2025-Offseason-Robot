@@ -25,7 +25,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.Robot.RobotType;
-import frc.robot.Superstructure.SuperState;
 import frc.robot.camera.Camera;
 import frc.robot.camera.CameraIOReal;
 import frc.robot.camera.CameraIOSim;
@@ -107,8 +106,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
   boolean hasFrontTags = false;
 
-  public SwerveSubsystem(
-      SwerveDriveSimulation swerveSimulation, Supplier<SuperState> stateSupplier) {
+  public SwerveSubsystem(SwerveDriveSimulation swerveSimulation) {
     if (Robot.ROBOT_TYPE == RobotType.SIM) {
       // Add simulated modules
       modules =
@@ -132,7 +130,7 @@ public class SwerveSubsystem extends SubsystemBase {
           };
       cameras =
           Arrays.stream(SWERVE_CONSTANTS.getCameraConstants())
-              .map((constants) -> new Camera(new CameraIOSim(constants), stateSupplier))
+              .map((constants) -> new Camera(new CameraIOSim(constants)))
               .toArray(Camera[]::new);
     } else {
       // Add real modules
@@ -145,7 +143,7 @@ public class SwerveSubsystem extends SubsystemBase {
           };
       cameras =
           Arrays.stream(SWERVE_CONSTANTS.getCameraConstants())
-              .map((constants) -> new Camera(new CameraIOReal(constants), stateSupplier))
+              .map((constants) -> new Camera(new CameraIOReal(constants)))
               .toArray(Camera[]::new);
     }
 
