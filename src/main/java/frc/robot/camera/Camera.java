@@ -66,10 +66,8 @@ public class Camera {
 
   private Pose3d pose;
 
-  private Supplier<SuperState> stateSupplier;
 
-  public Camera(CameraIO io, Supplier<SuperState> stateSupplier) {
-    this.stateSupplier = stateSupplier;
+  public Camera(CameraIO io) {
     this.io = io;
     estimator.setRobotToCameraTransform(io.getCameraConstants().robotToCamera);
     io.updateInputs(inputs);
@@ -180,12 +178,12 @@ public class Camera {
                           .times(
                               (getName().equals("Front_Left_Camera")
                                           || getName().equals("Front_Right_Camera"))
-                                      && (stateSupplier.get().toString().startsWith("PRE_L")
-                                          || stateSupplier.get().isScoreCoral()
-                                          || stateSupplier.get() == SuperState.INTAKE_ALGAE_HIGH_LEFT
-                                          || stateSupplier.get() == SuperState.INTAKE_ALGAE_HIGH_RIGHT
-                                          || stateSupplier.get() == SuperState.INTAKE_ALGAE_LOW_LEFT
-                                          || stateSupplier.get() == SuperState.INTAKE_ALGAE_LOW_RIGHT)
+                                      && (Superstructure.getState().toString().startsWith("PRE_L")
+                                          || Superstructure.getState().isScoreCoral()
+                                          || Superstructure.getState() == SuperState.INTAKE_ALGAE_HIGH_LEFT
+                                          || Superstructure.getState() == SuperState.INTAKE_ALGAE_HIGH_RIGHT
+                                          || Superstructure.getState() == SuperState.INTAKE_ALGAE_LOW_LEFT
+                                          || Superstructure.getState() == SuperState.INTAKE_ALGAE_LOW_RIGHT)
                                   ? 0.5
                                   : 1.5) // TODO tune these sorts of numbers
                           // hp tags
@@ -214,7 +212,7 @@ public class Camera {
                                                   || t.getFiducialId() == 14)
                                   ? 1.2
                                   : 1.0)
-                          .times(stateSupplier.get() == SuperState.PRE_BARGE_LEFT || stateSupplier.get() == SuperState.PRE_BARGE_RIGHT ? 0.5 : 1.0));
+                          .times(Superstructure.getState() == SuperState.PRE_BARGE_LEFT || Superstructure.getState() == SuperState.PRE_BARGE_RIGHT ? 0.5 : 1.0));
             });
 
         hasFutureData |= inputs.result.metadata.captureTimestampMicros > RobotController.getTime();

@@ -99,7 +99,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
   boolean hasFrontTags = false;
 
-  public SwerveSubsystem(SwerveDriveSimulation swerveSimulation, Supplier<SuperState> stateSupplier) {
+  public SwerveSubsystem(SwerveDriveSimulation swerveSimulation) {
     if (Robot.ROBOT_TYPE == RobotType.SIM) {
       // Add simulated modules
       modules =
@@ -121,7 +121,7 @@ public class SwerveSubsystem extends SubsystemBase {
                     SWERVE_CONSTANTS.getBackRightModuleConstants(),
                     swerveSimulation.getModules()[3]))
           };
-      cameras = Arrays.stream(SWERVE_CONSTANTS.getCameraConstants()).map((constants) -> new Camera(new CameraIOSim(constants), stateSupplier)).toArray(Camera[]::new);
+      cameras = Arrays.stream(SWERVE_CONSTANTS.getCameraConstants()).map((constants) -> new Camera(new CameraIOSim(constants))).toArray(Camera[]::new);
     } else {
       // Add real modules
       modules =
@@ -131,7 +131,7 @@ public class SwerveSubsystem extends SubsystemBase {
             new Module(new ModuleIOReal(SWERVE_CONSTANTS.getBackLeftModuleConstants())),
             new Module(new ModuleIOReal(SWERVE_CONSTANTS.getBackRightModuleConstants()))
           };
-          cameras = Arrays.stream(SWERVE_CONSTANTS.getCameraConstants()).map((constants) -> new Camera(new CameraIOReal(constants), stateSupplier)).toArray(Camera[]::new);
+          cameras = Arrays.stream(SWERVE_CONSTANTS.getCameraConstants()).map((constants) -> new Camera(new CameraIOReal(constants))).toArray(Camera[]::new);
 
     }
 

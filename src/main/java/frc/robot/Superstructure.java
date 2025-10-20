@@ -172,7 +172,7 @@ public class Superstructure {
   }
 
   @AutoLogOutput(key = "Superstructure/State")
-  private SuperState state = SuperState.IDLE;
+  private static SuperState state = SuperState.IDLE;
 
   private SuperState prevState = SuperState.IDLE;
 
@@ -309,8 +309,8 @@ public class Superstructure {
             () -> {
               System.out.println("Changing state from " + state + " to " + nextState);
               stateTimer.reset();
-              this.prevState = this.state;
-              this.state = nextState;
+              this.prevState = state;
+              state = nextState;
               setSubstates();
             })
         .ignoringDisable(true);
@@ -611,7 +611,7 @@ public class Superstructure {
     bindTransition(SuperState.PRE_CLIMB, SuperState.IDLE, climbCancelReq);
   }
 
-  public SuperState getState() {
+  public static SuperState getState() {
     return state;
   }
 
