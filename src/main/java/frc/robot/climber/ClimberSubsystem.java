@@ -1,55 +1,77 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.climber;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.pivot.PivotIO;
+import frc.robot.roller.RollerIO;
+import frc.robot.rollerpivot.RollerPivotSubsystem;
 import org.littletonrobotics.junction.AutoLogOutput;
 
-public class ClimberSubsystem extends SubsystemBase {
+public class ClimberSubsystem extends RollerPivotSubsystem {
+  public static final double PIVOT_RATIO = (45.0 / 16.0);
+  public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(180);
+  public static final Rotation2d MIN_ANGLE = Rotation2d.fromDegrees(0);
+  public static final double LENGTH_METERS = 0.179;
+  public static final double MAX_ACCELERATION = 10.0;
+  public static final double MAX_VELOCITY = 10.0;
+  // TODO tune
+  public static final double KP = 0.2;
+  public static final double KI = 0.0;
+  public static final double KD = 0.0;
+  public static final double KS = 0.0;
+  public static final double KG = 0.1;
+  public static final double KV = 0.1;
+  public static final double jKgMetersSquared = 0.01;
+  public static final double TOLERANCE_DEGREES = 5.0;
+  public static final Rotation2d CLIMB_EXTENSION_DEGREES = Rotation2d.fromDegrees(70);
 
-  @AutoLogOutput(key = "Climber/State")
-  private ClimberState state = ClimberState.IDLE;
-
-  /** Creates a new ClimberSubsystem. */
-  public ClimberSubsystem() {}
-
+  // TODO : change these values to the real ones
   public enum ClimberState {
-    // for position 0 is straight up and 90 is fully retracted (positive is counterclockwise)
-    IDLE(0, 0.0),
-    PRE_CLIMB(0, 1.0),
-    CLIMB(90, 10.0),
-    ;
+    IDLE(Rotation2d.fromDegrees(0), 0.0),
+    // climbing
+    PRE_CLIMB(Rotation2d.fromDegrees(0), 0.0),
+    CLIMB(Rotation2d.fromDegrees(20), 0.0);
 
     public final Rotation2d position;
     public final double volts;
 
-    private ClimberState(double positionDegrees, double volts) {
-      this.position = Rotation2d.fromDegrees(positionDegrees);
+    ClimberState(Rotation2d position, double volts) {
+      this.position = position;
       this.volts = volts;
     }
   }
+
+  public ClimberSubsystem(RollerIO rollerIO, PivotIO pivotIO, String name) {
+    super(rollerIO, pivotIO, name);
+  }
+
+  @AutoLogOutput(key = "Climber/State")
+  private ClimberState state = ClimberState.IDLE;
 
   public void setState(ClimberState state) {
     this.state = state;
   }
 
+  public ClimberState getState() {
+    return state;
+  }
+
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    super.periodic();
   }
 
-  // TODO setStateAngleVoltage
   public Command setStateAngleVoltage() {
-    return Commands.none();
+    return Commands.parallel(
+        setPivotAngle(() -> state.position), runRollerVoltage(() -> state.volts));
   }
 
-  // TODO atExtension
-  public boolean atExtension() {
-    return true;
+  public boolean isNearAngle(Rotation2d target) {
+    return isNear(target, TOLERANCE_DEGREES);
+  }
+
+  public boolean atClimbExtension() {
+    return isNearAngle(CLIMB_EXTENSION_DEGREES);
   }
 }

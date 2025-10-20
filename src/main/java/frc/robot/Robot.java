@@ -7,6 +7,15 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Meter;
 
 import com.ctre.phoenix6.SignalLogger;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.signals.GravityTypeValue;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
+import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -26,14 +35,18 @@ import frc.robot.Robot.AlgaeScoreTarget;
 import frc.robot.Robot.CoralScoreTarget;
 import frc.robot.Robot.ScoringSide;
 import frc.robot.Superstructure.SuperState;
-import frc.robot.arm.ArmIOReal;
-import frc.robot.arm.ArmIOSim;
 import frc.robot.arm.ArmSubsystem;
+import frc.robot.cancoder.CANcoderIOReal;
+import frc.robot.canrange.CANrangeIOReal;
 import frc.robot.climber.ClimberSubsystem;
 import frc.robot.elevator.ElevatorIOReal;
 import frc.robot.elevator.ElevatorIOSim;
 import frc.robot.elevator.ElevatorSubsystem;
 import frc.robot.intake.IntakeSubsystem;
+import frc.robot.pivot.PivotIOReal;
+import frc.robot.pivot.PivotIOSim;
+import frc.robot.roller.RollerIOReal;
+import frc.robot.roller.RollerIOSim;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.swerve.odometry.PhoenixOdometryThread;
 import frc.robot.utils.CommandXboxControllerSubsystem;
@@ -102,11 +115,124 @@ public class Robot extends LoggedRobot {
       new ElevatorSubsystem(
           ROBOT_TYPE != RobotType.SIM ? new ElevatorIOReal() : new ElevatorIOSim());
 
-  private final ArmSubsystem arm =
-      new ArmSubsystem(ROBOT_TYPE != RobotType.SIM ? new ArmIOReal() : new ArmIOSim());
+  // TODO tune these config values
+  TalonFXConfiguration armRollerConfig =
+      createRollerConfig(InvertedValue.CounterClockwise_Positive, 20.0);
+  TalonFXConfiguration armPivotConfig =
+      createPivotConfig(
+          InvertedValue.CounterClockwise_Positive, 20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
+  CANcoderConfiguration armCANcoderConfig =
+      createCANcoderConfig(SensorDirectionValue.Clockwise_Positive, 0.0, 0.0);
 
-  private final IntakeSubsystem intake = new IntakeSubsystem();
-  private final ClimberSubsystem climber = new ClimberSubsystem();
+  TalonFXConfiguration intakeRollerConfig =
+      createRollerConfig(InvertedValue.CounterClockwise_Positive, 20.0);
+  TalonFXConfiguration intakePivotConfig =
+      createPivotConfig(
+          InvertedValue.CounterClockwise_Positive, 20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
+
+  TalonFXConfiguration climberRollerConfig =
+      createRollerConfig(InvertedValue.CounterClockwise_Positive, 20.0);
+  TalonFXConfiguration climberPivotConfig =
+      createPivotConfig(
+          InvertedValue.CounterClockwise_Positive, 20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
+
+  // TODO tuning sim values espicall for pivot sims
+  private final ArmSubsystem arm =
+      new ArmSubsystem(
+          ROBOT_TYPE != RobotType.SIM
+              ? new RollerIOReal(9, armRollerConfig)
+              : new RollerIOSim(
+                  ArmSubsystem.jKgMetersSquared,
+                  ArmSubsystem.PIVOT_RATIO,
+                  new SimpleMotorFeedforward(ArmSubsystem.KS, ArmSubsystem.KV),
+                  new ProfiledPIDController(
+                      ArmSubsystem.KP,
+                      ArmSubsystem.KI,
+                      ArmSubsystem.KD,
+                      new TrapezoidProfile.Constraints(
+                          ArmSubsystem.MAX_VELOCITY, ArmSubsystem.MAX_ACCELERATION))),
+          ROBOT_TYPE != RobotType.SIM
+              ? new PivotIOReal(12, armPivotConfig)
+              : new PivotIOSim(
+                  ArmSubsystem.PIVOT_RATIO,
+                  ArmSubsystem.MIN_ANGLE.getRadians(),
+                  ArmSubsystem.MAX_ANGLE.getRadians(),
+                  ArmSubsystem.LENGTH_METERS,
+                  ArmSubsystem.KP,
+                  ArmSubsystem.KI,
+                  ArmSubsystem.KD,
+                  ArmSubsystem.KI,
+                  ArmSubsystem.KG,
+                  ArmSubsystem.KV,
+                  ArmSubsystem.MAX_VELOCITY,
+                  ArmSubsystem.MAX_ACCELERATION),
+          new CANcoderIOReal(0, armCANcoderConfig),
+          "Arm");
+
+  private final IntakeSubsystem intake =
+      new IntakeSubsystem(
+          ROBOT_TYPE != RobotType.SIM
+              ? new RollerIOReal(13, intakeRollerConfig)
+              : new RollerIOSim(
+                  IntakeSubsystem.jKgMetersSquared,
+                  IntakeSubsystem.PIVOT_RATIO,
+                  new SimpleMotorFeedforward(IntakeSubsystem.KS, IntakeSubsystem.KV),
+                  new ProfiledPIDController(
+                      IntakeSubsystem.KP,
+                      IntakeSubsystem.KI,
+                      IntakeSubsystem.KD,
+                      new TrapezoidProfile.Constraints(
+                          IntakeSubsystem.MAX_VELOCITY, IntakeSubsystem.MAX_ACCELERATION))),
+          ROBOT_TYPE != RobotType.SIM
+              ? new PivotIOReal(12, intakePivotConfig)
+              : new PivotIOSim(
+                  IntakeSubsystem.PIVOT_RATIO,
+                  IntakeSubsystem.MIN_ANGLE.getRadians(),
+                  IntakeSubsystem.MAX_ANGLE.getRadians(),
+                  IntakeSubsystem.LENGTH_METERS,
+                  IntakeSubsystem.KP,
+                  IntakeSubsystem.KI,
+                  IntakeSubsystem.KD,
+                  IntakeSubsystem.KI,
+                  IntakeSubsystem.KG,
+                  IntakeSubsystem.KV,
+                  IntakeSubsystem.MAX_VELOCITY,
+                  IntakeSubsystem.MAX_ACCELERATION),
+          new CANrangeIOReal(0),
+          new CANrangeIOReal(1),
+          "Intake");
+
+  private final ClimberSubsystem climber =
+      new ClimberSubsystem(
+          ROBOT_TYPE != RobotType.SIM
+              ? new RollerIOReal(17, climberRollerConfig)
+              : new RollerIOSim(
+                  ClimberSubsystem.jKgMetersSquared,
+                  ClimberSubsystem.PIVOT_RATIO,
+                  new SimpleMotorFeedforward(ClimberSubsystem.KS, ClimberSubsystem.KV),
+                  new ProfiledPIDController(
+                      ClimberSubsystem.KP,
+                      ClimberSubsystem.KI,
+                      ClimberSubsystem.KD,
+                      new TrapezoidProfile.Constraints(
+                          ClimberSubsystem.MAX_VELOCITY, ClimberSubsystem.MAX_ACCELERATION))),
+          ROBOT_TYPE != RobotType.SIM
+              ? new PivotIOReal(16, climberPivotConfig)
+              : new PivotIOSim(
+                  ClimberSubsystem.PIVOT_RATIO,
+                  ClimberSubsystem.MIN_ANGLE.getRadians(),
+                  ClimberSubsystem.MAX_ANGLE.getRadians(),
+                  ClimberSubsystem.LENGTH_METERS,
+                  ClimberSubsystem.KP,
+                  ClimberSubsystem.KI,
+                  ClimberSubsystem.KD,
+                  ClimberSubsystem.KI,
+                  ClimberSubsystem.KG,
+                  ClimberSubsystem.KV,
+                  ClimberSubsystem.MAX_VELOCITY,
+                  ClimberSubsystem.MAX_ACCELERATION),
+          "Climber");
+
 
   // Maple Sim Stuff
   private final DriveTrainSimulationConfig driveTrainSimConfig =
@@ -199,7 +325,7 @@ public class Robot extends LoggedRobot {
     PhoenixOdometryThread.getInstance().start();
 
     // Set default commands
-    // elevator.setDefaultCommand(elevator.setStateExtension());
+    elevator.setDefaultCommand(elevator.setStateExtension());
     // arm.setDefaultCommand(arm.setStateAngleVoltage());
     // intake.setDefaultCommand(intake.setStateAngleVoltage());
     // climber.setDefaultCommand(climber.setStateAngleVoltage());
@@ -227,6 +353,60 @@ public class Robot extends LoggedRobot {
     // autos = new Autos(swerve, arm);
     // autoChooser.addDefaultOption("None", autos.getNoneAuto());
     // TODO add autos trigger
+  }
+
+  private TalonFXConfiguration createRollerConfig(InvertedValue inverted, double currentLimit) {
+    TalonFXConfiguration config = new TalonFXConfiguration();
+
+    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    config.MotorOutput.Inverted = inverted;
+    config.CurrentLimits.SupplyCurrentLimit = currentLimit;
+    config.CurrentLimits.SupplyCurrentLimitEnable = true;
+
+    return config;
+  }
+
+  private TalonFXConfiguration createPivotConfig(
+      InvertedValue inverted,
+      double currentLimit,
+      double sensorToMechRatio,
+      double kV,
+      double kG,
+      double kS,
+      double kP,
+      double kI,
+      double kD) {
+    TalonFXConfiguration config = new TalonFXConfiguration();
+
+    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    config.MotorOutput.Inverted = inverted;
+    config.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
+
+    config.Slot0.kV = kV;
+    config.Slot0.kG = kG;
+    config.Slot0.kS = kS;
+    config.Slot0.kP = kP;
+    config.Slot0.kI = kI;
+    config.Slot0.kD = kD;
+
+    config.CurrentLimits.SupplyCurrentLimit = currentLimit;
+    config.CurrentLimits.SupplyCurrentLimitEnable = true;
+
+    config.Feedback.SensorToMechanismRatio = sensorToMechRatio;
+
+    return config;
+  }
+
+  private CANcoderConfiguration createCANcoderConfig(
+      SensorDirectionValue directionValue,
+      double MagnetOffset,
+      double AbsoluteSensorDiscontinuityPoint) {
+    CANcoderConfiguration config = new CANcoderConfiguration();
+    config.MagnetSensor.SensorDirection = directionValue;
+    config.MagnetSensor.MagnetOffset = MagnetOffset;
+    config.MagnetSensor.AbsoluteSensorDiscontinuityPoint = AbsoluteSensorDiscontinuityPoint;
+
+    return config;
   }
 
   /** Scales a joystick value for teleop driving */

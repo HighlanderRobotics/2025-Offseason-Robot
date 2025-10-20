@@ -190,3 +190,4 @@ compile_commands.json
 
 # Generated
 BuildConstants.java
+src/main/java/frc/robot/BuildConstants.java
