@@ -2,10 +2,10 @@ package frc.robot.climber;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.pivot.PivotIO;
 import frc.robot.roller.RollerIO;
 import frc.robot.rollerpivot.RollerPivotSubsystem;
-import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 
 public class ClimberSubsystem extends RollerPivotSubsystem {
@@ -51,20 +51,16 @@ public class ClimberSubsystem extends RollerPivotSubsystem {
     super.periodic();
   }
 
-  public Command setStateAngleVoltage(Supplier<ClimberState> stateSupplier) {
-    return this.run(
-        () -> {
-          ClimberState state = stateSupplier.get();
-          setPivotAngle(() -> state.position);
-          runRollerVoltage(() -> state.volts);
-        });
+  public Command setStateAngleVoltage() {
+    return Commands.parallel(
+        setPivotAngle(() -> state.position), runRollerVoltage(() -> state.volts));
   }
 
   public boolean isNearAngle(Rotation2d target) {
     return isNear(target, TOLERANCE_DEGREES);
   }
 
-  public boolean atExtension() {
+  public boolean atClimbExtension() {
     return isNearAngle(CLIMB_EXTENSION_DEGREES);
   }
 }

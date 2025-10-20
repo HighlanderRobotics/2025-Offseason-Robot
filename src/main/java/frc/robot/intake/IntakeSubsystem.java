@@ -9,7 +9,6 @@ import frc.robot.canrange.CANrangeIOInputsAutoLogged;
 import frc.robot.pivot.PivotIO;
 import frc.robot.roller.RollerIO;
 import frc.robot.rollerpivot.RollerPivotSubsystem;
-import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -17,7 +16,7 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   public static final double PIVOT_RATIO = (44.0 / 16.0) * 23;
   public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(180);
   public static final Rotation2d MIN_ANGLE = Rotation2d.fromDegrees(0);
-  public static final double TOLERANCE_DEGREES = 15.0;
+  public static final double TOLERANCE_DEGREES = 10.0;
 
   private final CANrangeIO leftCanrangeIO;
   private final CANrangeIO rightCanrangeIO;
@@ -81,22 +80,22 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   public void periodic() {
     super.periodic();
     leftCanrangeIO.updateInputs(leftCanrangeInputs);
-    Logger.processInputs("Intake/leftCanrange", leftCanrangeInputs);
+    Logger.processInputs("Intake/left CANrange", leftCanrangeInputs);
     rightCanrangeIO.updateInputs(rightCanrangeInputs);
-    Logger.processInputs("Intake/rightanrange", rightCanrangeInputs);
+    Logger.processInputs("Intake/right CANrange", rightCanrangeInputs);
   }
 
-  public double getleftCanrangeDistanceM() {
-    return leftCanrangeInputs.distanceM;
+  public double getleftCanrangeDistanceMeters() {
+    return leftCanrangeInputs.distanceMeters;
   }
 
-  public double getRightCanrangeDistanceM() {
-    return rightCanrangeInputs.distanceM;
+  public double getRightCanrangeDistanceMeters() {
+    return rightCanrangeInputs.distanceMeters;
   }
 
   @AutoLogOutput(key = "Intake/HasGamePiece")
   public boolean hasGamePiece() {
-    return getleftCanrangeDistanceM() < 10.0 || getRightCanrangeDistanceM() < 10.0;
+    return getleftCanrangeDistanceMeters() < 0.05 || getRightCanrangeDistanceMeters() < 0.05;
   }
 
   public Command zeroIntake() {
@@ -113,12 +112,8 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
     return isNear(target, TOLERANCE_DEGREES);
   }
 
-  public Command setStateAngleVoltage(Supplier<IntakeState> stateSupplier) {
-    return this.run(
-        () -> {
-          IntakeState state = stateSupplier.get();
-          setPivotAngle(() -> state.position);
-          runRollerVoltage(() -> state.volts);
-        });
+  public Command setStateAngleVoltage() {
+    return Commands.parallel(
+        setPivotAngle(() -> state.position), runRollerVoltage(() -> state.volts));
   }
 }

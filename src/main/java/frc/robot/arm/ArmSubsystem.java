@@ -9,7 +9,6 @@ import frc.robot.cancoder.CANcoderIOInputsAutoLogged;
 import frc.robot.pivot.PivotIO;
 import frc.robot.roller.RollerIO;
 import frc.robot.rollerpivot.RollerPivotSubsystem;
-import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -22,7 +21,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public static final double CORAL_INTAKE_VOLTAGE = 5.0;
   public static final double ALGAE_CURRENT_THRESHOLD = 20.0;
   public static final double CORAL_CURRENT_THRESHOLD = 20.0;
-  public static final double TOLERANCE_DEGREES = 20.0;
+  public static final double TOLERANCE_DEGREES = 10.0;
 
   private final CANcoderIO cancoderIO;
   private final CANcoderIOInputsAutoLogged cancoderInputs = new CANcoderIOInputsAutoLogged();
@@ -147,15 +146,15 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     return isNear(target, TOLERANCE_DEGREES);
   }
 
-  public Command setStateAngleVoltage(Supplier<ArmState> stateSupplier) {
-    return this.run(
-        () -> {
-          ArmState state = stateSupplier.get();
-          setPivotAngle(() -> state.position);
-          runRollerVoltage(() -> state.volts);
-        });
+  public Command setStateAngleVoltage() {
+    return Commands.parallel(
+        setPivotAngle(() -> state.position), runRollerVoltage(() -> state.volts));
   }
 
   // TODO setSimCoral
   public void setSimCoral(boolean b) {}
+
+  public Command rezeroFromEncoder() {
+    return this.runOnce(() -> zeroPivot(cancoderInputs.cancoderPosition.getDegrees()));
+  }
 }

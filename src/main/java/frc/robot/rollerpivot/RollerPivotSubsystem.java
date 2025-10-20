@@ -48,7 +48,7 @@ public class RollerPivotSubsystem extends SubsystemBase {
     return this.run(() -> pivotIO.setMotorVoltage(volts.getAsDouble()));
   }
 
-  public Rotation2d getAngle() {
+  public Rotation2d getPivotAngle() {
     return pivotInputs.position;
   }
 
@@ -57,7 +57,7 @@ public class RollerPivotSubsystem extends SubsystemBase {
   }
 
   public boolean isNear(Rotation2d target, double tolerance) {
-    return MathUtil.isNear(target.getDegrees(), getAngle().getDegrees(), tolerance);
+    return MathUtil.isNear(target.getDegrees(), getPivotAngle().getDegrees(), tolerance);
   }
 
   public Command zeroPivot(double position) {

@@ -5,10 +5,12 @@
 package frc.robot;
 
 import com.ctre.phoenix6.SignalLogger;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -98,58 +100,26 @@ public class Robot extends LoggedRobot {
       new ElevatorSubsystem(
           ROBOT_TYPE != RobotType.SIM ? new ElevatorIOReal() : new ElevatorIOSim());
 
-  // TODO: fill in correct values for these subsystems
-
-  private TalonFXConfiguration rollerConfig(double currentLimit) {
-    TalonFXConfiguration config = new TalonFXConfiguration();
-
-    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
-    config.CurrentLimits.SupplyCurrentLimit = currentLimit;
-    config.CurrentLimits.SupplyCurrentLimitEnable = true;
-
-    return config;
-  }
-
-  private TalonFXConfiguration pivotConfig(
-      double currentLimit,
-      double sensorToMechRatio,
-      double kV,
-      double kG,
-      double kS,
-      double kP,
-      double kI,
-      double kD) {
-    TalonFXConfiguration config = new TalonFXConfiguration();
-
-    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
-    config.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
-
-    config.Slot0.kV = kV;
-    config.Slot0.kG = kG;
-    config.Slot0.kS = kS;
-    config.Slot0.kP = kP;
-    config.Slot0.kI = kI;
-    config.Slot0.kD = kD;
-
-    config.CurrentLimits.SupplyCurrentLimit = currentLimit;
-    config.CurrentLimits.SupplyCurrentLimitEnable = true;
-
-    config.Feedback.SensorToMechanismRatio = sensorToMechRatio;
-
-    return config;
-  }
-
   // TODO tune these config values
-  TalonFXConfiguration armRollerConfig = rollerConfig(20.0);
-  TalonFXConfiguration armPivotConfig = pivotConfig(20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
+  TalonFXConfiguration armRollerConfig =
+      createRollerConfig(InvertedValue.CounterClockwise_Positive, 20.0);
+  TalonFXConfiguration armPivotConfig =
+      createPivotConfig(
+          InvertedValue.CounterClockwise_Positive, 20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
+  CANcoderConfiguration armCANcoderConfig =
+      createCANcoderConfig(SensorDirectionValue.Clockwise_Positive, 0.0, 0.0);
 
-  TalonFXConfiguration intakeRollerConfig = rollerConfig(20.0);
-  TalonFXConfiguration intakePivotConfig = pivotConfig(20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
+  TalonFXConfiguration intakeRollerConfig =
+      createRollerConfig(InvertedValue.CounterClockwise_Positive, 20.0);
+  TalonFXConfiguration intakePivotConfig =
+      createPivotConfig(
+          InvertedValue.CounterClockwise_Positive, 20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
 
-  TalonFXConfiguration climberRollerConfig = rollerConfig(20.0);
-  TalonFXConfiguration climberPivotConfig = pivotConfig(20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
+  TalonFXConfiguration climberRollerConfig =
+      createRollerConfig(InvertedValue.CounterClockwise_Positive, 20.0);
+  TalonFXConfiguration climberPivotConfig =
+      createPivotConfig(
+          InvertedValue.CounterClockwise_Positive, 20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
 
   // TODO tuning sim values espicall for pivot sims
   private final ArmSubsystem arm =
@@ -166,7 +136,7 @@ public class Robot extends LoggedRobot {
               ? new PivotIOReal(12, armPivotConfig)
               : new PivotIOSim(
                   (44.0 / 16.0) * 23, 0.0, 180.0, 23.0, 2.0, 0.0, 0.0, 0.1, 0.1, 0.1, 10.0, 10.0),
-          new CANcoderIOReal(0),
+          new CANcoderIOReal(0, armCANcoderConfig),
           "Arm");
 
   private final IntakeSubsystem intake =
@@ -269,9 +239,9 @@ public class Robot extends LoggedRobot {
 
     // Set default commands
     elevator.setDefaultCommand(elevator.setStateExtension());
-    arm.setDefaultCommand(arm.setStateAngleVoltage(arm::getState));
-    intake.setDefaultCommand(intake.setStateAngleVoltage(intake::getState));
-    climber.setDefaultCommand(climber.setStateAngleVoltage(climber::getState));
+    arm.setDefaultCommand(arm.setStateAngleVoltage());
+    intake.setDefaultCommand(intake.setStateAngleVoltage());
+    climber.setDefaultCommand(climber.setStateAngleVoltage());
 
     driver.setDefaultCommand(driver.rumbleCmd(0.0, 0.0));
     operator.setDefaultCommand(operator.rumbleCmd(0.0, 0.0));
@@ -281,6 +251,60 @@ public class Robot extends LoggedRobot {
     autos = new Autos(swerve, arm);
     // autoChooser.addDefaultOption("None", autos.getNoneAuto());
     // TODO add autos trigger
+  }
+
+  private TalonFXConfiguration createRollerConfig(InvertedValue inverted, double currentLimit) {
+    TalonFXConfiguration config = new TalonFXConfiguration();
+
+    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    config.MotorOutput.Inverted = inverted;
+    config.CurrentLimits.SupplyCurrentLimit = currentLimit;
+    config.CurrentLimits.SupplyCurrentLimitEnable = true;
+
+    return config;
+  }
+
+  private TalonFXConfiguration createPivotConfig(
+      InvertedValue inverted,
+      double currentLimit,
+      double sensorToMechRatio,
+      double kV,
+      double kG,
+      double kS,
+      double kP,
+      double kI,
+      double kD) {
+    TalonFXConfiguration config = new TalonFXConfiguration();
+
+    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    config.MotorOutput.Inverted = inverted;
+    config.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
+
+    config.Slot0.kV = kV;
+    config.Slot0.kG = kG;
+    config.Slot0.kS = kS;
+    config.Slot0.kP = kP;
+    config.Slot0.kI = kI;
+    config.Slot0.kD = kD;
+
+    config.CurrentLimits.SupplyCurrentLimit = currentLimit;
+    config.CurrentLimits.SupplyCurrentLimitEnable = true;
+
+    config.Feedback.SensorToMechanismRatio = sensorToMechRatio;
+
+    return config;
+  }
+
+  private CANcoderConfiguration createCANcoderConfig(
+      SensorDirectionValue directionValue,
+      double MagnetOffset,
+      double AbsoluteSensorDiscontinuityPoint) {
+    CANcoderConfiguration config = new CANcoderConfiguration();
+    config.MagnetSensor.SensorDirection = directionValue;
+    config.MagnetSensor.MagnetOffset = MagnetOffset;
+    config.MagnetSensor.AbsoluteSensorDiscontinuityPoint = AbsoluteSensorDiscontinuityPoint;
+
+    return config;
   }
 
   private void addControllerBindings() {

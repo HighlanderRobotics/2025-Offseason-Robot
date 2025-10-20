@@ -589,7 +589,8 @@ public class Superstructure {
     // ---Climb---
     bindTransition(SuperState.IDLE, SuperState.PRE_CLIMB, preClimbReq);
 
-    bindTransition(SuperState.PRE_CLIMB, SuperState.CLIMB, climbConfReq.and(climber::atExtension));
+    bindTransition(
+        SuperState.PRE_CLIMB, SuperState.CLIMB, climbConfReq.and(climber::atClimbExtension));
 
     bindTransition(SuperState.CLIMB, SuperState.PRE_CLIMB, climbCancelReq);
 

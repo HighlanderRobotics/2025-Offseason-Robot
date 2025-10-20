@@ -27,6 +27,6 @@ public class CANrangeIOReal implements CANrangeIO {
   public void updateInputs(CANrangeIOInputs inputs) {
     BaseStatusSignal.refreshAll(distance);
 
-    inputs.distanceM = distance.getValueAsDouble();
+    inputs.distanceMeters = distance.getValueAsDouble();
   }
 }
