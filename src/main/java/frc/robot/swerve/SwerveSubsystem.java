@@ -51,6 +51,7 @@ import frc.robot.utils.Tracer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
@@ -480,16 +481,24 @@ public class SwerveSubsystem extends SubsystemBase {
         < toleranceMeters;
   }
 
-  public Command autoAimToL23() {
-    return translateToPose(() -> FieldUtils.CoralTargets.getClosestTargetL23(getPose()));
+  public Command autoAimToL23(BooleanSupplier leftHanded) {
+    return translateToPose(() -> {
+      Twist2d twist = getVelocityFieldRelative().toTwist2d(0.3);
+      Transform2d twistTransform = new Transform2d(twist.dx, twist.dy, Rotation2d.fromRadians(twist.dtheta));
+      return FieldUtils.CoralTargets.getHandedClosestTargetL23(getPose().plus(twistTransform), leftHanded.getAsBoolean());
+    });
   }
 
   public boolean nearL23() {
     return isInAutoAimTolerance(FieldUtils.CoralTargets.getClosestTargetL23(getPose()));
   }
 
-  public Command autoAimToL4() {
-    return translateToPose(() -> FieldUtils.CoralTargets.getClosestTargetL4(getPose()));
+  public Command autoAimToL4(BooleanSupplier leftHanded) {
+    return translateToPose(() -> {
+      Twist2d twist = getVelocityFieldRelative().toTwist2d(0.3);
+      Transform2d twistTransform = new Transform2d(twist.dx, twist.dy, Rotation2d.fromRadians(twist.dtheta));
+      return FieldUtils.CoralTargets.getHandedClosestTargetL4(getPose().plus(twistTransform), leftHanded.getAsBoolean());
+    });
   }
 
   public boolean nearL4() {

@@ -269,7 +269,7 @@ public class Robot extends LoggedRobot {
                 coralScoreTarget == CoralScoreTarget.L2 || coralScoreTarget == CoralScoreTarget.L3)
         .whileTrue(
             Commands.parallel(
-                swerve.autoAimToL23(),
+                swerve.autoAimToL23(driver.leftBumper()),
                 Commands.waitUntil(swerve::nearL23)
                     .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy())));
 
@@ -279,7 +279,7 @@ public class Robot extends LoggedRobot {
         .and(() -> coralScoreTarget == CoralScoreTarget.L4)
         .whileTrue(
             Commands.parallel(
-                swerve.autoAimToL4(),
+                swerve.autoAimToL4(driver.leftBumper()),
                 Commands.waitUntil(swerve::nearL4)
                     .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy())));
 

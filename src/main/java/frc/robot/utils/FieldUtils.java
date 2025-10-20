@@ -262,13 +262,25 @@ public class FieldUtils {
     }
 
     /** Gets the closest offset target to the given pose. */
-    public static Pose2d getHandedClosestTarget(Pose2d pose, boolean leftHanded) {
+    public static Pose2d getHandedClosestTargetL23(Pose2d pose, boolean leftHanded) {
       return pose.nearest(
           Arrays.stream(values())
               .filter((target) -> target.leftHanded == leftHanded)
               .map(
                   (CoralTargets targets) -> {
                     return CoralTargets.getRobotTargetLocationL23(targets.location);
+                  })
+              .toList());
+    }
+
+    /** Gets the closest offset target to the given pose. */
+    public static Pose2d getHandedClosestTargetL4(Pose2d pose, boolean leftHanded) {
+      return pose.nearest(
+          Arrays.stream(values())
+              .filter((target) -> target.leftHanded == leftHanded)
+              .map(
+                  (CoralTargets targets) -> {
+                    return CoralTargets.getRobotTargetLocationL4(targets.location);
                   })
               .toList());
     }
