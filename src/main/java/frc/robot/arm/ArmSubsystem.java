@@ -157,9 +157,11 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     return isNear(target, TOLERANCE_DEGREES);
   }
 
+  // TODO this is definitely not Good
   public Command setStateAngleVoltage() {
-    return Commands.parallel(
-        setPivotAngle(() -> state.position), runRollerVoltage(() -> state.volts));
+    return setPivotAngle(() -> state.position)
+        .andThen(runRollerVoltage(() -> state.volts))
+        .repeatedly();
   }
 
   // TODO setSimCoral

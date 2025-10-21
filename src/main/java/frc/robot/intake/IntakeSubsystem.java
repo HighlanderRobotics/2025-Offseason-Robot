@@ -124,7 +124,8 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   }
 
   public Command setStateAngleVoltage() {
-    return Commands.parallel(
-        setPivotAngle(() -> state.position), runRollerVoltage(() -> state.volts));
+    return setPivotAngle(() -> state.position)
+        .andThen(runRollerVoltage(() -> state.volts))
+        .repeatedly();
   }
 }
