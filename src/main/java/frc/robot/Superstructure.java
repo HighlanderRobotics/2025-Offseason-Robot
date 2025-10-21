@@ -132,7 +132,30 @@ public class Superstructure {
           || this == PRE_L3_RIGHT
           || this == SCORE_L3_RIGHT
           || this == PRE_L4_RIGHT
-          || this == SCORE_L4_RIGHT;
+          || this == SCORE_L4_RIGHT
+          || this == PRE_L2_LEFT
+          || this == SCORE_L2_LEFT
+          || this == PRE_L3_LEFT
+          || this == SCORE_L3_LEFT
+          || this == PRE_L4_LEFT
+          || this == SCORE_L4_LEFT;
+    }
+
+    public boolean isScoreCoral() {
+      return this == PRE_L1
+          || this == L1
+          || this == PRE_L2_RIGHT
+          || this == SCORE_L2_RIGHT
+          || this == PRE_L3_RIGHT
+          || this == SCORE_L3_RIGHT
+          || this == PRE_L4_RIGHT
+          || this == SCORE_L4_RIGHT
+          || this == PRE_L2_LEFT
+          || this == SCORE_L2_LEFT
+          || this == PRE_L3_LEFT
+          || this == SCORE_L3_LEFT
+          || this == PRE_L4_LEFT
+          || this == SCORE_L4_LEFT;
     }
 
     public boolean isAlgae() {
@@ -148,7 +171,9 @@ public class Superstructure {
     }
   }
 
-  private SuperState state = SuperState.IDLE;
+  @AutoLogOutput(key = "Superstructure/State")
+  private static SuperState state = SuperState.IDLE;
+
   private SuperState prevState = SuperState.IDLE;
 
   private Timer stateTimer = new Timer();
@@ -284,8 +309,8 @@ public class Superstructure {
             () -> {
               System.out.println("Changing state from " + state + " to " + nextState);
               stateTimer.reset();
-              this.prevState = this.state;
-              this.state = nextState;
+              this.prevState = state;
+              state = nextState;
               setSubstates();
             })
         .ignoringDisable(true);
@@ -580,11 +605,7 @@ public class Superstructure {
     bindTransition(
         SuperState.SCORE_PROCESSOR,
         SuperState.IDLE,
-        new Trigger(arm::hasGamePiece)
-            .negate()
-            .debounce(0.2)
-            .and(swerve::isNearProcessor)
-            .negate());
+        new Trigger(arm::hasGamePiece).negate().debounce(0.2).and(swerve::nearProcessor).negate());
 
     // ---Climb---
     bindTransition(SuperState.IDLE, SuperState.PRE_CLIMB, preClimbReq);
@@ -597,7 +618,7 @@ public class Superstructure {
     bindTransition(SuperState.PRE_CLIMB, SuperState.IDLE, climbCancelReq);
   }
 
-  public SuperState getState() {
+  public static SuperState getState() {
     return state;
   }
 
