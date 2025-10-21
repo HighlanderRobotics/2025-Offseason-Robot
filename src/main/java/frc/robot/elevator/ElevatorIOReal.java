@@ -44,7 +44,7 @@ public class ElevatorIOReal implements ElevatorIO {
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
-    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     // Converts angular motion to linear motion
     config.Feedback.SensorToMechanismRatio =
