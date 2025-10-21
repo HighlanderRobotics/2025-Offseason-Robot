@@ -15,7 +15,6 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -24,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
+import frc.robot.Robot.CoralScoreTarget;
 import frc.robot.Robot.RobotType;
 import frc.robot.camera.Camera;
 import frc.robot.camera.CameraIOReal;
@@ -392,6 +392,26 @@ public class SwerveSubsystem extends SubsystemBase {
         });
   }
 
+  public Command translateToPose(
+      Supplier<Pose2d> target,
+      Supplier<ChassisSpeeds> speedsModifier,
+      Constraints translationConstraints,
+      Constraints headingConstraints) {
+    return Commands.runOnce(
+            () -> AutoAim.resetPIDControllers(getPose(), getVelocityFieldRelative()))
+        .andThen(
+            driveClosedLoopFieldRelative(
+                () -> {
+                  return AutoAim.calculateSpeeds(
+                          getPose(),
+                          target.get(),
+                          translationConstraints,
+                          translationConstraints,
+                          headingConstraints)
+                      .plus(speedsModifier.get());
+                }));
+  }
+
   /**
    * Autoailgns to the given pose
    *
@@ -540,11 +560,10 @@ public class SwerveSubsystem extends SubsystemBase {
                   getRotation());
           calculatedSpeedsRobotRelative.vxMetersPerSecond =
               isInAutoAimTolerance(FieldUtils.AlgaeIntakeTargets.getClosestTargetPose(getPose()))
-                  ? AutoAim.ALGAE_APPROACH_SPEED_METERS_PER_SECOND
-                  : 0.0;
+                  ? 0.0
+                  : AutoAim.ALGAE_APPROACH_SPEED_METERS_PER_SECOND;
           // IDK why we have to do this but it was in reefscape so...
-          calculatedSpeedsRobotRelative.vyMetersPerSecond =
-              -calculatedSpeedsRobotRelative.vyMetersPerSecond;
+          calculatedSpeedsRobotRelative.vyMetersPerSecond *= -1;
           return calculatedSpeedsRobotRelative;
         });
   }
@@ -595,24 +614,6 @@ public class SwerveSubsystem extends SubsystemBase {
             AutoAim.getClosestBargeRotation(getPose()).getRadians(),
             getPose().getRotation().getRadians(),
             AutoAim.ROTATION_TOLERANCE_RADIANS);
-  }
-
-  public Command autoAimAuto(Supplier<Pose2d> pose) {
-    return Commands.runOnce(
-            () -> AutoAim.resetPIDControllers(getPose(), getVelocityFieldRelative()))
-        .andThen(
-            driveClosedLoopFieldRelative(
-                () -> {
-                  return AutoAim.calculateSpeeds(
-                      getPose(),
-                      // TODO TUNE THIS. IT SHOULD BE LIKE HALFWAY BETWEEN l2 and l4
-                      isNearReef(Units.inchesToMeters(42))
-                          ? FieldUtils.CoralTargets.getClosestTargetL23(pose.get())
-                          : FieldUtils.CoralTargets.getClosestTargetL4(pose.get()),
-                      new Constraints(1.5, 1.0),
-                      new Constraints(1.5, 1.0),
-                      AutoAim.DEFAULT_ANGULAR_CONSTRAINTS);
-                }));
   }
 
   /**
