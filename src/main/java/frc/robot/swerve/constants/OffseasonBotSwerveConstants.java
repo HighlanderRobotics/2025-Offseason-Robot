@@ -269,4 +269,11 @@ public class OffseasonBotSwerveConstants extends SwerveConstants {
             FRONT_LEFT_DIST_COEFFS);
     return new CameraConstants[] {frontRightCamConstants, frontLeftCamConstants};
   }
+
+  // TODO
+  @Override
+  public double getHeadingVelocityKP() {
+    // Copied from Alpha
+    return 6.0;
+  }
 }

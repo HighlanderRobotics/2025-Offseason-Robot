@@ -162,7 +162,6 @@ public class Camera {
             "Add Measurement From " + getName(),
             () -> {
               swerveEstimator.addVisionMeasurement(
-                  // if it's an issue
                   visionPose.toPose2d(),
                   inputs.result.metadata.captureTimestampMicros / 1.0e6,
                   deviations
