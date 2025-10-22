@@ -6,6 +6,8 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Meter;
 
+import com.ctre.phoenix6.CANBus;
+import com.ctre.phoenix6.CANBus.CANBusStatus;
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -107,6 +109,10 @@ public class Robot extends LoggedRobot {
   @AutoLogOutput private static AlgaeIntakeTarget algaeIntakeTarget = AlgaeIntakeTarget.STACK;
   @AutoLogOutput private static AlgaeScoreTarget algaeScoreTarget = AlgaeScoreTarget.BARGE;
   @AutoLogOutput private static ScoringSide scoringSide = ScoringSide.RIGHT;
+
+    private static CANBus canivore = new CANBus("*");
+
+      private static CANBusStatus canivoreStatus = canivore.getStatus();
 
   // Instantiate subsystems
   private final ElevatorSubsystem elevator =
@@ -318,6 +324,8 @@ public class Robot extends LoggedRobot {
     }
     Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may
     // be added.
+
+    Logger.recordOutput("Canivore Status", canivoreStatus.Status);
 
     PhoenixOdometryThread.getInstance().start();
 
