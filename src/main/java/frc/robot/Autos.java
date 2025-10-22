@@ -11,18 +11,27 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Robot.CoralIntakeTarget;
 import frc.robot.Robot.CoralScoreTarget;
 import frc.robot.arm.ArmSubsystem;
+import frc.robot.elevator.ElevatorSubsystem;
+import frc.robot.intake.IntakeSubsystem;
 import frc.robot.swerve.SwerveSubsystem;
 import java.util.Optional;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 /** Add your docs here. */
 public class Autos {
+  public static final double ARM_PC_CURRENT_THRESHOLD = 20.0;
+  public static final double ElEVATOR_PC_CURRENT_THRESHOLD = 20.0;
+  public static final double INTAKE_PC_CURRENT_THRESHOLD = 20.0;
 
   private final SwerveSubsystem swerve;
   private final ArmSubsystem arm;
+  private final ElevatorSubsystem elevator;
+  private final IntakeSubsystem intake;
   private final AutoFactory factory;
 
   // Declare triggers
@@ -79,9 +88,15 @@ public class Autos {
     }
   }
 
-  public Autos(SwerveSubsystem swerve, ArmSubsystem arm) {
+  public Autos(
+      SwerveSubsystem swerve,
+      ArmSubsystem arm,
+      ElevatorSubsystem elevator,
+      IntakeSubsystem intake) {
     this.swerve = swerve;
     this.arm = arm;
+    this.elevator = elevator;
+    this.intake = intake;
     factory =
         new AutoFactory(
             swerve::getPose, swerve::resetPose, swerve.choreoDriveController(), true, swerve
@@ -204,6 +219,34 @@ public class Autos {
     return Commands.none();
   }
 
+  public Command setAutoIntakeCoralReqTrue() {
+    return Commands.runOnce(
+        () -> {
+          autoIntakeCoral = true;
+        });
+  }
+
+  public Command setAutoIntakeCoralReqFalse() {
+    return Commands.runOnce(
+        () -> {
+          autoIntakeCoral = false;
+        });
+  }
+
+  public Command setAutoIntakeAlgaeReqTrue() {
+    return Commands.runOnce(
+        () -> {
+          autoIntakeAlgae = true;
+        });
+  }
+
+  public Command setAutoIntakeAlgaeReqFalse() {
+    return Commands.runOnce(
+        () -> {
+          autoIntakeAlgae = false;
+        });
+  }
+
   public Command setAutoScoreReqTrue() {
     return Commands.runOnce(
         () -> {
@@ -223,7 +266,68 @@ public class Autos {
     return Robot.isSimulation() ? Commands.runOnce(() -> arm.setSimCoral(false)) : Commands.none();
   }
 
+  public Command setSimHasCoralTrue() {
+    return Robot.isSimulation() ? Commands.runOnce(() -> arm.setSimCoral(true)) : Commands.none();
+  }
+
   public Command waitUntilNoCoral() {
     return Commands.waitUntil(() -> !arm.hasGamePiece()).alongWith(setSimHasCoralFalse());
+  }
+
+  public Command waitUntilHasCoral() {
+    return Commands.waitUntil(() -> arm.hasGamePiece()).alongWith(setSimHasCoralTrue());
+  }
+
+  // TODO rename
+  // hese are differnet than the other intake/score stuff because they dont need the pose stuff
+  // TODO add current checking
+  // are there current checks for intake as well?
+  public Command intakeCoralAutoPC(CoralIntakeTarget target) {
+    return Commands.runOnce(
+            () -> {
+              Robot.setCoralIntakeTarget(target);
+            })
+        .andThen(
+            Commands.sequence(
+                setAutoIntakeCoralReqTrue(), waitUntilHasCoral(), setAutoIntakeCoralReqFalse()));
+  }
+
+  // TODO fix names?
+  public Command scoreCoralAutoPC(CoralScoreTarget level, double wait) {
+    return Commands.runOnce(
+            () -> {
+              Robot.setCoralScoreTarget(level);
+            })
+        .andThen(
+            Commands.sequence(
+                Commands.waitSeconds(wait),
+                setAutoScoreReqTrue(),
+                waitUntilNoCoral(),
+                setAutoScoreReqFalse()
+                    .raceWith(
+                        Commands.runOnce(
+                            () -> {
+                              // TODO fix these messages
+                              // TODO figure out what currents to check - elevator and intake?
+                              if (arm.getFilteredStatorCurrentAmps() > ARM_PC_CURRENT_THRESHOLD)
+                                Logger.recordOutput(
+                                    "Autos/pitchecks alert arm current spike",
+                                    arm.getFilteredStatorCurrentAmps());
+                            }))
+                    .repeatedly()));
+  }
+
+  public Command pitCheck() {
+    return Commands.sequence(
+        intakeCoralAutoPC(CoralIntakeTarget.GROUND),
+        scoreCoralAutoPC(CoralScoreTarget.L1, 0.5),
+        intakeCoralAutoPC(CoralIntakeTarget.GROUND),
+        scoreCoralAutoPC(CoralScoreTarget.L2, 0.50),
+        intakeCoralAutoPC(CoralIntakeTarget.STACK),
+        scoreCoralAutoPC(CoralScoreTarget.L3, 0.50),
+        intakeCoralAutoPC(CoralIntakeTarget.STACK),
+        scoreCoralAutoPC(CoralScoreTarget.L4, 0.50)
+        // TODO algae stuff
+        );
   }
 }
