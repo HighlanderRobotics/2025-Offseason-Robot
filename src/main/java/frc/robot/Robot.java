@@ -121,24 +121,24 @@ public class Robot extends LoggedRobot {
 
   // TODO tune these config values
   TalonFXConfiguration armRollerConfig =
-      createRollerConfig(InvertedValue.CounterClockwise_Positive, 20.0);
+      createRollerConfig(InvertedValue.CounterClockwise_Positive, 20.0, 18.0 / 26.0);
   TalonFXConfiguration armPivotConfig =
       createPivotConfig(
-          InvertedValue.CounterClockwise_Positive, 20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
+          InvertedValue.CounterClockwise_Positive, 20.0, 40.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
   CANcoderConfiguration armCANcoderConfig =
       createCANcoderConfig(SensorDirectionValue.Clockwise_Positive, 0.0, 0.0);
 
   TalonFXConfiguration intakeRollerConfig =
-      createRollerConfig(InvertedValue.CounterClockwise_Positive, 20.0);
+      createRollerConfig(InvertedValue.CounterClockwise_Positive, 20.0, 12.0 / 180.0); //this is for the rollers ratio
   TalonFXConfiguration intakePivotConfig =
       createPivotConfig(
-          InvertedValue.CounterClockwise_Positive, 20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
+          InvertedValue.CounterClockwise_Positive, 20.0, 40.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
 
   TalonFXConfiguration climberRollerConfig =
-      createRollerConfig(InvertedValue.CounterClockwise_Positive, 20.0);
+      createRollerConfig(InvertedValue.CounterClockwise_Positive, 20.0, 5.25 / 1);
   TalonFXConfiguration climberPivotConfig =
       createPivotConfig(
-          InvertedValue.CounterClockwise_Positive, 20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
+          InvertedValue.CounterClockwise_Positive, 20.0, 40.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
 
   // TODO tuning sim values espicall for pivot sims
   private final ArmSubsystem arm =
@@ -361,7 +361,7 @@ public class Robot extends LoggedRobot {
     // TODO add autos trigger
   }
 
-  private TalonFXConfiguration createRollerConfig(InvertedValue inverted, double currentLimit) {
+  private TalonFXConfiguration createRollerConfig(InvertedValue inverted, double currentLimit, double sensorToMechanismRatio) {
     TalonFXConfiguration config = new TalonFXConfiguration();
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
@@ -369,12 +369,15 @@ public class Robot extends LoggedRobot {
     config.CurrentLimits.SupplyCurrentLimit = currentLimit;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
+    config.Feedback.SensorToMechanismRatio = sensorToMechanismRatio;
+
     return config;
   }
 
   private TalonFXConfiguration createPivotConfig(
       InvertedValue inverted,
-      double currentLimit,
+      double supplyCurrentLimit,
+      double statorCurrentLimit,
       double sensorToMechRatio,
       double kV,
       double kG,
@@ -395,8 +398,11 @@ public class Robot extends LoggedRobot {
     config.Slot0.kI = kI;
     config.Slot0.kD = kD;
 
-    config.CurrentLimits.SupplyCurrentLimit = currentLimit;
+    config.CurrentLimits.SupplyCurrentLimit = supplyCurrentLimit;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
+
+    config.CurrentLimits.StatorCurrentLimit = statorCurrentLimit;
+    config.CurrentLimits.StatorCurrentLimitEnable = true;
 
     config.Feedback.SensorToMechanismRatio = sensorToMechRatio;
 
