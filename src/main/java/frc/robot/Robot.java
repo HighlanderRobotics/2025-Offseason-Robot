@@ -21,6 +21,7 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -110,9 +111,9 @@ public class Robot extends LoggedRobot {
   @AutoLogOutput private static AlgaeScoreTarget algaeScoreTarget = AlgaeScoreTarget.BARGE;
   @AutoLogOutput private static ScoringSide scoringSide = ScoringSide.RIGHT;
 
-    private static CANBus canivore = new CANBus("*");
+  private static CANBus canivore = new CANBus("*");
 
-      private static CANBusStatus canivoreStatus = canivore.getStatus();
+  private static CANBusStatus canivoreStatus = canivore.getStatus();
 
   // Instantiate subsystems
   private final ElevatorSubsystem elevator =
@@ -596,7 +597,17 @@ public class Robot extends LoggedRobot {
     superstructure.periodic();
 
     Logger.recordOutput(
-        "Mechanism Poses", new Pose3d[] {Pose3d.kZero, Pose3d.kZero, Pose3d.kZero, Pose3d.kZero});
+        "Mechanism Poses",
+        new Pose3d[] {
+          // First stage
+          new Pose3d(0, 0, elevator.getExtensionMeters() / 2, Rotation3d.kZero),
+          // Carriage
+          new Pose3d(0, 0, elevator.getExtensionMeters(), Rotation3d.kZero),
+          // Arm
+          Pose3d.kZero,
+          // Intake
+          Pose3d.kZero
+        });
   }
 
   @Override

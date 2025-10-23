@@ -170,4 +170,8 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public Command rezeroFromEncoder() {
     return this.runOnce(() -> zeroPivot(cancoderInputs.cancoderPosition.getDegrees()));
   }
+
+  public Rotation2d getPivotRotation() {
+    return pivotInputs.position;
+  }
 }

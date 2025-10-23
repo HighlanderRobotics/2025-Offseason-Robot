@@ -17,8 +17,8 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class RollerPivotSubsystem extends SubsystemBase {
-  private final RollerIOInputsAutoLogged rollerInputs = new RollerIOInputsAutoLogged();
-  private final PivotIOInputsAutoLogged pivotInputs = new PivotIOInputsAutoLogged();
+  protected final RollerIOInputsAutoLogged rollerInputs = new RollerIOInputsAutoLogged();
+  protected final PivotIOInputsAutoLogged pivotInputs = new PivotIOInputsAutoLogged();
   private final RollerIO rollerIO;
   private final PivotIO pivotIO;
   private final String name;
