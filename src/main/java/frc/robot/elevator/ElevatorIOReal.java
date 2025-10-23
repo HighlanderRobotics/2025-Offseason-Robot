@@ -16,8 +16,8 @@ import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
 
 public class ElevatorIOReal implements ElevatorIO {
-  private TalonFX leader = new TalonFX(10);
-  private TalonFX follower = new TalonFX(11);
+  private TalonFX leader = new TalonFX(10, "*");
+  private TalonFX follower = new TalonFX(11, "*");
 
   // Conversion from angle to distance happens in sensor to mechanism ratio
   private final BaseStatusSignal leaderPositionMeters = leader.getPosition();

@@ -144,7 +144,7 @@ public class Robot extends LoggedRobot {
   private final ArmSubsystem arm =
       new ArmSubsystem(
           ROBOT_TYPE != RobotType.SIM
-              ? new RollerIOReal(9, armRollerConfig)
+              ? new RollerIOReal(8, armRollerConfig)
               : new RollerIOSim(
                   ArmSubsystem.jKgMetersSquared,
                   ArmSubsystem.PIVOT_RATIO,
@@ -156,7 +156,7 @@ public class Robot extends LoggedRobot {
                       new TrapezoidProfile.Constraints(
                           ArmSubsystem.MAX_VELOCITY, ArmSubsystem.MAX_ACCELERATION))),
           ROBOT_TYPE != RobotType.SIM
-              ? new PivotIOReal(12, armPivotConfig)
+              ? new PivotIOReal(9, armPivotConfig)
               : new PivotIOSim(
                   ArmSubsystem.PIVOT_RATIO,
                   ArmSubsystem.MIN_ANGLE.getRadians(),
@@ -170,7 +170,7 @@ public class Robot extends LoggedRobot {
                   ArmSubsystem.KV,
                   ArmSubsystem.MAX_VELOCITY,
                   ArmSubsystem.MAX_ACCELERATION),
-          new CANcoderIOReal(0, armCANcoderConfig),
+          new CANcoderIOReal(4, armCANcoderConfig),
           "Arm");
 
   private final IntakeSubsystem intake =
@@ -209,7 +209,7 @@ public class Robot extends LoggedRobot {
   private final ClimberSubsystem climber =
       new ClimberSubsystem(
           ROBOT_TYPE != RobotType.SIM
-              ? new RollerIOReal(17, climberRollerConfig)
+              ? new RollerIOReal(15, climberRollerConfig)
               : new RollerIOSim(
                   ClimberSubsystem.jKgMetersSquared,
                   ClimberSubsystem.PIVOT_RATIO,
@@ -221,7 +221,7 @@ public class Robot extends LoggedRobot {
                       new TrapezoidProfile.Constraints(
                           ClimberSubsystem.MAX_VELOCITY, ClimberSubsystem.MAX_ACCELERATION))),
           ROBOT_TYPE != RobotType.SIM
-              ? new PivotIOReal(16, climberPivotConfig)
+              ? new PivotIOReal(14, climberPivotConfig)
               : new PivotIOSim(
                   ClimberSubsystem.PIVOT_RATIO,
                   ClimberSubsystem.MIN_ANGLE.getRadians(),
