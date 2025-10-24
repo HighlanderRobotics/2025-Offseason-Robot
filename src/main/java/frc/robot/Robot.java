@@ -21,7 +21,6 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -29,6 +28,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -110,9 +110,9 @@ public class Robot extends LoggedRobot {
   @AutoLogOutput private static AlgaeScoreTarget algaeScoreTarget = AlgaeScoreTarget.BARGE;
   @AutoLogOutput private static ScoringSide scoringSide = ScoringSide.RIGHT;
 
-    private static CANBus canivore = new CANBus("*");
+  private static CANBus canivore = new CANBus("*");
 
-      private static CANBusStatus canivoreStatus = canivore.getStatus();
+  private static CANBusStatus canivoreStatus = canivore.getStatus();
 
   // Instantiate subsystems
   private final ElevatorSubsystem elevator =
@@ -129,7 +129,10 @@ public class Robot extends LoggedRobot {
       createCANcoderConfig(SensorDirectionValue.Clockwise_Positive, 0.0, 0.0);
 
   TalonFXConfiguration intakeRollerConfig =
-      createRollerConfig(InvertedValue.CounterClockwise_Positive, 20.0, 12.0 / 180.0); //this is for the rollers ratio
+      createRollerConfig(
+          InvertedValue.CounterClockwise_Positive,
+          20.0,
+          12.0 / 180.0); // this is for the rollers ratio
   TalonFXConfiguration intakePivotConfig =
       createPivotConfig(
           InvertedValue.CounterClockwise_Positive, 20.0, 40.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
@@ -330,10 +333,10 @@ public class Robot extends LoggedRobot {
     PhoenixOdometryThread.getInstance().start();
 
     // Set default commands
-    elevator.setDefaultCommand(elevator.setStateExtension());
-    arm.setDefaultCommand(arm.setStateAngleVoltage());
-    intake.setDefaultCommand(intake.setStateAngleVoltage());
-    climber.setDefaultCommand(climber.setStateAngleVoltage());
+    // elevator.setDefaultCommand(elevator.setStateExtension());
+    // arm.setDefaultCommand(arm.setStateAngleVoltage());
+    // intake.setDefaultCommand(intake.setStateAngleVoltage());
+    // climber.setDefaultCommand(climber.setStateAngleVoltage());
 
     driver.setDefaultCommand(driver.rumbleCmd(0.0, 0.0));
     operator.setDefaultCommand(operator.rumbleCmd(0.0, 0.0));
@@ -342,26 +345,29 @@ public class Robot extends LoggedRobot {
       SimulatedArena.getInstance().addDriveTrainSimulation(swerveSimulation);
     }
 
-    swerve.setDefaultCommand(
-        swerve.driveOpenLoopFieldRelative(
-            () ->
-                new ChassisSpeeds(
-                        modifyJoystick(driver.getLeftY())
-                            * SwerveSubsystem.SWERVE_CONSTANTS.getMaxLinearSpeed(),
-                        modifyJoystick(driver.getLeftX())
-                            * SwerveSubsystem.SWERVE_CONSTANTS.getMaxLinearSpeed(),
-                        modifyJoystick(driver.getRightX())
-                            * SwerveSubsystem.SWERVE_CONSTANTS.getMaxAngularSpeed())
-                    .times(-1)));
+    // swerve.setDefaultCommand(
+    //     swerve.driveOpenLoopFieldRelative(
+    //         () ->
+    //             new ChassisSpeeds(
+    //                     modifyJoystick(driver.getLeftY())
+    //                         * SwerveSubsystem.SWERVE_CONSTANTS.getMaxLinearSpeed(),
+    //                     modifyJoystick(driver.getLeftX())
+    //                         * SwerveSubsystem.SWERVE_CONSTANTS.getMaxLinearSpeed(),
+    //                     modifyJoystick(driver.getRightX())
+    //                         * SwerveSubsystem.SWERVE_CONSTANTS.getMaxAngularSpeed())
+    //                 .times(-1)));
 
     addControllerBindings();
 
     autos = new Autos(swerve, arm);
     // autoChooser.addDefaultOption("None", autos.getNoneAuto());
     // TODO add autos trigger
+
+    SmartDashboard.putData("run elevator", elevator.setExtensionMeters(() -> 2));
   }
 
-  private TalonFXConfiguration createRollerConfig(InvertedValue inverted, double currentLimit, double sensorToMechanismRatio) {
+  private TalonFXConfiguration createRollerConfig(
+      InvertedValue inverted, double currentLimit, double sensorToMechanismRatio) {
     TalonFXConfiguration config = new TalonFXConfiguration();
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;

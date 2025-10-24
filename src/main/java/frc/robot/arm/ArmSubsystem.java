@@ -20,7 +20,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public static final double MAX_ACCELERATION = 10.0;
   public static final double MAX_VELOCITY = 10.0;
   public static final double ROLLERS_RATIO = (44.0 / 16.0) * 23;
-  
+
   // TODO tune
   public static final double KP = 0.2;
   public static final double KI = 0.0;
