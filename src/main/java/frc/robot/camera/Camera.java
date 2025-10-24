@@ -96,7 +96,7 @@ public class Camera {
     }
     if (Robot.ROBOT_TYPE != RobotType.REAL)
       Logger.recordOutput(
-          "Vision/" + io.getName() + " Best Distance",
+          "Vision/" + io.getName() + "/Best Distance",
           result.getBestTarget().getBestCameraToTarget().getTranslation().getNorm());
     Optional<EstimatedRobotPose> estPose = estimator.update(result);
     return estPose;
@@ -151,9 +151,9 @@ public class Camera {
         setSimPose(estPose, !inputs.stale);
 
         // if (Robot.ROBOT_TYPE != RobotType.REAL)
-        Logger.recordOutput("Vision/Vision Pose From " + getName(), visionPose);
+        Logger.recordOutput("Vision/" + getName() + "/Pose3d", visionPose);
         // if (Robot.ROBOT_TYPE != RobotType.REAL)
-        Logger.recordOutput("Vision/Vision Pose2d From " + getName(), visionPose.toPose2d());
+        Logger.recordOutput("Vision/" + getName() + "/Pose2d", visionPose.toPose2d());
         final Matrix<N3, N1> deviations = findVisionMeasurementStdDevs(estPose.get());
         // if (Robot.ROBOT_TYPE != RobotType.REAL)
         Logger.recordOutput("Vision/" + getName() + "/Deviations", deviations.getData());

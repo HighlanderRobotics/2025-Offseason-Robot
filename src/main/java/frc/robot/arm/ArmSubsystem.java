@@ -39,8 +39,8 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   private final CANcoderIO cancoderIO;
   private final CANcoderIOInputsAutoLogged cancoderInputs = new CANcoderIOInputsAutoLogged();
 
-  @AutoLogOutput public boolean hasAlgae = false;
-  @AutoLogOutput public boolean hasCoral = false;
+  public boolean hasAlgae = false;
+  public boolean hasCoral = false;
 
   /**
    * 0 for position is vertical with the EE up. We consider the front of the robot to be the intake,
@@ -148,7 +148,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   }
 
   // can it distinguish between coral and algae?
-  @AutoLogOutput(key = "Arm/Has GamePiece")
+  @AutoLogOutput(key = "Arm/Has Game Piece")
   public boolean hasGamePiece() {
     // return (Math.abs(currentFilterValue) > CORAL_CURRENT_THRESHOLD ||
     // Math.abs(currentFilterValue) > ALGAE_CURRENT_THRESHOLD);

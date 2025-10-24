@@ -13,7 +13,6 @@ import frc.robot.roller.RollerIO;
 import frc.robot.roller.RollerIOInputsAutoLogged;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
-import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class RollerPivotSubsystem extends SubsystemBase {
@@ -24,7 +23,7 @@ public class RollerPivotSubsystem extends SubsystemBase {
   private final String name;
 
   private LinearFilter currentFilter = LinearFilter.movingAverage(10);
-  @AutoLogOutput public double currentFilterValue = 0.0;
+  public double currentFilterValue = 0.0;
 
   public RollerPivotSubsystem(RollerIO rollerIO, PivotIO pivotIO, String name) {
     this.rollerIO = rollerIO;

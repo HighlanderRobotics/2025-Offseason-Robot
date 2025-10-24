@@ -35,13 +35,13 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   private final double ZEROING_POSITION = -10.0;
   private final double CURRENT_THRESHOLD = 10.0;
 
-  @AutoLogOutput public boolean intakeZeroed = false;
+  public boolean intakeZeroed = false;
 
   // TODO : change these values to the real ones
   public enum IntakeState {
     IDLE(0, 0.0),
     INTAKE_CORAL(0, 10.0),
-    READY_CORAL_INTAKE(0, 1.0),
+    READY_CORAL_INTAKE(-130, 1.0),
     HANDOFF(-130, -5.0),
     PRE_L1(-90, 1.0),
     SCORE_L1(-90, -5.0),
@@ -90,9 +90,9 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   public void periodic() {
     super.periodic();
     leftCanrangeIO.updateInputs(leftCanrangeInputs);
-    Logger.processInputs("Intake/left CANrange", leftCanrangeInputs);
+    Logger.processInputs("Intake/Left CANrange", leftCanrangeInputs);
     rightCanrangeIO.updateInputs(rightCanrangeInputs);
-    Logger.processInputs("Intake/right CANrange", rightCanrangeInputs);
+    Logger.processInputs("Intake/Right CANrange", rightCanrangeInputs);
   }
 
   public double getleftCanrangeDistanceMeters() {
@@ -103,7 +103,7 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
     return rightCanrangeInputs.distanceMeters;
   }
 
-  @AutoLogOutput(key = "Intake/HasGamePiece")
+  @AutoLogOutput(key = "Intake/Has Game Piece")
   public boolean hasGamePiece() {
     return getleftCanrangeDistanceMeters() < 0.05 || getRightCanrangeDistanceMeters() < 0.05;
   }
