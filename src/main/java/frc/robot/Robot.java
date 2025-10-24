@@ -23,6 +23,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -335,10 +336,10 @@ public class Robot extends LoggedRobot {
     PhoenixOdometryThread.getInstance().start();
 
     // Set default commands
-    // elevator.setDefaultCommand(elevator.setStateExtension());
-    // arm.setDefaultCommand(arm.setStateAngleVoltage());
-    // intake.setDefaultCommand(intake.setStateAngleVoltage());
-    // climber.setDefaultCommand(climber.setStateAngleVoltage());
+    elevator.setDefaultCommand(elevator.setStateExtension());
+    arm.setDefaultCommand(arm.setStateAngleVoltage());
+    intake.setDefaultCommand(intake.setStateAngleVoltage());
+    climber.setDefaultCommand(climber.setStateAngleVoltage());
 
     driver.setDefaultCommand(driver.rumbleCmd(0.0, 0.0));
     operator.setDefaultCommand(operator.rumbleCmd(0.0, 0.0));
@@ -347,17 +348,17 @@ public class Robot extends LoggedRobot {
       SimulatedArena.getInstance().addDriveTrainSimulation(swerveSimulation);
     }
 
-    // swerve.setDefaultCommand(
-    //     swerve.driveOpenLoopFieldRelative(
-    //         () ->
-    //             new ChassisSpeeds(
-    //                     modifyJoystick(driver.getLeftY())
-    //                         * SwerveSubsystem.SWERVE_CONSTANTS.getMaxLinearSpeed(),
-    //                     modifyJoystick(driver.getLeftX())
-    //                         * SwerveSubsystem.SWERVE_CONSTANTS.getMaxLinearSpeed(),
-    //                     modifyJoystick(driver.getRightX())
-    //                         * SwerveSubsystem.SWERVE_CONSTANTS.getMaxAngularSpeed())
-    //                 .times(-1)));
+    swerve.setDefaultCommand(
+        swerve.driveOpenLoopFieldRelative(
+            () ->
+                new ChassisSpeeds(
+                        modifyJoystick(driver.getLeftY())
+                            * SwerveSubsystem.SWERVE_CONSTANTS.getMaxLinearSpeed(),
+                        modifyJoystick(driver.getLeftX())
+                            * SwerveSubsystem.SWERVE_CONSTANTS.getMaxLinearSpeed(),
+                        modifyJoystick(driver.getRightX())
+                            * SwerveSubsystem.SWERVE_CONSTANTS.getMaxAngularSpeed())
+                    .times(-1)));
 
     addControllerBindings();
 
@@ -619,8 +620,10 @@ public class Robot extends LoggedRobot {
           new Pose3d( // arm
               new Translation3d(0, 0, elevator.getExtensionMeters()),
               new Rotation3d(0, arm.getPivotAngle().getRadians(), 0.0)),
-          new Pose3d(
-              new Translation3d(0, 0, 0), new Rotation3d(0, intake.getPivotAngle().getRadians(), 0))
+          new Pose3d( // intake
+              new Translation3d(0, 0, 0), // Units.inchesToMeters(10.265)
+              // new Rotation3d(Math.PI, intake.getPivotAngle().getRadians(), Math.PI))
+              new Rotation3d(intake.getPivotAngle().getRadians(), 0, 0))
         });
   }
 

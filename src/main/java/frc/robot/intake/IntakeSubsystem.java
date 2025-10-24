@@ -27,7 +27,6 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   public static final double KG = 0.1;
   public static final double KV = 0.1;
   public static final double jKgMetersSquared = 0.01;
-  public static final Rotation2d CLIMB_EXTENSION_DEGREES = Rotation2d.fromDegrees(70);
   public static final double TOLERANCE_DEGREES = 10.0;
   private final CANrangeIO leftCanrangeIO;
   private final CANrangeIO rightCanrangeIO;
@@ -40,12 +39,12 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
 
   // TODO : change these values to the real ones
   public enum IntakeState {
-    IDLE(130, 0.0),
+    IDLE(0, 0.0),
     INTAKE_CORAL(0, 10.0),
-    READY_CORAL_INTAKE(130, 1.0),
-    HANDOFF(130, -5.0),
-    PRE_L1(90, 1.0),
-    SCORE_L1(9, -5.0),
+    READY_CORAL_INTAKE(0, 1.0),
+    HANDOFF(-130, -5.0),
+    PRE_L1(-90, 1.0),
+    SCORE_L1(-90, -5.0),
     CLIMB(0, 0.0);
 
     public final Rotation2d position;
