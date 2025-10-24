@@ -21,6 +21,8 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -363,7 +365,7 @@ public class Robot extends LoggedRobot {
     // autoChooser.addDefaultOption("None", autos.getNoneAuto());
     // TODO add autos trigger
 
-    SmartDashboard.putData("run elevator", elevator.setExtensionMeters(() -> 2));
+    SmartDashboard.putData("run elevator", elevator.setExtensionMeters(() -> 0.5));
   }
 
   private TalonFXConfiguration createRollerConfig(
@@ -608,7 +610,18 @@ public class Robot extends LoggedRobot {
     superstructure.periodic();
 
     Logger.recordOutput(
-        "Mechanism Poses", new Pose3d[] {Pose3d.kZero, Pose3d.kZero, Pose3d.kZero, Pose3d.kZero});
+        "Mechanism Poses",
+        new Pose3d[] {
+          new Pose3d( // first stage
+              new Translation3d(0, 0, elevator.getExtensionMeters() / 2.0), new Rotation3d()),
+          // carriage
+          new Pose3d(new Translation3d(0, 0, elevator.getExtensionMeters()), new Rotation3d()),
+          new Pose3d( // arm
+              new Translation3d(0, 0, elevator.getExtensionMeters()),
+              new Rotation3d(0, arm.getPivotAngle().getRadians(), 0.0)),
+          new Pose3d(
+              new Translation3d(0, 0, 0), new Rotation3d(0, intake.getPivotAngle().getRadians(), 0))
+        });
   }
 
   @Override
