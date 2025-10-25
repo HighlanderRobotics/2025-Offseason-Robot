@@ -8,6 +8,8 @@ import choreo.auto.AutoFactory;
 import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -16,6 +18,8 @@ import frc.robot.Robot.CoralIntakeTarget;
 import frc.robot.Robot.CoralScoreTarget;
 import frc.robot.arm.ArmSubsystem;
 import frc.robot.swerve.SwerveSubsystem;
+import frc.robot.utils.AutoAim;
+import frc.robot.utils.FieldUtils;
 import java.util.Optional;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -242,7 +246,7 @@ public class Autos {
 
   public void bindCoralElevatorExtension(AutoRoutine routine, double toleranceMeters) {
     routine
-        .observe(arm::hasCoral)
+        .observe(arm::hasGamePiece)
         .and(() -> swerve.isNearReef(toleranceMeters))
         .whileTrue(Commands.run(() -> autoPreScore = true))
         .whileFalse(Commands.run(() -> autoPreScore = false));
@@ -282,13 +286,27 @@ public class Autos {
   public Command scoreCoralInAuto(Supplier<Pose2d> trajEndPose) {
     return Commands.sequence(
             Commands.waitUntil(
-                new Trigger(() -> swerve.isNearPoseAuto(trajEndPose.get()))
+                new Trigger(
+                        () ->
+                            swerve.isInAutoAimTolerance(
+                                Robot.getCoralScoreTarget().equals(Robot.CoralScoreTarget.L4)
+                                    ? FieldUtils.CoralTargets.getClosestTargetL4(trajEndPose.get())
+                                    : FieldUtils.CoralTargets.getClosestTargetL23(
+                                        trajEndPose.get())))
                     .and(swerve::isNotMoving)
                     .debounce(0.06 * 2)),
             setAutoScoreReqTrue(),
             waitUntilNoCoral(),
             setAutoScoreReqFalse())
-        .raceWith(swerve.autoAimAuto(trajEndPose));
+        .raceWith(
+            swerve.translateToPose(
+                () ->
+                    Robot.getCoralScoreTarget().equals(CoralScoreTarget.L4)
+                        ? FieldUtils.CoralTargets.getClosestTargetL4(trajEndPose.get())
+                        : FieldUtils.CoralTargets.getClosestTargetL23(trajEndPose.get()),
+                () -> new ChassisSpeeds(),
+                new Constraints(1.5, 1.0),
+                AutoAim.DEFAULT_ANGULAR_CONSTRAINTS));
   }
 
   public Command runPathThenIntakeCoralGround(Path path, AutoRoutine routine) {
@@ -321,7 +339,7 @@ public class Autos {
   public Command intakeStackCoralInAuto() {
     return Commands.sequence(
       Commands.runOnce(() -> autoIntakeCoral = true),
-      Commands.waitUntil(arm::hasCoral),
+      Commands.waitUntil(arm::hasGamePiece),
       Commands.runOnce(() -> autoIntakeCoral = false)
     );
   }
@@ -335,11 +353,11 @@ public class Autos {
 
   public Command intakeAlgaeInAuto(Supplier<Pose2d> trajEndPose) {
     return Commands.sequence(
-      swerve.autoAimToOffsetAlgae(),
+      swerve.autoAimToOffsetAlgaePose(),
       Commands.waitUntil(swerve::nearIntakeAlgaeOffsetPose),
       Commands.runOnce(() -> autoIntakeAlgae = true),
       swerve.approachAlgae(),
-      Commands.waitUntil(arm::hasAlgae),
+      Commands.waitUntil(arm::hasGamePiece),
       Commands.runOnce(() -> autoIntakeAlgae = false)
     )
     ;
@@ -365,6 +383,6 @@ public class Autos {
   }
 
   public Command waitUntilNoCoral() {
-    return Commands.waitUntil(() -> !arm.hasCoral()).alongWith(setSimHasCoralFalse());
+    return Commands.waitUntil(() -> !arm.hasGamePiece()).alongWith(setSimHasCoralFalse());
   }
 }

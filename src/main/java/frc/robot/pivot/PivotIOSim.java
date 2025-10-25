@@ -1,0 +1,79 @@
+package frc.robot.pivot;
+
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+
+public class PivotIOSim implements PivotIO {
+  private final SingleJointedArmSim pivotSim;
+  private final ProfiledPIDController pivotPid;
+  private final ArmFeedforward pivotFf;
+
+  public PivotIOSim(
+      double pivotRatio,
+      double minAngleRadians,
+      double maxAngleRadians,
+      double length,
+      double Kp,
+      double Ki,
+      double Kd,
+      double Ks,
+      double Kg,
+      double Kv,
+      double maxVelocity,
+      double maxAcceleration) {
+    pivotSim =
+        new SingleJointedArmSim(
+            DCMotor.getKrakenX60Foc(1),
+            pivotRatio,
+            0.1,
+            length,
+            minAngleRadians,
+            maxAngleRadians,
+            true,
+            0.0);
+
+    pivotPid =
+        new ProfiledPIDController(
+            Kp, Ki, Kp, new TrapezoidProfile.Constraints(maxVelocity, maxAcceleration));
+
+    pivotFf = new ArmFeedforward(Ks, Kg, Kv);
+  }
+
+  private double appliedVoltage = 0.0;
+
+  @Override
+  public void updateInputs(PivotIOInputs inputs) {
+    pivotSim.update(0.02);
+
+    inputs.angularVelocityRotsPerSec =
+        RadiansPerSecond.of(pivotSim.getVelocityRadPerSec()).in(RotationsPerSecond);
+    inputs.position = Rotation2d.fromRadians(pivotSim.getAngleRads());
+    inputs.statorCurrentAmps = pivotSim.getCurrentDrawAmps();
+    inputs.supplyCurrentAmps = 0.0;
+    inputs.appliedVoltage = appliedVoltage;
+  }
+
+  @Override
+  public void setMotorVoltage(double voltage) {
+    appliedVoltage = voltage;
+    pivotSim.setInputVoltage(MathUtil.clamp(voltage, -12, 12));
+  }
+
+  @Override
+  public void setMotorPosition(Rotation2d targetPosition) {
+    setMotorVoltage(
+        pivotPid.calculate(pivotSim.getAngleRads(), targetPosition.getRadians())
+            + pivotFf.calculate(pivotPid.getSetpoint().position, pivotPid.getSetpoint().velocity));
+  }
+
+  @Override
+  public void resetEncoder(double position) {}
+}
