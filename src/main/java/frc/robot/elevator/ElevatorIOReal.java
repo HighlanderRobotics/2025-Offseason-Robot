@@ -52,14 +52,14 @@ public class ElevatorIOReal implements ElevatorIO {
 
     // TODO: TUNE
     config.Slot0.GravityType = GravityTypeValue.Elevator_Static;
-    config.Slot0.kS = 0.0;
-    config.Slot0.kG = 0.0;
-    config.Slot0.kV = 0.0;
-    config.Slot0.kP = 0.0;
+    config.Slot0.kS = 0.24;
+    config.Slot0.kG = 0.56;
+    config.Slot0.kV = 0.6;
+    config.Slot0.kP = 110.0;
     config.Slot0.kD = 0.0;
 
     // TODO: TUNE
-    config.CurrentLimits.StatorCurrentLimit = 20.0;
+    config.CurrentLimits.StatorCurrentLimit = 40.0;
     config.CurrentLimits.StatorCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimit = 60.0;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
@@ -151,5 +151,6 @@ public class ElevatorIOReal implements ElevatorIO {
   @Override
   public void resetEncoder(double position) {
     leader.setPosition(position);
+    follower.setPosition(position);
   }
 }

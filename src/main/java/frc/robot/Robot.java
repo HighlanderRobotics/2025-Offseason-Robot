@@ -23,7 +23,6 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -336,10 +335,10 @@ public class Robot extends LoggedRobot {
     PhoenixOdometryThread.getInstance().start();
 
     // Set default commands
-    elevator.setDefaultCommand(elevator.setStateExtension());
-    arm.setDefaultCommand(arm.setStateAngleVoltage());
-    intake.setDefaultCommand(intake.setStateAngleVoltage());
-    climber.setDefaultCommand(climber.setStateAngleVoltage());
+    // elevator.setDefaultCommand(elevator.setStateExtension());
+    // arm.setDefaultCommand(arm.setStateAngleVoltage());
+    // intake.setDefaultCommand(intake.setStateAngleVoltage());
+    // climber.setDefaultCommand(climber.setStateAngleVoltage());
 
     driver.setDefaultCommand(driver.rumbleCmd(0.0, 0.0));
     operator.setDefaultCommand(operator.rumbleCmd(0.0, 0.0));
@@ -348,25 +347,24 @@ public class Robot extends LoggedRobot {
       SimulatedArena.getInstance().addDriveTrainSimulation(swerveSimulation);
     }
 
-    swerve.setDefaultCommand(
-        swerve.driveOpenLoopFieldRelative(
-            () ->
-                new ChassisSpeeds(
-                        modifyJoystick(driver.getLeftY())
-                            * SwerveSubsystem.SWERVE_CONSTANTS.getMaxLinearSpeed(),
-                        modifyJoystick(driver.getLeftX())
-                            * SwerveSubsystem.SWERVE_CONSTANTS.getMaxLinearSpeed(),
-                        modifyJoystick(driver.getRightX())
-                            * SwerveSubsystem.SWERVE_CONSTANTS.getMaxAngularSpeed())
-                    .times(-1)));
+    // swerve.setDefaultCommand(
+    //     swerve.driveOpenLoopFieldRelative(
+    //         () ->
+    //             new ChassisSpeeds(
+    //                     modifyJoystick(driver.getLeftY())
+    //                         * SwerveSubsystem.SWERVE_CONSTANTS.getMaxLinearSpeed(),
+    //                     modifyJoystick(driver.getLeftX())
+    //                         * SwerveSubsystem.SWERVE_CONSTANTS.getMaxLinearSpeed(),
+    //                     modifyJoystick(driver.getRightX())
+    //                         * SwerveSubsystem.SWERVE_CONSTANTS.getMaxAngularSpeed())
+    //                 .times(-1)));
 
     addControllerBindings();
 
     autos = new Autos(swerve, arm);
     // autoChooser.addDefaultOption("None", autos.getNoneAuto());
     // TODO add autos trigger
-
-    SmartDashboard.putData("run elevator", elevator.setExtensionMeters(() -> 0.5));
+    SmartDashboard.putData("rezero elevator", elevator.rezero());
   }
 
   private TalonFXConfiguration createRollerConfig(
