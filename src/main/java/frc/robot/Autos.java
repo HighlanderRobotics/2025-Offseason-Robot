@@ -67,7 +67,7 @@ public class Autos {
     CtoPRM("C", "PRM", PathEndType.INTAKE_CORAL_GROUND),
     PRMtoB("PRM", "B", PathEndType.SCORE_CORAL),
     BtoPRO("B", "PRO", PathEndType.INTAKE_CORAL_GROUND),
-    
+
     LOtoA4("LO", "A4", PathEndType.SCORE_CORAL),
     A4toSMM("A4", "SMM", PathEndType.INTAKE_CORAL_STACK),
     SMMtoB4("SMM", "B4", PathEndType.SCORE_CORAL),
@@ -84,8 +84,7 @@ public class Autos {
     H4toGH("H4", "GH", PathEndType.INTAKE_ALGAE),
     GHtoBR("GH", "BR", PathEndType.SCORE_ALGAE),
     BRtoIJ("BR", "IJ", PathEndType.INTAKE_ALGAE),
-    IJtoBR("BR", "IJ", PathEndType.SCORE_ALGAE)
-    ;
+    IJtoBR("BR", "IJ", PathEndType.SCORE_ALGAE);
 
     private final String start;
     private final String end;
@@ -123,17 +122,10 @@ public class Autos {
             );
   }
 
-  
   public Command getLeftStackAuto() {
     final AutoRoutine routine = factory.newRoutine("Left Stack Auto");
     bindCoralElevatorExtension(routine);
-    Path[] paths = {
-      Path.LOtoA4,
-      Path.A4toSMM,
-      Path.SMMtoB4,
-      Path.B4toSRL,
-      Path.SRLtoC4
-    };
+    Path[] paths = {Path.LOtoA4, Path.A4toSMM, Path.SMMtoB4, Path.B4toSRL, Path.SRLtoC4};
 
     Command autoCommand = paths[0].getTrajectory(routine).resetOdometry();
 
@@ -141,12 +133,15 @@ public class Autos {
       autoCommand = autoCommand.andThen(runPath(path, routine));
     }
 
-    routine.active()
-      .onTrue(Commands.runOnce(() -> {
-        Robot.setCoralScoreTarget(CoralScoreTarget.L4);
-        Robot.setCoralIntakeTarget(CoralIntakeTarget.STACK);
-      }))
-      .whileTrue(autoCommand);
+    routine
+        .active()
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  Robot.setCoralScoreTarget(CoralScoreTarget.L4);
+                  Robot.setCoralIntakeTarget(CoralIntakeTarget.STACK);
+                }))
+        .whileTrue(autoCommand);
 
     return routine.cmd();
   }
@@ -154,13 +149,7 @@ public class Autos {
   public Command getRightStackAuto() {
     final AutoRoutine routine = factory.newRoutine("Left Stack Auto");
     bindCoralElevatorExtension(routine);
-    Path[] paths = {
-      Path.ROtoB4,
-      Path.B4toSMM,
-      Path.SMMtoA4,
-      Path.A4toSLR,
-      Path.SLRtoL4
-    };
+    Path[] paths = {Path.ROtoB4, Path.B4toSMM, Path.SMMtoA4, Path.A4toSLR, Path.SLRtoL4};
 
     Command autoCommand = paths[0].getTrajectory(routine).resetOdometry();
 
@@ -168,12 +157,15 @@ public class Autos {
       autoCommand = autoCommand.andThen(runPath(path, routine));
     }
 
-    routine.active()
-      .onTrue(Commands.runOnce(() -> {
-        Robot.setCoralScoreTarget(CoralScoreTarget.L4);
-        Robot.setCoralIntakeTarget(CoralIntakeTarget.STACK);
-      }))
-      .whileTrue(autoCommand);
+    routine
+        .active()
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  Robot.setCoralScoreTarget(CoralScoreTarget.L4);
+                  Robot.setCoralIntakeTarget(CoralIntakeTarget.STACK);
+                }))
+        .whileTrue(autoCommand);
 
     return routine.cmd();
   }
@@ -181,13 +173,7 @@ public class Autos {
   public Command getAlgaeAuto() {
     final AutoRoutine routine = factory.newRoutine("Algae auto");
     bindCoralElevatorExtension(routine);
-    Path[] paths = {
-      Path.CMtoH4,
-      Path.H4toGH,
-      Path.GHtoBR,
-      Path.BRtoIJ,
-      Path.IJtoBR
-    };
+    Path[] paths = {Path.CMtoH4, Path.H4toGH, Path.GHtoBR, Path.BRtoIJ, Path.IJtoBR};
 
     Command autoCommand = paths[0].getTrajectory(routine).cmd();
 
@@ -195,15 +181,19 @@ public class Autos {
       autoCommand = autoCommand.andThen(runPath(path, routine));
     }
 
-    routine.active()
-      .onTrue(Commands.runOnce(() -> {
-        Robot.setCoralScoreTarget(CoralScoreTarget.L4);
-        Robot.setAlgaeIntakeTarget(AlgaeIntakeTarget.HIGH);
-      }))
-      .whileTrue(autoCommand);
-    
-    routine.observe(paths[3].getTrajectory(routine).active())
-      .onTrue(Commands.runOnce(() -> Robot.setAlgaeIntakeTarget(AlgaeIntakeTarget.LOW)));
+    routine
+        .active()
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  Robot.setCoralScoreTarget(CoralScoreTarget.L4);
+                  Robot.setAlgaeIntakeTarget(AlgaeIntakeTarget.HIGH);
+                }))
+        .whileTrue(autoCommand);
+
+    routine
+        .observe(paths[3].getTrajectory(routine).active())
+        .onTrue(Commands.runOnce(() -> Robot.setAlgaeIntakeTarget(AlgaeIntakeTarget.LOW)));
 
     return routine.cmd();
   }
@@ -331,36 +321,30 @@ public class Autos {
   // TODO: SHOULD THIS AUTOALIGN??
   public Command runPathThenIntakeStackCoral(Path path, AutoRoutine routine) {
     return Commands.sequence(
-      path.getTrajectory(routine).cmd().until(routine.idle()),
-      intakeStackCoralInAuto()
-    );
+        path.getTrajectory(routine).cmd().until(routine.idle()), intakeStackCoralInAuto());
   }
 
   public Command intakeStackCoralInAuto() {
     return Commands.sequence(
-      Commands.runOnce(() -> autoIntakeCoral = true),
-      Commands.waitUntil(arm::hasGamePiece),
-      Commands.runOnce(() -> autoIntakeCoral = false)
-    );
+        Commands.runOnce(() -> autoIntakeCoral = true),
+        Commands.waitUntil(arm::hasGamePiece),
+        Commands.runOnce(() -> autoIntakeCoral = false));
   }
 
   public Command runPathThenIntakeAlgae(Path path, AutoRoutine routine) {
     return Commands.sequence(
-      path.getTrajectory(routine).cmd(),
-      intakeAlgaeInAuto(() -> path.getTrajectory(routine).getFinalPose().get())
-    );
+        path.getTrajectory(routine).cmd(),
+        intakeAlgaeInAuto(() -> path.getTrajectory(routine).getFinalPose().get()));
   }
 
   public Command intakeAlgaeInAuto(Supplier<Pose2d> trajEndPose) {
     return Commands.sequence(
-      swerve.autoAimToOffsetAlgaePose(),
-      Commands.waitUntil(swerve::nearIntakeAlgaeOffsetPose),
-      Commands.runOnce(() -> autoIntakeAlgae = true),
-      swerve.approachAlgae(),
-      Commands.waitUntil(arm::hasGamePiece),
-      Commands.runOnce(() -> autoIntakeAlgae = false)
-    )
-    ;
+        swerve.autoAimToOffsetAlgaePose(),
+        Commands.waitUntil(swerve::nearIntakeAlgaeOffsetPose),
+        Commands.runOnce(() -> autoIntakeAlgae = true),
+        swerve.approachAlgae(),
+        Commands.waitUntil(arm::hasGamePiece),
+        Commands.runOnce(() -> autoIntakeAlgae = false));
   }
 
   public Command setAutoScoreReqTrue() {

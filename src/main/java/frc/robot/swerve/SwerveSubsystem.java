@@ -470,6 +470,7 @@ public class SwerveSubsystem extends SubsystemBase {
                         getPose().getRotation().getRadians(),
                         headingToleranceRadians));
   }
+
   private Command translateWithIntermediatePose(
       Supplier<Pose2d> target, Supplier<Pose2d> intermediate) {
     return translateToPose(intermediate)
@@ -724,13 +725,16 @@ public class SwerveSubsystem extends SubsystemBase {
       Logger.recordOutput("Choreo/Target Pose", sample.getPose());
       Logger.recordOutput("Choreo/Target Speeds Field Relative", sample.getChassisSpeeds());
 
-      ChassisSpeeds feedback = new ChassisSpeeds(
-        xController.calculate(pose.getX(), sample.x), 
-        yController.calculate(pose.getY(), sample.y), 
-        headingController.calculate(pose.getRotation().getRadians(), sample.heading));
+      ChassisSpeeds feedback =
+          new ChassisSpeeds(
+              xController.calculate(pose.getX(), sample.x),
+              yController.calculate(pose.getY(), sample.y),
+              headingController.calculate(pose.getRotation().getRadians(), sample.heading));
 
-      ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(sample.getChassisSpeeds().plus(feedback), getPose().getRotation());
-      
+      ChassisSpeeds speeds =
+          ChassisSpeeds.fromFieldRelativeSpeeds(
+              sample.getChassisSpeeds().plus(feedback), getPose().getRotation());
+
       this.drive(speeds, false);
     };
   }

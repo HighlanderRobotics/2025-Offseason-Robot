@@ -269,7 +269,7 @@ public class Robot extends LoggedRobot {
 
   private final Autos autos;
   private Optional<Alliance> lastAlliance = Optional.empty();
-  @AutoLogOutput boolean haveAutosGenerated = false; 
+  @AutoLogOutput boolean haveAutosGenerated = false;
   private final LoggedDashboardChooser<Command> autoChooser = new LoggedDashboardChooser<>("Autos");
 
   @SuppressWarnings("resource")
@@ -356,18 +356,21 @@ public class Robot extends LoggedRobot {
     autoChooser.addDefaultOption("None", Commands.none());
 
     // Generates autos on connected
-    new Trigger(() -> 
-      DriverStation.isDSAttached() && DriverStation.getAlliance().isPresent() && !haveAutosGenerated
-    )
-    .onTrue(Commands.print("Connected"))
-    .onTrue(Commands.runOnce(this::addAutos).ignoringDisable(true));
+    new Trigger(
+            () ->
+                DriverStation.isDSAttached()
+                    && DriverStation.getAlliance().isPresent()
+                    && !haveAutosGenerated)
+        .onTrue(Commands.print("Connected"))
+        .onTrue(Commands.runOnce(this::addAutos).ignoringDisable(true));
 
-    new Trigger(() -> {
-      boolean allianceChanged = !DriverStation.getAlliance().equals(lastAlliance);
-      lastAlliance = DriverStation.getAlliance();
-      return allianceChanged && DriverStation.getAlliance().isPresent();
-    })
-    .onTrue(Commands.runOnce(this::addAutos).ignoringDisable(true));
+    new Trigger(
+            () -> {
+              boolean allianceChanged = !DriverStation.getAlliance().equals(lastAlliance);
+              lastAlliance = DriverStation.getAlliance();
+              return allianceChanged && DriverStation.getAlliance().isPresent();
+            })
+        .onTrue(Commands.runOnce(this::addAutos).ignoringDisable(true));
   }
 
   private TalonFXConfiguration createRollerConfig(InvertedValue inverted, double currentLimit) {
@@ -586,7 +589,7 @@ public class Robot extends LoggedRobot {
     System.out.println("------- Regenerating Autos");
     System.out.println(
         "Regenerating Autos on " + DriverStation.getAlliance().map((a) -> a.toString()));
-    
+
     autoChooser.addOption("Left stack auto", autos.getLeftStackAuto());
     autoChooser.addOption("Right stack auto", autos.getRightStackAuto());
     autoChooser.addOption("Algae auto", autos.getAlgaeAuto());
