@@ -126,9 +126,19 @@ public class Robot extends LoggedRobot {
       createRollerConfig(InvertedValue.CounterClockwise_Positive, 20.0, 18.0 / 26.0);
   TalonFXConfiguration armPivotConfig =
       createPivotConfig(
-          InvertedValue.CounterClockwise_Positive, 20.0, 40.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
+          InvertedValue.CounterClockwise_Positive,
+          ArmSubsystem.SUPPLY_CURRENT_LIMIT,
+          ArmSubsystem.STATOR_CURRENT_LIMIT,
+          ArmSubsystem.SENSOR_TO_MECH_RATIO,
+          ArmSubsystem.KV,
+          ArmSubsystem.KG,
+          ArmSubsystem.KS,
+          ArmSubsystem.KP,
+          ArmSubsystem.KI,
+          ArmSubsystem.KD);
+
   CANcoderConfiguration armCANcoderConfig =
-      createCANcoderConfig(SensorDirectionValue.Clockwise_Positive, 0.0, 0.0);
+      createCANcoderConfig(SensorDirectionValue.Clockwise_Positive, ArmSubsystem.CANCODER_OFFSET, ArmSubsystem.CANCODER_DISCONTINUITY_POINT);
 
   TalonFXConfiguration intakeRollerConfig =
       createRollerConfig(

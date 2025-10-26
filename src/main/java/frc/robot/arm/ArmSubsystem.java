@@ -21,13 +21,15 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public static final double MAX_VELOCITY = 10.0;
   public static final double ROLLERS_RATIO = (44.0 / 16.0) * 23;
 
-  // TODO tune
-  public static final double KP = 0.2;
+  public static final double SUPPLY_CURRENT_LIMIT = 40.0;
+  public static final double STATOR_CURRENT_LIMIT = 40.0;
+  public static final double SENSOR_TO_MECH_RATIO = 0.0;
+  public static final double KP = 0.0;
   public static final double KI = 0.0;
   public static final double KD = 0.0;
   public static final double KS = 0.0;
-  public static final double KG = 0.1;
-  public static final double KV = 0.1;
+  public static final double KG = 0.0;
+  public static final double KV = 0.0;
   public static final double jKgMetersSquared = 0.01;
   // public static final double GAME_PIECE_CURRENT_THRESHOLD = 20.0;
   public static final double ALGAE_INTAKE_VOLTAGE = 8.0;
@@ -35,6 +37,10 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public static final double ALGAE_CURRENT_THRESHOLD = 20.0;
   public static final double CORAL_CURRENT_THRESHOLD = 20.0;
   public static final double TOLERANCE_DEGREES = 10.0;
+
+  public static final double CANCODER_OFFSET = 0.688;
+  //this is because we want it to wrap around from 360 to 0 when it's vertical, which is what we've decided is 0
+  public static final double CANCODER_DISCONTINUITY_POINT = 0.688;
 
   private final CANcoderIO cancoderIO;
   private final CANcoderIOInputsAutoLogged cancoderInputs = new CANcoderIOInputsAutoLogged();
