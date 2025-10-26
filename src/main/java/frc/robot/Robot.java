@@ -123,10 +123,10 @@ public class Robot extends LoggedRobot {
 
   // TODO tune these config values
   TalonFXConfiguration armRollerConfig =
-      createRollerConfig(InvertedValue.CounterClockwise_Positive, 20.0, 18.0 / 26.0);
+      createRollerConfig(InvertedValue.Clockwise_Positive, 20.0, 18.0 / 26.0);
   TalonFXConfiguration armPivotConfig =
       createPivotConfig(
-          InvertedValue.CounterClockwise_Positive,
+          InvertedValue.Clockwise_Positive,
           ArmSubsystem.SUPPLY_CURRENT_LIMIT,
           ArmSubsystem.STATOR_CURRENT_LIMIT,
           ArmSubsystem.SENSOR_TO_MECH_RATIO,
@@ -138,7 +138,10 @@ public class Robot extends LoggedRobot {
           ArmSubsystem.KD);
 
   CANcoderConfiguration armCANcoderConfig =
-      createCANcoderConfig(SensorDirectionValue.Clockwise_Positive, ArmSubsystem.CANCODER_OFFSET, ArmSubsystem.CANCODER_DISCONTINUITY_POINT);
+      createCANcoderConfig(
+          SensorDirectionValue.Clockwise_Positive,
+          ArmSubsystem.CANCODER_OFFSET,
+          ArmSubsystem.CANCODER_DISCONTINUITY_POINT);
 
   TalonFXConfiguration intakeRollerConfig =
       createRollerConfig(

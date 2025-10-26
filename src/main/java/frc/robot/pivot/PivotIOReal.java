@@ -36,6 +36,15 @@ public class PivotIOReal implements PivotIO {
     motorPositionRotations = motor.getPosition();
     motorTemperatureCelsius = motor.getDeviceTemp();
 
+    BaseStatusSignal.setUpdateFrequencyForAll(
+        50.0,
+        angularVelocityRotsPerSec,
+        supplyCurrentAmps,
+        statorCurrentAmps,
+        appliedVoltage,
+        motorPositionRotations,
+        motorTemperatureCelsius);
+
     motor.getConfigurator().apply(config);
     motor.optimizeBusUtilization();
   }
