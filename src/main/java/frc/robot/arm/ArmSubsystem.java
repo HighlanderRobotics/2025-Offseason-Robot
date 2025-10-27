@@ -38,7 +38,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public static final double CORAL_CURRENT_THRESHOLD = 20.0;
   public static final double TOLERANCE_DEGREES = 10.0;
 
-  public static final double CANCODER_OFFSET = -0.397;
+  public static final double CANCODER_OFFSET = -0.368896484375;
   // this is because we want it to wrap around from 360 to 0 when it's vertical, which is what we've
   // decided is 0
   public static final double CANCODER_DISCONTINUITY_POINT = 0.5;
