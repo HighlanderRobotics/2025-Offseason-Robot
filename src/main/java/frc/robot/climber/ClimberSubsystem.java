@@ -25,7 +25,6 @@ public class ClimberSubsystem extends RollerPivotSubsystem {
   public static final double TOLERANCE_DEGREES = 5.0;
   public static final Rotation2d CLIMB_EXTENSION_DEGREES = Rotation2d.fromDegrees(70);
 
-  // TODO : change these values to the real ones
   public enum ClimberState {
     IDLE(Rotation2d.fromDegrees(0), 0.0),
     // climbing
@@ -62,9 +61,7 @@ public class ClimberSubsystem extends RollerPivotSubsystem {
   }
 
   public Command setStateAngleVoltage() {
-    return setPivotAngle(() -> state.position)
-        .andThen(runRollerVoltage(() -> state.volts))
-        .repeatedly();
+    return setPivotAndRollers(() -> state.position, () -> state.volts);
   }
 
   public boolean isNearAngle(Rotation2d target) {

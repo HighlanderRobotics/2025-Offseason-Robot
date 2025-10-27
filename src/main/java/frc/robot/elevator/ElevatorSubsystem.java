@@ -123,6 +123,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   public Command setExtensionMeters(DoubleSupplier meters) {
     return this.run(
         () -> {
+          // decrease accel if the difference is too big to prevent slamming into the bottom hardstop
           if ((getExtensionMeters() - meters.getAsDouble()) > Units.inchesToMeters(6)) {
             io.setPositionSetpoint(meters.getAsDouble(), SLOW_ACCELERATION);
           } else {

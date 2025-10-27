@@ -135,7 +135,6 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   }
 
   public Rotation2d getCANcoderPosition() {
-    System.out.println(cancoderInputs.cancoderPositionRotations.getRotations() + "rotations");
     return cancoderInputs.cancoderPositionRotations;
   }
 
@@ -167,17 +166,14 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     return isNear(target, TOLERANCE_DEGREES);
   }
 
-  // TODO this is definitely not Good
   public Command setStateAngleVoltage() {
-    return setPivotAngle(() -> state.position)
-        .andThen(runRollerVoltage(() -> state.volts))
-        .repeatedly();
+    return setPivotAndRollers(() -> state.position, () -> state.volts);
   }
 
   // TODO setSimCoral
   public void setSimCoral(boolean b) {}
 
   public Command rezeroFromEncoder() {
-    return zeroPivot(() -> getCANcoderPosition().getRotations());
+    return zeroPivot(() -> getCANcoderPosition());
   }
 }

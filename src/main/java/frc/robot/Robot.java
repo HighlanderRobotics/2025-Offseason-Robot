@@ -125,6 +125,7 @@ public class Robot extends LoggedRobot {
   // TODO tune these config values
   TalonFXConfiguration armRollerConfig =
       createRollerConfig(InvertedValue.Clockwise_Positive, 20.0, 18.0 / 26.0);
+
   TalonFXConfiguration armPivotConfig =
       createPivotConfig(
               InvertedValue.Clockwise_Positive,
@@ -155,12 +156,14 @@ public class Robot extends LoggedRobot {
           InvertedValue.CounterClockwise_Positive,
           20.0,
           12.0 / 180.0); // this is for the rollers ratio
+
   TalonFXConfiguration intakePivotConfig =
       createPivotConfig(
           InvertedValue.CounterClockwise_Positive, 20.0, 40.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
 
   TalonFXConfiguration climberRollerConfig =
       createRollerConfig(InvertedValue.CounterClockwise_Positive, 20.0, 5.25 / 1);
+
   TalonFXConfiguration climberPivotConfig =
       createPivotConfig(
           InvertedValue.CounterClockwise_Positive, 20.0, 40.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
@@ -183,18 +186,12 @@ public class Robot extends LoggedRobot {
           ROBOT_TYPE != RobotType.SIM
               ? new PivotIOReal(9, armPivotConfig)
               : new PivotIOSim(
-                  ArmSubsystem.PIVOT_RATIO,
                   ArmSubsystem.MIN_ANGLE.getRadians(),
                   ArmSubsystem.MAX_ANGLE.getRadians(),
                   ArmSubsystem.LENGTH_METERS,
-                  ArmSubsystem.KP,
-                  ArmSubsystem.KI,
-                  ArmSubsystem.KD,
-                  ArmSubsystem.KI,
-                  ArmSubsystem.KG,
-                  ArmSubsystem.KV,
                   ArmSubsystem.MAX_VELOCITY,
-                  ArmSubsystem.MAX_ACCELERATION),
+                  ArmSubsystem.MAX_ACCELERATION,
+                  armPivotConfig),
           new CANcoderIOReal(4, armCANcoderConfig),
           "Arm");
 
@@ -215,18 +212,12 @@ public class Robot extends LoggedRobot {
           ROBOT_TYPE != RobotType.SIM
               ? new PivotIOReal(12, intakePivotConfig)
               : new PivotIOSim(
-                  IntakeSubsystem.PIVOT_RATIO,
                   IntakeSubsystem.MIN_ANGLE.getRadians(),
                   IntakeSubsystem.MAX_ANGLE.getRadians(),
                   IntakeSubsystem.LENGTH_METERS,
-                  IntakeSubsystem.KP,
-                  IntakeSubsystem.KI,
-                  IntakeSubsystem.KD,
-                  IntakeSubsystem.KI,
-                  IntakeSubsystem.KG,
-                  IntakeSubsystem.KV,
                   IntakeSubsystem.MAX_VELOCITY,
-                  IntakeSubsystem.MAX_ACCELERATION),
+                  IntakeSubsystem.MAX_ACCELERATION,
+                  intakePivotConfig),
           new CANrangeIOReal(0),
           new CANrangeIOReal(1),
           "Intake");
@@ -248,18 +239,12 @@ public class Robot extends LoggedRobot {
           ROBOT_TYPE != RobotType.SIM
               ? new PivotIOReal(14, climberPivotConfig)
               : new PivotIOSim(
-                  ClimberSubsystem.PIVOT_RATIO,
                   ClimberSubsystem.MIN_ANGLE.getRadians(),
                   ClimberSubsystem.MAX_ANGLE.getRadians(),
                   ClimberSubsystem.LENGTH_METERS,
-                  ClimberSubsystem.KP,
-                  ClimberSubsystem.KI,
-                  ClimberSubsystem.KD,
-                  ClimberSubsystem.KI,
-                  ClimberSubsystem.KG,
-                  ClimberSubsystem.KV,
                   ClimberSubsystem.MAX_VELOCITY,
-                  ClimberSubsystem.MAX_ACCELERATION),
+                  ClimberSubsystem.MAX_ACCELERATION,
+                  climberPivotConfig),
           "Climber");
 
   // Maple Sim Stuff
@@ -384,7 +369,7 @@ public class Robot extends LoggedRobot {
     autos = new Autos(swerve, arm);
     // autoChooser.addDefaultOption("None", autos.getNoneAuto());
     // TODO add autos trigger
-    SmartDashboard.putData("rezero elevator", elevator.rezero());
+    SmartDashboard.putData("rezero elevator", elevator.rezero().ignoringDisable(true));
     SmartDashboard.putData("rezero arm", arm.rezeroFromEncoder().ignoringDisable(true));
   }
 

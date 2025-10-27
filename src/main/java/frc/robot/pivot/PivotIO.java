@@ -20,5 +20,5 @@ public interface PivotIO {
 
   public void setMotorPosition(Rotation2d targetPosition);
 
-  public void resetEncoder(double rotations);
+  public void resetEncoder(Rotation2d targetPosition);
 }

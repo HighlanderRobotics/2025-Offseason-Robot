@@ -78,7 +78,7 @@ public class PivotIOReal implements PivotIO {
   }
 
   @Override
-  public void resetEncoder(double rotations) {
-    motor.setPosition(rotations);
+  public void resetEncoder(Rotation2d rotations) {
+    motor.setPosition(rotations.getRotations());
   }
 }

@@ -3,6 +3,8 @@ package frc.robot.pivot;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -17,22 +19,16 @@ public class PivotIOSim implements PivotIO {
   private final ArmFeedforward pivotFf;
 
   public PivotIOSim(
-      double pivotRatio,
       double minAngleRadians,
       double maxAngleRadians,
       double length,
-      double Kp,
-      double Ki,
-      double Kd,
-      double Ks,
-      double Kg,
-      double Kv,
       double maxVelocity,
-      double maxAcceleration) {
+      double maxAcceleration,
+      TalonFXConfiguration config) {
     pivotSim =
         new SingleJointedArmSim(
             DCMotor.getKrakenX60Foc(1),
-            pivotRatio,
+            config.Feedback.SensorToMechanismRatio,
             0.1,
             length,
             minAngleRadians,
@@ -42,9 +38,9 @@ public class PivotIOSim implements PivotIO {
 
     pivotPid =
         new ProfiledPIDController(
-            Kp, Ki, Kp, new TrapezoidProfile.Constraints(maxVelocity, maxAcceleration));
+            config.Slot0.kP, config.Slot0.kI, config.Slot0.kD, new TrapezoidProfile.Constraints(maxVelocity, maxAcceleration));
 
-    pivotFf = new ArmFeedforward(Ks, Kg, Kv);
+    pivotFf = new ArmFeedforward(config.Slot0.kS, config.Slot0.kG, config.Slot0.kV);
   }
 
   private double appliedVoltage = 0.0;
@@ -75,5 +71,5 @@ public class PivotIOSim implements PivotIO {
   }
 
   @Override
-  public void resetEncoder(double position) {}
+  public void resetEncoder(Rotation2d rotations) {}
 }

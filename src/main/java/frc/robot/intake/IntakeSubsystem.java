@@ -32,7 +32,7 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   private final CANrangeIO rightCanrangeIO;
   private final CANrangeIOInputsAutoLogged leftCanrangeInputs = new CANrangeIOInputsAutoLogged();
   private final CANrangeIOInputsAutoLogged rightCanrangeInputs = new CANrangeIOInputsAutoLogged();
-  private final double ZEROING_POSITION = -10.0;
+  private final Rotation2d ZEROING_POSITION = Rotation2d.fromDegrees(-10.0);
   private final double CURRENT_THRESHOLD = 10.0;
 
   public boolean intakeZeroed = false;
@@ -123,8 +123,6 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   }
 
   public Command setStateAngleVoltage() {
-    return setPivotAngle(() -> state.position)
-        .andThen(runRollerVoltage(() -> state.volts))
-        .repeatedly();
+    return setPivotAndRollers(() -> state.position, () -> state.volts);
   }
 }
