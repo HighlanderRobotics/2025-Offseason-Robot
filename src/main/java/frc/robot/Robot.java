@@ -10,6 +10,7 @@ import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.CANBus.CANBusStatus;
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.ClosedLoopGeneralConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -126,16 +127,22 @@ public class Robot extends LoggedRobot {
       createRollerConfig(InvertedValue.Clockwise_Positive, 20.0, 18.0 / 26.0);
   TalonFXConfiguration armPivotConfig =
       createPivotConfig(
-          InvertedValue.Clockwise_Positive,
-          ArmSubsystem.SUPPLY_CURRENT_LIMIT,
-          ArmSubsystem.STATOR_CURRENT_LIMIT,
-          ArmSubsystem.SENSOR_TO_MECH_RATIO,
-          ArmSubsystem.KV,
-          ArmSubsystem.KG,
-          ArmSubsystem.KS,
-          ArmSubsystem.KP,
-          ArmSubsystem.KI,
-          ArmSubsystem.KD);
+              InvertedValue.Clockwise_Positive,
+              ArmSubsystem.SUPPLY_CURRENT_LIMIT,
+              ArmSubsystem.STATOR_CURRENT_LIMIT,
+              ArmSubsystem.SENSOR_TO_MECH_RATIO,
+              ArmSubsystem.KV,
+              ArmSubsystem.KG,
+              ArmSubsystem.KS,
+              ArmSubsystem.KP,
+              ArmSubsystem.KI,
+              ArmSubsystem.KD)
+          // this is what lets us wrap it from -180 to 180 at the bottom
+          // basically think of it like the swerve turn motor
+          // it's not actually fused with the cancoder, which means it shows up weird in the log
+          // but that's true for the swerve as well and both seem to be fine so we'll just roll with
+          // it
+          .withClosedLoopGeneral(new ClosedLoopGeneralConfigs().withContinuousWrap(true));
 
   CANcoderConfiguration armCANcoderConfig =
       createCANcoderConfig(
