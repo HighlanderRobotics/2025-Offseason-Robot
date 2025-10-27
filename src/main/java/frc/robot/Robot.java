@@ -378,6 +378,7 @@ public class Robot extends LoggedRobot {
     // autoChooser.addDefaultOption("None", autos.getNoneAuto());
     // TODO add autos trigger
     SmartDashboard.putData("rezero elevator", elevator.rezero());
+    SmartDashboard.putData("rezero arm", arm.rezeroFromEncoder().ignoringDisable(true));
   }
 
   private TalonFXConfiguration createRollerConfig(

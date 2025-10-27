@@ -15,13 +15,16 @@ public class CANcoderIOReal implements CANcoderIO {
   public CANcoderIOReal(int cancoderID, CANcoderConfiguration config) {
     cancoder = new CANcoder(cancoderID, "*");
     cancoderAbsolutePosition = cancoder.getAbsolutePosition();
+    BaseStatusSignal.setUpdateFrequencyForAll(50.0, cancoderAbsolutePosition);
     cancoder.getConfigurator().apply(config);
+    cancoder.optimizeBusUtilization();
   }
 
   @Override
   public void updateInputs(CANcoderIOInputs inputs) {
     BaseStatusSignal.refreshAll(cancoderAbsolutePosition);
 
-    inputs.cancoderPosition = Rotation2d.fromRotations(cancoderAbsolutePosition.getValueAsDouble());
+    inputs.cancoderPositionRotations =
+        Rotation2d.fromRotations(cancoderAbsolutePosition.getValueAsDouble());
   }
 }

@@ -8,7 +8,6 @@ public interface PivotIO {
   public static class PivotIOInputs {
     public double angularVelocityRotsPerSec = 0.0;
     public Rotation2d position = new Rotation2d();
-    public Rotation2d cancoderPosition = new Rotation2d();
     public double supplyCurrentAmps = 0.0;
     public double appliedVoltage = 0.0;
     public double statorCurrentAmps = 0.0;

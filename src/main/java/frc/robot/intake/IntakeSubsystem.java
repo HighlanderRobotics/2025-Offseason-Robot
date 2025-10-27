@@ -115,7 +115,7 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
             Commands.parallel(
                 Commands.runOnce(() -> intakeZeroed = true),
                 Commands.print("Intake Zeroed"),
-                zeroPivot(ZEROING_POSITION)));
+                zeroPivot(() -> ZEROING_POSITION)));
   }
 
   public boolean isNearAngle(Rotation2d target) {

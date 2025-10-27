@@ -59,8 +59,8 @@ public class RollerPivotSubsystem extends SubsystemBase {
     return MathUtil.isNear(target.getDegrees(), getPivotAngle().getDegrees(), tolerance);
   }
 
-  public Command zeroPivot(double position) {
-    return this.runOnce(() -> pivotIO.resetEncoder(position));
+  public Command zeroPivot(DoubleSupplier rotations) {
+    return this.runOnce(() -> pivotIO.resetEncoder(rotations.getAsDouble()));
   }
 
   public double getFilteredStatorCurrentAmps() {

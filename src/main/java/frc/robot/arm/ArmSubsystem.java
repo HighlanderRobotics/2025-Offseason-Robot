@@ -13,7 +13,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class ArmSubsystem extends RollerPivotSubsystem {
-  public static final double PIVOT_RATIO = (44.0 / 16.0) * 23;
+  public static final double PIVOT_RATIO = 79.17;
   public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(180);
   public static final Rotation2d MIN_ANGLE = Rotation2d.fromDegrees(0);
   public static final double LENGTH_METERS = 0.659;
@@ -22,14 +22,14 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public static final double ROLLERS_RATIO = (44.0 / 16.0) * 23;
 
   public static final double SUPPLY_CURRENT_LIMIT = 40.0;
-  public static final double STATOR_CURRENT_LIMIT = 40.0;
-  public static final double SENSOR_TO_MECH_RATIO = 0.0;
-  public static final double KP = 0.0;
+  public static final double STATOR_CURRENT_LIMIT = 60.0;
+  public static final double SENSOR_TO_MECH_RATIO = PIVOT_RATIO;
+  public static final double KP = 120.0;
   public static final double KI = 0.0;
   public static final double KD = 0.0;
   public static final double KS = 0.0;
   public static final double KG = 0.4;
-  public static final double KV = 0.0;
+  public static final double KV = 0.14;
   public static final double jKgMetersSquared = 0.01;
   // public static final double GAME_PIECE_CURRENT_THRESHOLD = 20.0;
   public static final double ALGAE_INTAKE_VOLTAGE = 8.0;
@@ -38,10 +38,10 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public static final double CORAL_CURRENT_THRESHOLD = 20.0;
   public static final double TOLERANCE_DEGREES = 10.0;
 
-  public static final double CANCODER_OFFSET = 0.688;
+  public static final double CANCODER_OFFSET = -0.397;
   // this is because we want it to wrap around from 360 to 0 when it's vertical, which is what we've
   // decided is 0
-  public static final double CANCODER_DISCONTINUITY_POINT = 0.688;
+  public static final double CANCODER_DISCONTINUITY_POINT = 0.5;
 
   private final CANcoderIO cancoderIO;
   private final CANcoderIOInputsAutoLogged cancoderInputs = new CANcoderIOInputsAutoLogged();
@@ -135,7 +135,8 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   }
 
   public Rotation2d getCANcoderPosition() {
-    return cancoderInputs.cancoderPosition;
+    System.out.println(cancoderInputs.cancoderPositionRotations.getRotations() + "rotations");
+    return cancoderInputs.cancoderPositionRotations;
   }
 
   public Command intakeAlgae() {
@@ -177,6 +178,6 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public void setSimCoral(boolean b) {}
 
   public Command rezeroFromEncoder() {
-    return this.runOnce(() -> zeroPivot(cancoderInputs.cancoderPosition.getDegrees()));
+    return zeroPivot(() -> getCANcoderPosition().getRotations());
   }
 }
