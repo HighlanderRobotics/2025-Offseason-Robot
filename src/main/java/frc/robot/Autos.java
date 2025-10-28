@@ -11,6 +11,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Robot.AlgaeIntakeTarget;
+import frc.robot.Robot.AlgaeScoreTarget;
 import frc.robot.Robot.CoralIntakeTarget;
 import frc.robot.Robot.CoralScoreTarget;
 import frc.robot.arm.ArmSubsystem;
@@ -208,7 +210,7 @@ public class Autos {
                     .and(swerve::isNotMoving)
                     .debounce(0.06 * 2)),
             setAutoScoreReqTrue(),
-            waitUntilNoCoral(),
+            waitUntilNoGamePiece(),
             setAutoScoreReqFalse())
         .raceWith(swerve.autoAimAuto(trajEndPose));
   }
@@ -270,11 +272,11 @@ public class Autos {
     return Robot.isSimulation() ? Commands.runOnce(() -> arm.setSimCoral(true)) : Commands.none();
   }
 
-  public Command waitUntilNoCoral() {
+  public Command waitUntilNoGamePiece() {
     return Commands.waitUntil(() -> !arm.hasGamePiece()).alongWith(setSimHasCoralFalse());
   }
 
-  public Command waitUntilHasCoral() {
+  public Command waitUntilHasGamePiece() {
     return Commands.waitUntil(() -> arm.hasGamePiece()).alongWith(setSimHasCoralTrue());
   }
 
@@ -289,7 +291,21 @@ public class Autos {
             })
         .andThen(
             Commands.sequence(
-                setAutoIntakeCoralReqTrue(), waitUntilHasCoral(), setAutoIntakeCoralReqFalse()));
+                setAutoIntakeCoralReqTrue(),
+                waitUntilHasGamePiece(),
+                setAutoIntakeCoralReqFalse()));
+  }
+
+  public Command intakeAlgaeAutoPC(AlgaeIntakeTarget target) {
+    return Commands.runOnce(
+            () -> {
+              Robot.setAlgaeIntakeTarget(target);
+            })
+        .andThen(
+            Commands.sequence(
+                setAutoIntakeAlgaeReqTrue(),
+                waitUntilHasGamePiece(),
+                setAutoIntakeAlgaeReqFalse()));
   }
 
   // TODO fix names?
@@ -302,7 +318,32 @@ public class Autos {
             Commands.sequence(
                 Commands.waitSeconds(wait),
                 setAutoScoreReqTrue(),
-                waitUntilNoCoral(),
+                waitUntilNoGamePiece(),
+                setAutoScoreReqFalse()
+                    .raceWith(
+                        Commands.runOnce(
+                            () -> {
+                              // TODO fix these messages
+                              // TODO figure out what currents to check - elevator and intake as well?
+                              // TODO belt skip checking?
+                              if (arm.getFilteredStatorCurrentAmps() > ARM_PC_CURRENT_THRESHOLD)
+                                Logger.recordOutput(
+                                    "Autos/pitchecks alert arm current spike",
+                                    arm.getFilteredStatorCurrentAmps());
+                            }))
+                    .repeatedly()));
+  }
+
+  public Command scoreAlgaeAutoPC(AlgaeScoreTarget level, double wait) {
+    return Commands.runOnce(
+            () -> {
+              Robot.setAlgaeScoreTarget(level);
+            })
+        .andThen(
+            Commands.sequence(
+                Commands.waitSeconds(wait),
+                setAutoScoreReqTrue(),
+                waitUntilNoGamePiece(),
                 setAutoScoreReqFalse()
                     .raceWith(
                         Commands.runOnce(
@@ -319,6 +360,7 @@ public class Autos {
 
   public Command pitCheck() {
     return Commands.sequence(
+        // coral stuff
         intakeCoralAutoPC(CoralIntakeTarget.GROUND),
         scoreCoralAutoPC(CoralScoreTarget.L1, 0.5),
         intakeCoralAutoPC(CoralIntakeTarget.GROUND),
@@ -326,8 +368,15 @@ public class Autos {
         intakeCoralAutoPC(CoralIntakeTarget.STACK),
         scoreCoralAutoPC(CoralScoreTarget.L3, 0.50),
         intakeCoralAutoPC(CoralIntakeTarget.STACK),
-        scoreCoralAutoPC(CoralScoreTarget.L4, 0.50)
-        // TODO algae stuff
-        );
+        scoreCoralAutoPC(CoralScoreTarget.L4, 0.50),
+        // algae stuff
+        intakeAlgaeAutoPC(AlgaeIntakeTarget.GROUND),
+        scoreAlgaeAutoPC(AlgaeScoreTarget.PROCESSOR, 0.5),
+        intakeAlgaeAutoPC(AlgaeIntakeTarget.STACK),
+        scoreAlgaeAutoPC(AlgaeScoreTarget.PROCESSOR, 0.5),
+        intakeAlgaeAutoPC(AlgaeIntakeTarget.LOW),
+        scoreAlgaeAutoPC(AlgaeScoreTarget.BARGE, 0.5),
+        intakeAlgaeAutoPC(AlgaeIntakeTarget.HIGH),
+        scoreAlgaeAutoPC(AlgaeScoreTarget.BARGE, 0.5));
   }
 }
