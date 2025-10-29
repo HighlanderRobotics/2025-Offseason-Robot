@@ -194,13 +194,13 @@ public class SwerveSubsystem extends SubsystemBase {
             Tracer.trace("Update module inputs for " + module.getPrefix(), module::periodic);
           }
 
-          for (Camera camera : cameras) {
-            Tracer.trace(
-                "Camera " + camera.getName() + " Periodic", () -> camera.periodic(estimator));
-          }
+          // for (Camera camera : cameras) {
+          //   Tracer.trace(
+          //       "Camera " + camera.getName() + " Periodic", () -> camera.periodic(estimator));
+          // }
 
           Tracer.trace("Update odometry", this::updateOdometry);
-          Tracer.trace("Update vision", this::updateVision);
+          // Tracer.trace("Update vision", this::updateVision);
         });
   }
 

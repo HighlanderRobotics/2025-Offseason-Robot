@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Superstructure.SuperState;
 import frc.robot.arm.ArmSubsystem;
@@ -48,6 +49,7 @@ import frc.robot.swerve.odometry.PhoenixOdometryThread;
 import frc.robot.utils.CommandXboxControllerSubsystem;
 import frc.robot.utils.FieldUtils.AlgaeIntakeTargets;
 import java.util.Optional;
+import java.util.Set;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.COTS;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -346,10 +348,6 @@ public class Robot extends LoggedRobot {
                             * SwerveSubsystem.SWERVE_CONSTANTS.getMaxAngularSpeed())
                     .times(-1)));
 
-    if (ROBOT_TYPE == RobotType.SIM) {
-      SimulatedArena.getInstance().addDriveTrainSimulation(swerveSimulation);
-    }
-
     addControllerBindings();
 
     autos = new Autos(swerve, arm);
@@ -371,6 +369,10 @@ public class Robot extends LoggedRobot {
               return allianceChanged && DriverStation.getAlliance().isPresent();
             })
         .onTrue(Commands.runOnce(this::addAutos).ignoringDisable(true));
+
+    // Run auto when auto starts. Matches Choreolib's defer impl
+    RobotModeTriggers.autonomous()
+        .whileTrue(Commands.defer(() -> autoChooser.get().asProxy(), Set.of()));
   }
 
   private TalonFXConfiguration createRollerConfig(InvertedValue inverted, double currentLimit) {
@@ -592,7 +594,7 @@ public class Robot extends LoggedRobot {
 
     autoChooser.addOption("Left stack auto", autos.getLeftStackAuto());
     autoChooser.addOption("Right stack auto", autos.getRightStackAuto());
-    autoChooser.addOption("Algae auto", autos.getAlgaeAuto());
+    // autoChooser.addOption("Algae auto", autos.getAlgaeAuto());
     haveAutosGenerated = true;
   }
 

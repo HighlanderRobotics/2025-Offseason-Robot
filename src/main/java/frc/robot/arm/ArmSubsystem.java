@@ -158,8 +158,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   }
 
   public Command setStateAngleVoltage() {
-    return Commands.parallel(
-        setPivotAngle(() -> state.position), runRollerVoltage(() -> state.volts));
+    return setPivotAngleAndRollerVoltage(() -> state.position, () -> state.volts);
   }
 
   // TODO setSimCoral

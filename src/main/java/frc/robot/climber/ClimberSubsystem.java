@@ -2,7 +2,6 @@ package frc.robot.climber;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.pivot.PivotIO;
 import frc.robot.roller.RollerIO;
 import frc.robot.rollerpivot.RollerPivotSubsystem;
@@ -63,8 +62,7 @@ public class ClimberSubsystem extends RollerPivotSubsystem {
   }
 
   public Command setStateAngleVoltage() {
-    return Commands.parallel(
-        setPivotAngle(() -> state.position), runRollerVoltage(() -> state.volts));
+    return setPivotAngleAndRollerVoltage(() -> state.position, () -> state.volts);
   }
 
   public boolean isNearAngle(Rotation2d target) {

@@ -19,8 +19,8 @@ import org.littletonrobotics.junction.Logger;
 public class RollerPivotSubsystem extends SubsystemBase {
   private final RollerIOInputsAutoLogged rollerInputs = new RollerIOInputsAutoLogged();
   private final PivotIOInputsAutoLogged pivotInputs = new PivotIOInputsAutoLogged();
-  private final RollerIO rollerIO;
-  private final PivotIO pivotIO;
+  protected final RollerIO rollerIO;
+  protected final PivotIO pivotIO;
   private final String name;
 
   private LinearFilter currentFilter = LinearFilter.movingAverage(10);
@@ -46,6 +46,15 @@ public class RollerPivotSubsystem extends SubsystemBase {
 
   public Command setPivotVoltage(DoubleSupplier volts) {
     return this.run(() -> pivotIO.setMotorVoltage(volts.getAsDouble()));
+  }
+
+  public Command setPivotAngleAndRollerVoltage(
+      Supplier<Rotation2d> pivotTarget, DoubleSupplier rollerVoltage) {
+    return this.run(
+        () -> {
+          pivotIO.setMotorPosition(pivotTarget.get());
+          rollerIO.setRollerVoltage(rollerVoltage.getAsDouble());
+        });
   }
 
   public Rotation2d getPivotAngle() {
