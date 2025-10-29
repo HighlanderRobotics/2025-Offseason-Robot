@@ -252,12 +252,35 @@ public class Autos {
       case INTAKE_CORAL_STACK:
         return runPathThenIntakeStackCoral(path, routine);
       case SCORE_ALGAE:
-        return null; // lol
+        return runPathThenScoreAlgae(path, routine);
       case INTAKE_ALGAE:
-        return null; // lol
+        return runPathThenIntakeAlgae(path, routine); 
       default: // TODO this should never happen?
         return Commands.none();
     }
+  }
+
+  // Only for barge rn. Is this a problem?? I assume no...
+  public Command runPathThenScoreAlgae(Path path, AutoRoutine routine) {
+    return Commands.sequence(
+      path.getTrajectory(routine).cmd()
+      .until(routine.observe(path.getTrajectory(routine).done())),
+      scoreAlgaeBargeInAuto()
+    );
+  }
+
+  public Command scoreAlgaeBargeInAuto() {
+    return Commands.race(
+      swerve.autoAimToBarge(() -> 0),
+      Commands.sequence(
+        Commands.runOnce(() -> Autos.autoPreScore = true),
+        Commands.waitUntil(swerve::nearBarge),
+        setAutoScoreReqTrue(),
+        Commands.waitUntil(() -> !arm.hasAlgae),
+        // Also sets prescore false
+        setAutoScoreReqFalse()
+      )
+    );
   }
 
   public Command runPathThenScoreCoral(Path path, AutoRoutine routine) {
