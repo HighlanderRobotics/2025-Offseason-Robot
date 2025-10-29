@@ -594,7 +594,7 @@ public class Robot extends LoggedRobot {
 
     autoChooser.addOption("Left stack auto", autos.getLeftStackAuto());
     autoChooser.addOption("Right stack auto", autos.getRightStackAuto());
-    // autoChooser.addOption("Algae auto", autos.getAlgaeAuto());
+    autoChooser.addOption("Algae auto", autos.getAlgaeAuto());
     haveAutosGenerated = true;
   }
 
