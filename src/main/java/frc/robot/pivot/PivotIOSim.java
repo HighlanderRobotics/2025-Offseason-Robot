@@ -4,7 +4,6 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -38,7 +37,10 @@ public class PivotIOSim implements PivotIO {
 
     pivotPid =
         new ProfiledPIDController(
-            config.Slot0.kP, config.Slot0.kI, config.Slot0.kD, new TrapezoidProfile.Constraints(maxVelocity, maxAcceleration));
+            config.Slot0.kP,
+            config.Slot0.kI,
+            config.Slot0.kD,
+            new TrapezoidProfile.Constraints(maxVelocity, maxAcceleration));
 
     pivotFf = new ArmFeedforward(config.Slot0.kS, config.Slot0.kG, config.Slot0.kV);
   }

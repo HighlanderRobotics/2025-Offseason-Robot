@@ -1,6 +1,7 @@
 package frc.robot.arm;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -37,6 +38,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public static final double ALGAE_CURRENT_THRESHOLD = 20.0;
   public static final double CORAL_CURRENT_THRESHOLD = 20.0;
   public static final double TOLERANCE_DEGREES = 10.0;
+  public static final double VERTICAL_OFFSET_METERS = Units.inchesToMeters(12.0);
 
   public static final double CANCODER_OFFSET = -0.368896484375;
   // this is because we want it to wrap around from -180 to 180, which is when it's pointed straight
@@ -167,7 +169,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   }
 
   public Command setStateAngleVoltage() {
-    return setPivotAndRollers(() -> state.position, () -> state.volts);
+    return setPivotAndRollers(() -> getState().position, () -> getState().volts);
   }
 
   // TODO setSimCoral

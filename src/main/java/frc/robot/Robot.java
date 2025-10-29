@@ -23,6 +23,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -151,23 +152,6 @@ public class Robot extends LoggedRobot {
           ArmSubsystem.CANCODER_OFFSET,
           ArmSubsystem.CANCODER_DISCONTINUITY_POINT);
 
-  TalonFXConfiguration intakeRollerConfig =
-      createRollerConfig(
-          InvertedValue.CounterClockwise_Positive,
-          20.0,
-          12.0 / 180.0); // this is for the rollers ratio
-
-  TalonFXConfiguration intakePivotConfig =
-      createPivotConfig(
-          InvertedValue.CounterClockwise_Positive, 20.0, 40.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
-
-  TalonFXConfiguration climberRollerConfig =
-      createRollerConfig(InvertedValue.CounterClockwise_Positive, 20.0, 5.25 / 1);
-
-  TalonFXConfiguration climberPivotConfig =
-      createPivotConfig(
-          InvertedValue.CounterClockwise_Positive, 20.0, 40.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
-
   // TODO tuning sim values espicall for pivot sims
   private final ArmSubsystem arm =
       new ArmSubsystem(
@@ -195,6 +179,16 @@ public class Robot extends LoggedRobot {
           new CANcoderIOReal(4, armCANcoderConfig),
           "Arm");
 
+  TalonFXConfiguration intakeRollerConfig =
+      createRollerConfig(
+          InvertedValue.CounterClockwise_Positive,
+          20.0,
+          12.0 / 180.0); // this is for the rollers ratio
+
+  TalonFXConfiguration intakePivotConfig =
+      createPivotConfig(
+          InvertedValue.CounterClockwise_Positive, 20.0, 40.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
+
   private final IntakeSubsystem intake =
       new IntakeSubsystem(
           ROBOT_TYPE != RobotType.SIM
@@ -221,6 +215,13 @@ public class Robot extends LoggedRobot {
           new CANrangeIOReal(0),
           new CANrangeIOReal(1),
           "Intake");
+
+  TalonFXConfiguration climberRollerConfig =
+      createRollerConfig(InvertedValue.CounterClockwise_Positive, 20.0, 5.25 / 1);
+
+  TalonFXConfiguration climberPivotConfig =
+      createPivotConfig(
+          InvertedValue.CounterClockwise_Positive, 20.0, 40.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
 
   private final ClimberSubsystem climber =
       new ClimberSubsystem(
@@ -371,6 +372,7 @@ public class Robot extends LoggedRobot {
     // TODO add autos trigger
     SmartDashboard.putData("rezero elevator", elevator.rezero().ignoringDisable(true));
     SmartDashboard.putData("rezero arm", arm.rezeroFromEncoder().ignoringDisable(true));
+    SmartDashboard.putData("rezero intake", intake.rezero().ignoringDisable(true));
   }
 
   private TalonFXConfiguration createRollerConfig(
@@ -622,8 +624,17 @@ public class Robot extends LoggedRobot {
           // carriage
           new Pose3d(new Translation3d(0, 0, elevator.getExtensionMeters()), new Rotation3d()),
           new Pose3d( // arm
-              new Translation3d(0, 0, elevator.getExtensionMeters()),
-              new Rotation3d(0, arm.getPivotAngle().getRadians(), 0.0)),
+                  Translation3d.kZero, new Rotation3d(0, arm.getPivotAngle().getRadians(), 0.0))
+              .transformBy(
+                  new Transform3d(
+                      new Translation3d(
+                          ArmSubsystem.VERTICAL_OFFSET_METERS
+                              * Math.cos(Math.PI / 2 - arm.getPivotAngle().getRadians()),
+                          0,
+                          -elevator.getExtensionMeters()
+                              - ArmSubsystem.VERTICAL_OFFSET_METERS
+                                  * Math.sin(Math.PI / 2 - arm.getPivotAngle().getRadians())),
+                      Rotation3d.kZero)),
           new Pose3d( // intake
               new Translation3d(0, 0, 0), // Units.inchesToMeters(10.265)
               // new Rotation3d(Math.PI, intake.getPivotAngle().getRadians(), Math.PI))

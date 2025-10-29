@@ -4,7 +4,6 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.Robot.RobotType;
@@ -19,8 +18,8 @@ import org.littletonrobotics.junction.Logger;
 public class RollerPivotSubsystem extends SubsystemBase {
   private final RollerIOInputsAutoLogged rollerInputs = new RollerIOInputsAutoLogged();
   private final PivotIOInputsAutoLogged pivotInputs = new PivotIOInputsAutoLogged();
-  private final RollerIO rollerIO;
-  private final PivotIO pivotIO;
+  protected final RollerIO rollerIO;
+  protected final PivotIO pivotIO;
   private final String name;
 
   private LinearFilter currentFilter = LinearFilter.movingAverage(10);
@@ -32,16 +31,13 @@ public class RollerPivotSubsystem extends SubsystemBase {
     this.name = name;
   }
 
-  public Command runRollerVoltage(DoubleSupplier volts) {
-    return this.runOnce(() -> rollerIO.setRollerVoltage(volts.getAsDouble()));
+  public void runRollerVoltage(DoubleSupplier volts) {
+    rollerIO.setRollerVoltage(volts.getAsDouble());
   }
 
-  public Command setPivotAngle(Supplier<Rotation2d> target) {
-    return this.runOnce(
-        () -> {
-          Logger.recordOutput(name + "/Pivot Setpoint", target.get());
-          pivotIO.setMotorPosition(target.get());
-        });
+  public void setPivotAngle(Supplier<Rotation2d> target) {
+    Logger.recordOutput(name + "/Pivot Setpoint", target.get());
+    pivotIO.setMotorPosition(target.get());
   }
 
   public Command setPivotVoltage(DoubleSupplier volts) {
@@ -68,8 +64,19 @@ public class RollerPivotSubsystem extends SubsystemBase {
     return currentFilterValue;
   }
 
+  // this CANNOT be correct LMAO
   public Command setPivotAndRollers(Supplier<Rotation2d> pivotAngle, DoubleSupplier rollerVoltage) {
-    return Commands.parallel(setPivotAngle(pivotAngle), runRollerVoltage(rollerVoltage));
+    // Command cmd =
+    //     Commands.parallel(
+    //         Commands.runOnce(() -> setPivotAngle(pivotAngle)),
+    //         Commands.run(() -> runRollerVoltage(rollerVoltage)));
+    // cmd.addRequirements(this);
+    // return cmd;
+    return this.run(
+        () -> {
+          setPivotAngle(pivotAngle);
+          runRollerVoltage(rollerVoltage);
+        });
   }
 
   @Override

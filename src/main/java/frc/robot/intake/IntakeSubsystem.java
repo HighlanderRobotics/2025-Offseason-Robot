@@ -13,18 +13,19 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class IntakeSubsystem extends RollerPivotSubsystem {
-  public static final double PIVOT_RATIO = (15.0 / 1);
+  public static final double PIVOT_RATIO = 12.5; // (15.0 / 1);
   public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(180);
   public static final Rotation2d MIN_ANGLE = Rotation2d.fromDegrees(0);
   public static final double LENGTH_METERS = 0.325;
   public static final double MAX_ACCELERATION = 10.0;
   public static final double MAX_VELOCITY = 10.0;
   // TODO tune
-  public static final double KP = 0.2;
-  public static final double KI = 0.0;
-  public static final double KD = 0.0;
-  public static final double KS = 0.0;
-  public static final double KG = 0.1;
+  //TODO THESE SUCK ! 
+  public static final double KP = 80.0;
+  public static final double KI = 5.0;
+  public static final double KD = 3.0;
+  public static final double KS = 0.381;
+  public static final double KG = 2.0;
   public static final double KV = 0.1;
   public static final double jKgMetersSquared = 0.01;
   public static final double TOLERANCE_DEGREES = 10.0;
@@ -34,6 +35,8 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   private final CANrangeIOInputsAutoLogged rightCanrangeInputs = new CANrangeIOInputsAutoLogged();
   private final Rotation2d ZEROING_POSITION = Rotation2d.fromDegrees(-10.0);
   private final double CURRENT_THRESHOLD = 10.0;
+
+  private boolean hasGamePieceSim = false;
 
   public boolean intakeZeroed = false;
 
@@ -116,6 +119,10 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
                 Commands.runOnce(() -> intakeZeroed = true),
                 Commands.print("Intake Zeroed"),
                 zeroPivot(() -> ZEROING_POSITION)));
+  }
+
+  public Command rezero() {
+    return this.run(() -> pivotIO.resetEncoder(Rotation2d.kZero));
   }
 
   public boolean isNearAngle(Rotation2d target) {
