@@ -175,7 +175,7 @@ public class Autos {
     bindCoralElevatorExtension(routine);
     Path[] paths = {Path.CMtoH4, Path.H4toGH, Path.GHtoBR, Path.BRtoIJ, Path.IJtoBR};
 
-    Command autoCommand = paths[0].getTrajectory(routine).cmd();
+    Command autoCommand = paths[0].getTrajectory(routine).resetOdometry();
 
     for (Path path : paths) {
       autoCommand = autoCommand.andThen(runPath(path, routine));
@@ -254,7 +254,7 @@ public class Autos {
       case SCORE_ALGAE:
         return runPathThenScoreAlgae(path, routine);
       case INTAKE_ALGAE:
-        return runPathThenIntakeAlgae(path, routine); 
+        return runPathThenIntakeAlgae(path, routine);
       default: // TODO this should never happen?
         return Commands.none();
     }
@@ -263,24 +263,22 @@ public class Autos {
   // Only for barge rn. Is this a problem?? I assume no...
   public Command runPathThenScoreAlgae(Path path, AutoRoutine routine) {
     return Commands.sequence(
-      path.getTrajectory(routine).cmd()
-      .until(routine.observe(path.getTrajectory(routine).done())),
-      scoreAlgaeBargeInAuto()
-    );
+        path.getTrajectory(routine)
+            .cmd()
+            .until(routine.observe(path.getTrajectory(routine).done())),
+        scoreAlgaeBargeInAuto());
   }
 
   public Command scoreAlgaeBargeInAuto() {
     return Commands.race(
-      swerve.autoAimToBarge(() -> 0),
-      Commands.sequence(
-        Commands.runOnce(() -> Autos.autoPreScore = true),
-        Commands.waitUntil(swerve::nearBarge),
-        setAutoScoreReqTrue(),
-        Commands.waitUntil(() -> !arm.hasAlgae),
-        // Also sets prescore false
-        setAutoScoreReqFalse()
-      )
-    );
+        swerve.autoAimToBarge(() -> 0),
+        Commands.sequence(
+            Commands.runOnce(() -> Autos.autoPreScore = true),
+            Commands.waitUntil(swerve::nearBarge),
+            setAutoScoreReqTrue(),
+            Commands.waitUntil(() -> !arm.hasAlgae),
+            // Also sets prescore false
+            setAutoScoreReqFalse()));
   }
 
   public Command runPathThenScoreCoral(Path path, AutoRoutine routine) {
