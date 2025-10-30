@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Superstructure.SuperState;
 import frc.robot.arm.ArmSubsystem;
@@ -48,6 +49,7 @@ import frc.robot.swerve.odometry.PhoenixOdometryThread;
 import frc.robot.utils.CommandXboxControllerSubsystem;
 import frc.robot.utils.FieldUtils.AlgaeIntakeTargets;
 import java.util.Optional;
+import java.util.Set;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.COTS;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -269,6 +271,7 @@ public class Robot extends LoggedRobot {
 
   private final Autos autos;
   private Optional<Alliance> lastAlliance = Optional.empty();
+  @AutoLogOutput boolean haveAutosGenerated = false;
   private final LoggedDashboardChooser<Command> autoChooser = new LoggedDashboardChooser<>("Autos");
 
   @SuppressWarnings("resource")
@@ -345,15 +348,31 @@ public class Robot extends LoggedRobot {
                             * SwerveSubsystem.SWERVE_CONSTANTS.getMaxAngularSpeed())
                     .times(-1)));
 
-    if (ROBOT_TYPE == RobotType.SIM) {
-      SimulatedArena.getInstance().addDriveTrainSimulation(swerveSimulation);
-    }
-
     addControllerBindings();
 
     autos = new Autos(swerve, arm);
-    // autoChooser.addDefaultOption("None", autos.getNoneAuto());
-    // TODO add autos trigger
+    autoChooser.addDefaultOption("None", Commands.none());
+
+    // Generates autos on connected
+    new Trigger(
+            () ->
+                DriverStation.isDSAttached()
+                    && DriverStation.getAlliance().isPresent()
+                    && !haveAutosGenerated)
+        .onTrue(Commands.print("Connected"))
+        .onTrue(Commands.runOnce(this::addAutos).ignoringDisable(true));
+
+    new Trigger(
+            () -> {
+              boolean allianceChanged = !DriverStation.getAlliance().equals(lastAlliance);
+              lastAlliance = DriverStation.getAlliance();
+              return allianceChanged && DriverStation.getAlliance().isPresent();
+            })
+        .onTrue(Commands.runOnce(this::addAutos).ignoringDisable(true));
+
+    // Run auto when auto starts. Matches Choreolib's defer impl
+    RobotModeTriggers.autonomous()
+        .whileTrue(Commands.defer(() -> autoChooser.get().asProxy(), Set.of()));
   }
 
   private TalonFXConfiguration createRollerConfig(InvertedValue inverted, double currentLimit) {
@@ -572,17 +591,11 @@ public class Robot extends LoggedRobot {
     System.out.println("------- Regenerating Autos");
     System.out.println(
         "Regenerating Autos on " + DriverStation.getAlliance().map((a) -> a.toString()));
-    // autoChooser.addOption("Triangle Test", autos.getTestTriangle());
-    // autoChooser.addOption("Sprint Test", autos.getTestSprint());
-    // autoChooser.addOption("LM to H", autos.LMtoH());
-    // autoChooser.addOption("RM to G", autos.RMtoG());
-    // autoChooser.addOption("4.5 L Outside", autos.LOtoJ());
-    // autoChooser.addOption("4.5 R Outside", autos.ROtoE());
-    // autoChooser.addOption("4.5 L Inside", autos.LItoK());
-    // autoChooser.addOption("4.5 R Inside", autos.RItoD());
-    // autoChooser.addOption("Push Auto", autos.PMtoPL());
-    // autoChooser.addOption("Algae auto", autos.CMtoGH());
-    // autoChooser.addOption("!!! DO NOT RUN!! 2910 auto", autos.LOtoA());
+
+    autoChooser.addOption("Left stack auto", autos.getLeftStackAuto());
+    autoChooser.addOption("Right stack auto", autos.getRightStackAuto());
+    autoChooser.addOption("Algae auto", autos.getAlgaeAuto());
+    haveAutosGenerated = true;
   }
 
   @Override

@@ -208,7 +208,9 @@ public class Superstructure {
   @AutoLogOutput(key = "Superstructure/Climb Cancel Request")
   public Trigger climbCancelReq;
 
-  public Trigger atExtensionTrigger = new Trigger(this::atExtension);
+  @AutoLogOutput(key = "Superstructure/At extension")
+  // TODO: GOOD SIM
+  public Trigger atExtensionTrigger = new Trigger(this::atExtension).or(Robot::isSimulation);
 
   /** Creates a new Superstructure. */
   public Superstructure(
@@ -616,6 +618,15 @@ public class Superstructure {
     bindTransition(SuperState.CLIMB, SuperState.PRE_CLIMB, climbCancelReq);
 
     bindTransition(SuperState.PRE_CLIMB, SuperState.IDLE, climbCancelReq);
+  }
+
+  /**
+   * <b>Only for setting initial state at the beginning of auto</b>
+   *
+   * @param state the state to set to
+   */
+  public static void resetStateForAuto(SuperState state) {
+    Superstructure.state = state;
   }
 
   public static SuperState getState() {

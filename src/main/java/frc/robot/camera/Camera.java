@@ -78,7 +78,6 @@ public class Camera {
   public void periodic(SwerveDrivePoseEstimator swerveEstimator) {
     Tracer.trace("Update inputs", this::updateInputs);
     Tracer.trace("Process april tag inputs", this::processApriltagInputs);
-    Tracer.trace("Add vision estimate", () -> updateCamera(swerveEstimator));
   }
 
   public void updateInputs() {

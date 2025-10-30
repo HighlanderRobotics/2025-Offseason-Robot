@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
+import org.littletonrobotics.junction.Logger;
 
 public class AutoAim {
   static final double MAX_ANGULAR_SPEED = 10.0;
@@ -74,17 +75,27 @@ public class AutoAim {
     VY_CONTROLLER.setConstraints(yConstraints);
     HEADING_CONTROLLER.setConstraints(headingConstraints);
 
-    if (isInTolerance(robotPose, target, TRANSLATION_TOLERANCE_METERS, ROTATION_TOLERANCE_RADIANS))
-      return new ChassisSpeeds();
+    ChassisSpeeds speeds;
 
-    return new ChassisSpeeds(
-        VX_CONTROLLER.calculate(robotPose.getX(), target.getX())
-            + VX_CONTROLLER.getSetpoint().velocity,
-        VY_CONTROLLER.calculate(robotPose.getX(), target.getY())
-            + VY_CONTROLLER.getSetpoint().velocity,
-        HEADING_CONTROLLER.calculate(
-                robotPose.getRotation().getRadians(), target.getRotation().getRadians())
-            + HEADING_CONTROLLER.getSetpoint().velocity);
+    if (isInTolerance(
+        robotPose, target, TRANSLATION_TOLERANCE_METERS, ROTATION_TOLERANCE_RADIANS)) {
+      speeds = new ChassisSpeeds();
+    } else {
+      speeds =
+          new ChassisSpeeds(
+              VX_CONTROLLER.calculate(robotPose.getX(), target.getX())
+                  + VX_CONTROLLER.getSetpoint().velocity,
+              VY_CONTROLLER.calculate(robotPose.getY(), target.getY())
+                  + VY_CONTROLLER.getSetpoint().velocity,
+              HEADING_CONTROLLER.calculate(
+                      robotPose.getRotation().getRadians(), target.getRotation().getRadians())
+                  + HEADING_CONTROLLER.getSetpoint().velocity);
+    }
+    Logger.recordOutput(
+        "AutoAim/Target Speeds Robot Relative",
+        ChassisSpeeds.fromFieldRelativeSpeeds(speeds, robotPose.getRotation()));
+
+    return speeds;
   }
 
   public static double getClosestBargeXCoord(Pose2d pose) {

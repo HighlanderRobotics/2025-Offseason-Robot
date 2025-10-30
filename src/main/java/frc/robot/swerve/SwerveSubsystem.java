@@ -3,6 +3,7 @@ package frc.robot.swerve;
 import choreo.trajectory.SwerveSample;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -193,13 +194,13 @@ public class SwerveSubsystem extends SubsystemBase {
             Tracer.trace("Update module inputs for " + module.getPrefix(), module::periodic);
           }
 
-          for (Camera camera : cameras) {
-            Tracer.trace(
-                "Camera " + camera.getName() + " Periodic", () -> camera.periodic(estimator));
-          }
+          // for (Camera camera : cameras) {
+          //   Tracer.trace(
+          //       "Camera " + camera.getName() + " Periodic", () -> camera.periodic(estimator));
+          // }
 
           Tracer.trace("Update odometry", this::updateOdometry);
-          Tracer.trace("Update vision", this::updateVision);
+          // Tracer.trace("Update vision", this::updateVision);
         });
   }
 
@@ -400,15 +401,21 @@ public class SwerveSubsystem extends SubsystemBase {
             () -> AutoAim.resetPIDControllers(getPose(), getVelocityFieldRelative()))
         .andThen(
             driveClosedLoopFieldRelative(
-                () -> {
-                  return AutoAim.calculateSpeeds(
-                          getPose(),
-                          target.get(),
-                          translationConstraints,
-                          translationConstraints,
-                          headingConstraints)
-                      .plus(speedsModifier.get());
-                }));
+                    () -> {
+                      return AutoAim.calculateSpeeds(
+                              getPose(),
+                              target.get(),
+                              translationConstraints,
+                              translationConstraints,
+                              headingConstraints)
+                          .plus(speedsModifier.get());
+                    })
+                .alongWith(
+                    Commands.run(
+                        () -> {
+                          Logger.recordOutput("AutoAim/Target Pose", target.get());
+                          Logger.recordOutput("AutoAim/Speeds Modifier", speedsModifier.get());
+                        })));
   }
 
   /**
@@ -426,11 +433,16 @@ public class SwerveSubsystem extends SubsystemBase {
             () -> AutoAim.resetPIDControllers(getPose(), getVelocityFieldRelative()))
         .andThen(
             driveClosedLoopFieldRelative(
-                () -> {
-                  Logger.recordOutput("AutoAim/TargetPose", target.get());
-                  return AutoAim.calculateSpeeds(getPose(), target.get())
-                      .plus(speedsModifier.get());
-                }));
+                    () -> {
+                      return AutoAim.calculateSpeeds(getPose(), target.get())
+                          .plus(speedsModifier.get());
+                    })
+                .alongWith(
+                    Commands.run(
+                        () -> {
+                          Logger.recordOutput("AutoAim/TargetPose", target.get());
+                          Logger.recordOutput("AutoAim/Speeds Modifier", speedsModifier.get());
+                        })));
   }
 
   /**
@@ -443,6 +455,31 @@ public class SwerveSubsystem extends SubsystemBase {
    */
   private Command translateToPose(Supplier<Pose2d> target) {
     return translateToPose(target, () -> new ChassisSpeeds());
+  }
+
+  /**
+   * Autoaligns to the given pose, stopping when it's within the passed-in tolerance
+   *
+   * @param target the target pose
+   * @param xToleranceMeters the allowed x-direction translational tolerance
+   * @param yToleranceMeters the allowed y-direction translational tolerance
+   * @param headingToleranceRadians the allowed heading tolerance
+   * @return a Command driving to the target pose
+   */
+  public Command translateToPoseWithTolerance(
+      Supplier<Pose2d> target,
+      double xToleranceMeters,
+      double yToleranceMeters,
+      double headingToleranceRadians) {
+    return translateToPose(target)
+        .until(
+            () ->
+                MathUtil.isNear(target.get().getX(), getPose().getX(), xToleranceMeters)
+                    && MathUtil.isNear(target.get().getY(), getPose().getY(), yToleranceMeters)
+                    && MathUtil.isNear(
+                        target.get().getRotation().getRadians(),
+                        getPose().getRotation().getRadians(),
+                        headingToleranceRadians));
   }
 
   private Command translateWithIntermediatePose(
@@ -686,8 +723,31 @@ public class SwerveSubsystem extends SubsystemBase {
     return states;
   }
 
+  @SuppressWarnings("resource")
   public Consumer<SwerveSample> choreoDriveController() {
-    // TODO
-    return null;
+    // TODO: TUNE
+    final PIDController xController = new PIDController(5.0, 0.0, 0.0);
+    final PIDController yController = new PIDController(5.0, 0.0, 0.0);
+    final PIDController headingController = new PIDController(6.0, 0.0, 0.0);
+    headingController.enableContinuousInput(-Math.PI, Math.PI);
+    return (sample) -> {
+      Pose2d pose = getPose();
+
+      Logger.recordOutput("Choreo/Target Pose", sample.getPose());
+      Logger.recordOutput("Choreo/Raw Target Speeds Field Relative", sample.getChassisSpeeds());
+
+      ChassisSpeeds feedback =
+          new ChassisSpeeds(
+              xController.calculate(pose.getX(), sample.x),
+              yController.calculate(pose.getY(), sample.y),
+              headingController.calculate(pose.getRotation().getRadians(), sample.heading));
+
+      ChassisSpeeds speeds =
+          ChassisSpeeds.fromFieldRelativeSpeeds(
+              sample.getChassisSpeeds().plus(feedback), getPose().getRotation());
+      Logger.recordOutput("Choreo/Target Speeds Robot Relative", speeds);
+
+      this.drive(speeds, false);
+    };
   }
 }
