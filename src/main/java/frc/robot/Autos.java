@@ -280,9 +280,8 @@ public class Autos {
     return Commands.waitUntil(() -> arm.hasGamePiece()).alongWith(setSimHasCoralTrue());
   }
 
-  // TODO rename
-  // hese are differnet than the other intake/score stuff because they dont need the pose stuff
-  // TODO add current checking
+  // TODO fix names?
+  // these are differnet than the other intake/score stuff because they dont need the pose stuff
   // are there current checks for intake as well?
   public Command intakeCoralAutoPC(CoralIntakeTarget target) {
     return Commands.runOnce(
@@ -291,9 +290,17 @@ public class Autos {
             })
         .andThen(
             Commands.sequence(
-                setAutoIntakeCoralReqTrue(),
-                waitUntilHasGamePiece(),
-                setAutoIntakeCoralReqFalse()));
+                    setAutoIntakeCoralReqTrue(),
+                    waitUntilHasGamePiece(),
+                    setAutoIntakeCoralReqFalse())
+                .raceWith(
+                    Commands.runOnce(
+                        () -> {
+                          if (intake.getFilteredStatorCurrentAmps() > INTAKE_PC_CURRENT_THRESHOLD)
+                            Logger.recordOutput(
+                                "Autos/pitchecks alert intake current spike at coral" + target,
+                                intake.getFilteredStatorCurrentAmps());
+                        })));
   }
 
   public Command intakeAlgaeAutoPC(AlgaeIntakeTarget target) {
@@ -303,12 +310,19 @@ public class Autos {
             })
         .andThen(
             Commands.sequence(
-                setAutoIntakeAlgaeReqTrue(),
-                waitUntilHasGamePiece(),
-                setAutoIntakeAlgaeReqFalse()));
+                    setAutoIntakeAlgaeReqTrue(),
+                    waitUntilHasGamePiece(),
+                    setAutoIntakeAlgaeReqFalse())
+                .raceWith(
+                    Commands.runOnce(
+                        () -> {
+                          if (intake.getFilteredStatorCurrentAmps() > INTAKE_PC_CURRENT_THRESHOLD)
+                            Logger.recordOutput(
+                                "Autos/pitchecks alert intake current spike at algae" + target,
+                                intake.getFilteredStatorCurrentAmps());
+                        })));
   }
 
-  // TODO fix names?
   public Command scoreCoralAutoPC(CoralScoreTarget level, double wait) {
     return Commands.runOnce(
             () -> {
@@ -316,22 +330,25 @@ public class Autos {
             })
         .andThen(
             Commands.sequence(
-                Commands.waitSeconds(wait),
-                setAutoScoreReqTrue(),
-                waitUntilNoGamePiece(),
-                setAutoScoreReqFalse()
-                    .raceWith(
-                        Commands.runOnce(
-                            () -> {
-                              // TODO fix these messages
-                              // TODO figure out what currents to check - elevator and intake as well?
-                              // TODO belt skip checking?
-                              if (arm.getFilteredStatorCurrentAmps() > ARM_PC_CURRENT_THRESHOLD)
-                                Logger.recordOutput(
-                                    "Autos/pitchecks alert arm current spike",
-                                    arm.getFilteredStatorCurrentAmps());
-                            }))
-                    .repeatedly()));
+                    Commands.waitSeconds(wait),
+                    setAutoScoreReqTrue(),
+                    waitUntilNoGamePiece(),
+                    setAutoScoreReqFalse())
+                .raceWith(
+                    Commands.runOnce(
+                        () -> {
+                          // TODO belt skip checking?
+                          if (arm.getFilteredStatorCurrentAmps() > ARM_PC_CURRENT_THRESHOLD)
+                            Logger.recordOutput(
+                                "Autos/pitchecks alert arm current spike at coral level" + level,
+                                arm.getFilteredStatorCurrentAmps());
+                          if (elevator.currentFilterValue > ElEVATOR_PC_CURRENT_THRESHOLD)
+                            Logger.recordOutput(
+                                "Autos/pitchecks alert elevator current spike at coral level"
+                                    + level,
+                                elevator.currentFilterValue);
+                        }))
+                .repeatedly());
   }
 
   public Command scoreAlgaeAutoPC(AlgaeScoreTarget level, double wait) {
@@ -341,21 +358,25 @@ public class Autos {
             })
         .andThen(
             Commands.sequence(
-                Commands.waitSeconds(wait),
-                setAutoScoreReqTrue(),
-                waitUntilNoGamePiece(),
-                setAutoScoreReqFalse()
-                    .raceWith(
-                        Commands.runOnce(
-                            () -> {
-                              // TODO fix these messages
-                              // TODO figure out what currents to check - elevator and intake?
-                              if (arm.getFilteredStatorCurrentAmps() > ARM_PC_CURRENT_THRESHOLD)
-                                Logger.recordOutput(
-                                    "Autos/pitchecks alert arm current spike",
-                                    arm.getFilteredStatorCurrentAmps());
-                            }))
-                    .repeatedly()));
+                    Commands.waitSeconds(wait),
+                    setAutoScoreReqTrue(),
+                    waitUntilNoGamePiece(),
+                    setAutoScoreReqFalse())
+                .raceWith(
+                    Commands.runOnce(
+                        () -> {
+                          // TODO threshold may be different for algae scoring
+                          // TODO belt skip checking?
+                          if (arm.getFilteredStatorCurrentAmps() > ARM_PC_CURRENT_THRESHOLD)
+                            Logger.recordOutput(
+                                "Autos/pitchecks alert arm current spike at algae" + level,
+                                arm.getFilteredStatorCurrentAmps());
+                          if (elevator.currentFilterValue > ElEVATOR_PC_CURRENT_THRESHOLD)
+                            Logger.recordOutput(
+                                "Autos/pitchecks alert elevator current spike at algae" + level,
+                                elevator.currentFilterValue);
+                        }))
+                .repeatedly());
   }
 
   public Command pitCheck() {

@@ -73,7 +73,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   private LinearFilter currentFilter = LinearFilter.movingAverage(5);
 
   @AutoLogOutput(key = "Elevator/Current Filter Value")
-  private double currentFilterValue = 0.0;
+  public double currentFilterValue = 0.0;
 
   @AutoLogOutput(key = "Elevator/Has Zeroed")
   private boolean hasZeroed = false;
