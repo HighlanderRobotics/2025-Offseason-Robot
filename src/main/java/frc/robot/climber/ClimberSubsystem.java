@@ -8,18 +8,19 @@ import frc.robot.rollerpivot.RollerPivotSubsystem;
 import org.littletonrobotics.junction.AutoLogOutput;
 
 public class ClimberSubsystem extends RollerPivotSubsystem {
-  public static final double PIVOT_RATIO = (45.0 / 16.0);
+  public static final double PIVOT_RATIO = 12.5;
   public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(180);
   public static final Rotation2d MIN_ANGLE = Rotation2d.fromDegrees(0);
   public static final double LENGTH_METERS = 0.179;
   public static final double MAX_ACCELERATION = 10.0;
   public static final double MAX_VELOCITY = 10.0;
   // TODO tune
-  public static final double KP = 0.2;
-  public static final double KI = 0.0;
-  public static final double KD = 0.0;
-  public static final double KS = 0.0;
-  public static final double KG = 0.1;
+  // TODO THESE SUCK !
+  public static final double KP = 80.0;
+  public static final double KI = 5.0;
+  public static final double KD = 3.0;
+  public static final double KS = 0.381;
+  public static final double KG = 2.0;
   public static final double KV = 0.1;
   public static final double jKgMetersSquared = 0.01;
   public static final double TOLERANCE_DEGREES = 5.0;

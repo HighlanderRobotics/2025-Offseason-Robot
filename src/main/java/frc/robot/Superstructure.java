@@ -208,7 +208,9 @@ public class Superstructure {
   @AutoLogOutput(key = "Superstructure/Climb Cancel Request")
   public Trigger climbCancelReq;
 
-  public Trigger atExtensionTrigger = new Trigger(this::atExtension);
+  @AutoLogOutput(key = "Superstructure/At extension")
+  // TODO: GOOD SIM
+  public Trigger atExtensionTrigger = new Trigger(this::atExtension).or(Robot::isSimulation);
 
   /** Creates a new Superstructure. */
   public Superstructure(
