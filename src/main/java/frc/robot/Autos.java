@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Robot.AlgaeIntakeTarget;
 import frc.robot.Robot.CoralIntakeTarget;
 import frc.robot.Robot.CoralScoreTarget;
+import frc.robot.Superstructure.SuperState;
 import frc.robot.arm.ArmSubsystem;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.utils.AutoAim;
@@ -127,7 +128,9 @@ public class Autos {
     bindCoralElevatorExtension(routine);
     Path[] paths = {Path.LOtoA4, Path.A4toSMM, Path.SMMtoB4, Path.B4toSRL, Path.SRLtoC4};
 
-    Command autoCommand = paths[0].getTrajectory(routine).resetOdometry();
+    Command autoCommand =
+        Commands.runOnce(() -> Superstructure.resetStateForAuto(SuperState.READY_CORAL_ARM))
+            .andThen(paths[0].getTrajectory(routine).resetOdometry());
 
     for (Path path : paths) {
       autoCommand = autoCommand.andThen(runPath(path, routine));
@@ -151,7 +154,9 @@ public class Autos {
     bindCoralElevatorExtension(routine);
     Path[] paths = {Path.ROtoB4, Path.B4toSMM, Path.SMMtoA4, Path.A4toSLR, Path.SLRtoL4};
 
-    Command autoCommand = paths[0].getTrajectory(routine).resetOdometry();
+    Command autoCommand =
+        Commands.runOnce(() -> Superstructure.resetStateForAuto(SuperState.READY_CORAL_ARM))
+            .andThen(paths[0].getTrajectory(routine).resetOdometry());
 
     for (Path path : paths) {
       autoCommand = autoCommand.andThen(runPath(path, routine));
@@ -175,7 +180,9 @@ public class Autos {
     bindCoralElevatorExtension(routine);
     Path[] paths = {Path.CMtoH4, Path.H4toGH, Path.GHtoBR, Path.BRtoIJ, Path.IJtoBR};
 
-    Command autoCommand = paths[0].getTrajectory(routine).resetOdometry();
+    Command autoCommand =
+        Commands.runOnce(() -> Superstructure.resetStateForAuto(SuperState.READY_CORAL_ARM))
+            .andThen(paths[0].getTrajectory(routine).resetOdometry());
 
     for (Path path : paths) {
       autoCommand = autoCommand.andThen(runPath(path, routine));
@@ -296,6 +303,7 @@ public class Autos {
 
   public Command scoreCoralInAuto(Supplier<Pose2d> trajEndPose) {
     return Commands.sequence(
+            setAutoPreScoreReqTrue(),
             Commands.waitUntil(
                 new Trigger(
                         () ->
@@ -373,6 +381,10 @@ public class Autos {
         () -> {
           autoScore = true;
         });
+  }
+
+  public Command setAutoPreScoreReqTrue() {
+    return Commands.runOnce(() -> autoPreScore = true);
   }
 
   public Command setAutoScoreReqFalse() {
