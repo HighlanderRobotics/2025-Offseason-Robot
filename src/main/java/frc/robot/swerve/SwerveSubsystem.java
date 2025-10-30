@@ -401,15 +401,21 @@ public class SwerveSubsystem extends SubsystemBase {
             () -> AutoAim.resetPIDControllers(getPose(), getVelocityFieldRelative()))
         .andThen(
             driveClosedLoopFieldRelative(
-                () -> {
-                  return AutoAim.calculateSpeeds(
-                          getPose(),
-                          target.get(),
-                          translationConstraints,
-                          translationConstraints,
-                          headingConstraints)
-                      .plus(speedsModifier.get());
-                }));
+                    () -> {
+                      return AutoAim.calculateSpeeds(
+                              getPose(),
+                              target.get(),
+                              translationConstraints,
+                              translationConstraints,
+                              headingConstraints)
+                          .plus(speedsModifier.get());
+                    })
+                .alongWith(
+                    Commands.run(
+                        () -> {
+                          Logger.recordOutput("AutoAim/Target Pose", target.get());
+                          Logger.recordOutput("AutoAim/Speeds Modifier", speedsModifier.get());
+                        })));
   }
 
   /**
@@ -427,11 +433,16 @@ public class SwerveSubsystem extends SubsystemBase {
             () -> AutoAim.resetPIDControllers(getPose(), getVelocityFieldRelative()))
         .andThen(
             driveClosedLoopFieldRelative(
-                () -> {
-                  Logger.recordOutput("AutoAim/TargetPose", target.get());
-                  return AutoAim.calculateSpeeds(getPose(), target.get())
-                      .plus(speedsModifier.get());
-                }));
+                    () -> {
+                      return AutoAim.calculateSpeeds(getPose(), target.get())
+                          .plus(speedsModifier.get());
+                    })
+                .alongWith(
+                    Commands.run(
+                        () -> {
+                          Logger.recordOutput("AutoAim/TargetPose", target.get());
+                          Logger.recordOutput("AutoAim/Speeds Modifier", speedsModifier.get());
+                        })));
   }
 
   /**
@@ -723,7 +734,7 @@ public class SwerveSubsystem extends SubsystemBase {
       Pose2d pose = getPose();
 
       Logger.recordOutput("Choreo/Target Pose", sample.getPose());
-      Logger.recordOutput("Choreo/Target Speeds Field Relative", sample.getChassisSpeeds());
+      Logger.recordOutput("Choreo/Raw Target Speeds Field Relative", sample.getChassisSpeeds());
 
       ChassisSpeeds feedback =
           new ChassisSpeeds(
@@ -734,6 +745,7 @@ public class SwerveSubsystem extends SubsystemBase {
       ChassisSpeeds speeds =
           ChassisSpeeds.fromFieldRelativeSpeeds(
               sample.getChassisSpeeds().plus(feedback), getPose().getRotation());
+      Logger.recordOutput("Choreo/Target Speeds Robot Relative", speeds);
 
       this.drive(speeds, false);
     };
