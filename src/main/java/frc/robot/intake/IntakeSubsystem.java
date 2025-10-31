@@ -12,6 +12,11 @@ import frc.robot.rollerpivot.RollerPivotSubsystem;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.signals.GravityTypeValue;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+
 public class IntakeSubsystem extends RollerPivotSubsystem {
   public static final double PIVOT_RATIO = 12.5; // (15.0 / 1);
   public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(180);
@@ -131,5 +136,40 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
 
   public Command setStateAngleVoltage() {
     return setPivotAndRollers(() -> state.position, () -> state.volts);
+  }
+
+  public static TalonFXConfiguration getIntakePivotConfig() {
+    TalonFXConfiguration config = new TalonFXConfiguration();
+
+    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+
+    // Slot 0 is for without a coral
+    config.Slot0.kV = 1;
+    config.Slot0.kG = 1.05;
+    config.Slot0.kS = 0.38;
+    config.Slot0.kP = 15;
+    config.Slot0.kI = 0.1;
+    config.Slot0.kD = 1;
+    config.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
+
+    // Slot 1 is with a coral
+    config.Slot1.kP = 50;
+    config.Slot1.kI = 0;
+    config.Slot1.kD = 5;
+    config.Slot1.kS = 0.32;
+    config.Slot1.kV = 3;
+    config.Slot1.kG = 1.36;
+    config.Slot1.GravityType = GravityTypeValue.Arm_Cosine;
+
+    config.CurrentLimits.SupplyCurrentLimit = 40;
+    config.CurrentLimits.SupplyCurrentLimitEnable = true;
+
+    config.CurrentLimits.StatorCurrentLimit = 80;
+    config.CurrentLimits.StatorCurrentLimitEnable = true;
+
+    config.Feedback.SensorToMechanismRatio = 12.5;
+
+    return config;
   }
 }

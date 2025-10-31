@@ -204,7 +204,7 @@ public class Robot extends LoggedRobot {
                       new TrapezoidProfile.Constraints(
                           IntakeSubsystem.MAX_VELOCITY, IntakeSubsystem.MAX_ACCELERATION))),
           ROBOT_TYPE != RobotType.SIM
-              ? new PivotIOReal(12, intakePivotConfig)
+              ? new PivotIOReal(12, IntakeSubsystem.getIntakePivotConfig())
               : new PivotIOSim(
                   IntakeSubsystem.MIN_ANGLE.getRadians(),
                   IntakeSubsystem.MAX_ANGLE.getRadians(),
