@@ -31,11 +31,15 @@ public class RollerPivotSubsystem extends SubsystemBase {
     this.name = name;
   }
 
-  public void runRollerVoltage(DoubleSupplier volts) {
+  protected void runRollerVoltage(DoubleSupplier volts) {
     rollerIO.setRollerVoltage(volts.getAsDouble());
   }
 
-  public void setPivotAngle(Supplier<Rotation2d> target) {
+  protected void runRollerVelocity(double velocityRPS) {
+    rollerIO.setRollerVelocity(velocityRPS);
+  }
+
+  protected void setPivotAngle(Supplier<Rotation2d> target) {
     Logger.recordOutput(name + "/Pivot Setpoint", target.get());
     pivotIO.setMotorPosition(target.get());
   }
@@ -65,7 +69,8 @@ public class RollerPivotSubsystem extends SubsystemBase {
   }
 
   // this CANNOT be correct LMAO
-  public Command setPivotAndRollers(Supplier<Rotation2d> pivotAngle, DoubleSupplier rollerVoltage) {
+  public Command setPivotAndRollers(
+      Supplier<Rotation2d> pivotAngle, DoubleSupplier rollerVelocity) {
     // Command cmd =
     //     Commands.parallel(
     //         Commands.runOnce(() -> setPivotAngle(pivotAngle)),
@@ -75,7 +80,7 @@ public class RollerPivotSubsystem extends SubsystemBase {
     return this.run(
         () -> {
           setPivotAngle(pivotAngle);
-          runRollerVoltage(rollerVoltage);
+          runRollerVelocity(rollerVelocity.getAsDouble());
         });
   }
 

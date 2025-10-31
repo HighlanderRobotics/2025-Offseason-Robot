@@ -18,7 +18,11 @@ public interface PivotIO {
 
   public void setMotorVoltage(double voltage);
 
-  public void setMotorPosition(Rotation2d targetPosition);
+  public default void setMotorPosition(Rotation2d targetPosition) {
+    setMotorPosition(targetPosition, 0);
+  }
+
+  public void setMotorPosition(Rotation2d targetPosition, int slot);
 
   public void resetEncoder(Rotation2d targetPosition);
 }

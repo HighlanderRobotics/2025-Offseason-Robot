@@ -59,7 +59,7 @@ public class ElevatorIOReal implements ElevatorIO {
     config.Slot0.kD = 0.0;
 
     // TODO: TUNE
-    config.CurrentLimits.StatorCurrentLimit = 40.0;
+    config.CurrentLimits.StatorCurrentLimit = 80.0;
     config.CurrentLimits.StatorCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimit = 60.0;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;

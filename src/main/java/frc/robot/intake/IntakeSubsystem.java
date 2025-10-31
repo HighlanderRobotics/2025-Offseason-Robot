@@ -1,6 +1,11 @@
 package frc.robot.intake;
 
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.signals.GravityTypeValue;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -12,11 +17,6 @@ import frc.robot.rollerpivot.RollerPivotSubsystem;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.signals.GravityTypeValue;
-import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
-
 public class IntakeSubsystem extends RollerPivotSubsystem {
   public static final double PIVOT_RATIO = 12.5; // (15.0 / 1);
   public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(180);
@@ -25,7 +25,7 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   public static final double MAX_ACCELERATION = 10.0;
   public static final double MAX_VELOCITY = 10.0;
   // TODO tune
-  //TODO THESE SUCK ! 
+  // TODO THESE SUCK !
   public static final double KP = 80.0;
   public static final double KI = 5.0;
   public static final double KD = 3.0;
@@ -48,27 +48,27 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   // TODO : change these values to the real ones
   public enum IntakeState {
     IDLE(0, 0.0),
-    INTAKE_CORAL(0, 10.0),
-    READY_CORAL_INTAKE(-130, 1.0),
-    HANDOFF(-130, -5.0),
+    INTAKE_CORAL(Units.radiansToDegrees(-2.05), 15.0),
+    READY_CORAL_INTAKE(0.0, 1.0),
+    HANDOFF(Units.radiansToDegrees(1.96), -15.0),
     PRE_L1(-90, 1.0),
     SCORE_L1(-90, -5.0),
     CLIMB(0, 0.0);
 
     public final Rotation2d position;
-    public final double volts;
+    public final double velocityRPS;
 
-    private IntakeState(double positionDegrees, double volts) {
+    private IntakeState(double positionDegrees, double velocityRPS) {
       this.position = Rotation2d.fromDegrees(positionDegrees);
-      this.volts = volts;
+      this.velocityRPS = velocityRPS;
     }
 
     public Rotation2d getAngle() {
       return position;
     }
 
-    public double getVolts() {
-      return volts;
+    public double getVelocityRPS() {
+      return velocityRPS;
     }
   }
 
@@ -135,7 +135,12 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   }
 
   public Command setStateAngleVoltage() {
-    return setPivotAndRollers(() -> state.position, () -> state.volts);
+    return this.run(
+        () -> {
+          Logger.recordOutput("Intake/Pivot Setpoint", state.position);
+          pivotIO.setMotorPosition(state.position, hasGamePiece() ? 1 : 0);
+          rollerIO.setRollerVelocity(state.velocityRPS);
+        });
   }
 
   public static TalonFXConfiguration getIntakePivotConfig() {

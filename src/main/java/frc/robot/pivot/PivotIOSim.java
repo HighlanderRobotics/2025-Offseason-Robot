@@ -66,7 +66,7 @@ public class PivotIOSim implements PivotIO {
   }
 
   @Override
-  public void setMotorPosition(Rotation2d targetPosition) {
+  public void setMotorPosition(Rotation2d targetPosition, int slot) {
     setMotorVoltage(
         pivotPid.calculate(pivotSim.getAngleRads(), targetPosition.getRadians())
             + pivotFf.calculate(pivotPid.getSetpoint().position, pivotPid.getSetpoint().velocity));

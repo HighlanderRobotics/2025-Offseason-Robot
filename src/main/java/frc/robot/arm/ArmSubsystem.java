@@ -60,6 +60,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public enum ArmState {
     IDLE(0, 0.0),
     // coral
+    PRE_HANDOFF(0, 0.0),
     HANDOFF(180, 5.0),
     READY_CORAL_ARM(0, 1.0),
     INTAKE_CORAL_STACK(100, 5.0),
@@ -97,19 +98,19 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     CLIMB(180, 0.0);
 
     public final Rotation2d position;
-    public final double volts;
+    public final double velocityRPS;
 
-    private ArmState(double positionDegrees, double volts) {
+    private ArmState(double positionDegrees, double velocityRPS) {
       this.position = Rotation2d.fromDegrees(positionDegrees);
-      this.volts = volts;
+      this.velocityRPS = velocityRPS;
     }
 
     public Rotation2d getAngle() {
       return position;
     }
 
-    public double getVolts() {
-      return volts;
+    public double getVelocityRPS() {
+      return velocityRPS;
     }
   }
 
@@ -168,8 +169,8 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     return isNear(target, TOLERANCE_DEGREES);
   }
 
-  public Command setStateAngleVoltage() {
-    return setPivotAndRollers(() -> getState().position, () -> getState().volts);
+  public Command setStateAngleVelocity() {
+    return setPivotAndRollers(() -> getState().position, () -> getState().velocityRPS);
   }
 
   // TODO setSimCoral

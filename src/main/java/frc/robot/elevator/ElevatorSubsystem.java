@@ -34,7 +34,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     // inches
     // So the constructor handles the conversion
     IDLE(0),
-    HANDOFF(37.841),
+    HANDOFF(Units.metersToInches(0.451)),
     INTAKE_CORAL_STACK(0),
     // coral
     PRE_L2(0),

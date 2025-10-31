@@ -125,7 +125,7 @@ public class Robot extends LoggedRobot {
 
   // TODO tune these config values
   TalonFXConfiguration armRollerConfig =
-      createRollerConfig(InvertedValue.Clockwise_Positive, 20.0, 18.0 / 26.0);
+      createRollerConfig(InvertedValue.Clockwise_Positive, 20.0, 6.62, 0.48, 0.25, 0.0);
 
   TalonFXConfiguration armPivotConfig =
       createPivotConfig(
@@ -181,13 +181,16 @@ public class Robot extends LoggedRobot {
 
   TalonFXConfiguration intakeRollerConfig =
       createRollerConfig(
-          InvertedValue.CounterClockwise_Positive,
-          20.0,
-          12.0 / 180.0); // this is for the rollers ratio
+          InvertedValue.Clockwise_Positive,
+          80.0,
+          2.5,
+          0.48,
+          0.9,
+          1); // this is for the rollers ratio
 
   TalonFXConfiguration intakePivotConfig =
       createPivotConfig(
-          InvertedValue.CounterClockwise_Positive, 20.0, 40.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
+          InvertedValue.CounterClockwise_Positive, 40.0, 80.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
 
   private final IntakeSubsystem intake =
       new IntakeSubsystem(
@@ -217,7 +220,7 @@ public class Robot extends LoggedRobot {
           "Intake");
 
   TalonFXConfiguration climberRollerConfig =
-      createRollerConfig(InvertedValue.CounterClockwise_Positive, 20.0, 5.25 / 1);
+      createRollerConfig(InvertedValue.CounterClockwise_Positive, 20.0, 5.25 / 1, 0.0, 0.0, 0.0);
 
   TalonFXConfiguration climberPivotConfig =
       createPivotConfig(
@@ -341,9 +344,9 @@ public class Robot extends LoggedRobot {
     PhoenixOdometryThread.getInstance().start();
 
     // Set default commands
-    // elevator.setDefaultCommand(elevator.setStateExtension());
-    // arm.setDefaultCommand(arm.setStateAngleVoltage());
-    // intake.setDefaultCommand(intake.setStateAngleVoltage());
+    elevator.setDefaultCommand(elevator.setStateExtension());
+    arm.setDefaultCommand(arm.setStateAngleVelocity());
+    intake.setDefaultCommand(intake.setStateAngleVoltage());
     // climber.setDefaultCommand(climber.setStateAngleVoltage());
 
     driver.setDefaultCommand(driver.rumbleCmd(0.0, 0.0));
@@ -376,13 +379,22 @@ public class Robot extends LoggedRobot {
   }
 
   private TalonFXConfiguration createRollerConfig(
-      InvertedValue inverted, double currentLimit, double sensorToMechanismRatio) {
+      InvertedValue inverted,
+      double currentLimit,
+      double sensorToMechanismRatio,
+      double kS,
+      double kV,
+      double kP) {
     TalonFXConfiguration config = new TalonFXConfiguration();
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     config.MotorOutput.Inverted = inverted;
     config.CurrentLimits.SupplyCurrentLimit = currentLimit;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
+
+    config.Slot0.kS = kS;
+    config.Slot0.kV = kV;
+    config.Slot0.kP = kP;
 
     config.Feedback.SensorToMechanismRatio = sensorToMechanismRatio;
 

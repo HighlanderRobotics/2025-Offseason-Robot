@@ -41,7 +41,7 @@ public class Superstructure {
     INTAKE_CORAL_GROUND(ElevatorState.IDLE, ArmState.IDLE, IntakeState.INTAKE_CORAL),
 
     READY_CORAL_INTAKE(ElevatorState.IDLE, ArmState.IDLE, IntakeState.READY_CORAL_INTAKE),
-    PRE_HANDOFF(ElevatorState.HANDOFF, ArmState.HANDOFF, IntakeState.READY_CORAL_INTAKE),
+    PRE_HANDOFF(ElevatorState.HANDOFF, ArmState.PRE_HANDOFF, IntakeState.READY_CORAL_INTAKE),
     HANDOFF(ElevatorState.HANDOFF, ArmState.HANDOFF, IntakeState.HANDOFF),
     READY_CORAL_ARM(ElevatorState.IDLE, ArmState.READY_CORAL_ARM, IntakeState.IDLE),
 
