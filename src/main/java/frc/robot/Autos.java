@@ -22,6 +22,7 @@ import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.utils.AutoAim;
 import frc.robot.utils.FieldUtils;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 
@@ -31,6 +32,7 @@ public class Autos {
   private final SwerveSubsystem swerve;
   private final ArmSubsystem arm;
   private final AutoFactory factory;
+  private Consumer<SuperState> stateSetter;
 
   // Declare triggers
   // mehhhhhhh
@@ -104,9 +106,10 @@ public class Autos {
     }
   }
 
-  public Autos(SwerveSubsystem swerve, ArmSubsystem arm) {
+  public Autos(SwerveSubsystem swerve, ArmSubsystem arm, Consumer<SuperState> stateSetter) {
     this.swerve = swerve;
     this.arm = arm;
+    this.stateSetter = stateSetter;
     factory =
         new AutoFactory(
             swerve::getPose, swerve::resetPose, swerve.choreoDriveController(), true, swerve
@@ -129,11 +132,17 @@ public class Autos {
     Path[] paths = {Path.LOtoA4, Path.A4toSMM, Path.SMMtoB4, Path.B4toSRL, Path.SRLtoC4};
 
     Command autoCommand =
-        Commands.runOnce(() -> Superstructure.resetStateForAuto(SuperState.READY_CORAL_ARM))
+        Commands.runOnce(
+                () -> {
+                  stateSetter.accept(SuperState.READY_CORAL_ARM);
+                  arm.setHasCoralForAuto(true);
+                })
             .andThen(paths[0].getTrajectory(routine).resetOdometry());
 
     for (Path path : paths) {
-      autoCommand = autoCommand.andThen(runPath(path, routine));
+      autoCommand =
+          autoCommand.andThen(
+              Commands.print("Running path: " + path.toString()).andThen(runPath(path, routine)));
     }
 
     routine
@@ -155,7 +164,7 @@ public class Autos {
     Path[] paths = {Path.ROtoB4, Path.B4toSMM, Path.SMMtoA4, Path.A4toSLR, Path.SLRtoL4};
 
     Command autoCommand =
-        Commands.runOnce(() -> Superstructure.resetStateForAuto(SuperState.READY_CORAL_ARM))
+        Commands.runOnce(() -> stateSetter.accept(SuperState.READY_CORAL_ARM))
             .andThen(paths[0].getTrajectory(routine).resetOdometry());
 
     for (Path path : paths) {
@@ -181,7 +190,7 @@ public class Autos {
     Path[] paths = {Path.CMtoH4, Path.H4toGH, Path.GHtoBR, Path.BRtoIJ, Path.IJtoBR};
 
     Command autoCommand =
-        Commands.runOnce(() -> Superstructure.resetStateForAuto(SuperState.READY_CORAL_ARM))
+        Commands.runOnce(() -> stateSetter.accept(SuperState.READY_CORAL_ARM))
             .andThen(paths[0].getTrajectory(routine).resetOdometry());
 
     for (Path path : paths) {
@@ -201,38 +210,6 @@ public class Autos {
     routine
         .observe(paths[3].getTrajectory(routine).active())
         .onTrue(Commands.runOnce(() -> Robot.setAlgaeIntakeTarget(AlgaeIntakeTarget.LOW)));
-
-    return routine.cmd();
-  }
-
-  public Command getRightOutsideAuto() {
-    final AutoRoutine routine = factory.newRoutine("RO to E");
-    bindCoralElevatorExtension(routine);
-    Path[] paths = {
-      Path.ROtoE,
-      Path.EtoPRO,
-      Path.PROtoD,
-      Path.DtoPRO,
-      Path.PROtoC,
-      Path.CtoPRM,
-      Path.PRMtoB,
-      Path.BtoPRO
-    };
-    // Will always need to reset odo at the start of a routine
-    Command autoCommand = paths[0].getTrajectory(routine).resetOdometry();
-
-    for (Path p : paths) {
-      autoCommand = autoCommand.andThen(runPath(p, routine));
-    }
-
-    routine
-        .active()
-        .onTrue(Commands.runOnce(() -> Robot.setCoralScoreTarget(CoralScoreTarget.L4)))
-        .whileTrue(autoCommand);
-
-    routine
-        .observe(paths[5].getTrajectory(routine).done())
-        .onTrue(Commands.runOnce(() -> Robot.setCoralScoreTarget(CoralScoreTarget.L2)));
 
     return routine.cmd();
   }
@@ -315,6 +292,7 @@ public class Autos {
                     .and(swerve::isNotMoving)
                     .debounce(0.06 * 2)),
             setAutoScoreReqTrue(),
+            arm.setSimCoral(false),
             waitUntilNoCoral(),
             setAutoScoreReqFalse())
         .raceWith(

@@ -350,7 +350,7 @@ public class Robot extends LoggedRobot {
 
     addControllerBindings();
 
-    autos = new Autos(swerve, arm);
+    autos = new Autos(swerve, arm, superstructure::resetStateForAuto);
     autoChooser.addDefaultOption("None", Commands.none());
 
     // Generates autos on connected

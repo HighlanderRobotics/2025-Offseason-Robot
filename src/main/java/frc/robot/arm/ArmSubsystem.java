@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Robot;
 import frc.robot.cancoder.CANcoderIO;
 import frc.robot.cancoder.CANcoderIOInputsAutoLogged;
 import frc.robot.pivot.PivotIO;
@@ -162,10 +163,20 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     return setPivotAngleAndRollerVoltage(() -> state.position, () -> state.volts);
   }
 
-  // TODO setSimCoral
-  public void setSimCoral(boolean b) {}
+  public Command setSimCoral(boolean b) {
+    return Commands.runOnce(
+        () -> {
+          if (Robot.isSimulation()) {
+            hasCoral = b;
+          }
+        });
+  }
 
   public Command rezeroFromEncoder() {
     return this.runOnce(() -> zeroPivot(cancoderInputs.cancoderPosition.getDegrees()));
+  }
+
+  public void setHasCoralForAuto(boolean hasCoral) {
+    this.hasCoral = hasCoral;
   }
 }

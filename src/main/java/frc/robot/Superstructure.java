@@ -625,8 +625,12 @@ public class Superstructure {
    *
    * @param state the state to set to
    */
-  public static void resetStateForAuto(SuperState state) {
-    Superstructure.state = state;
+  public void resetStateForAuto(SuperState nextState) {
+    System.out.println("Resetting state from " + state + " to " + nextState + " for auto.");
+    stateTimer.reset();
+    this.prevState = state;
+    state = nextState;
+    setSubstates();
   }
 
   public static SuperState getState() {
