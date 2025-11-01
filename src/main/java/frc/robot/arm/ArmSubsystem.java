@@ -105,10 +105,11 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     public final DoubleSupplier velocityRPS;
 
     private ArmState(double positionDegrees, double velocityRPS) {
-      LoggedTunableNumber ltn = new LoggedTunableNumber("Arm/" + this.name(), positionDegrees);
+      LoggedTunableNumber ltn =
+          new LoggedTunableNumber("Arm/" + this.name() + "/Angle", positionDegrees);
       // we're in real life!! use degrees
       this.position = () -> Rotation2d.fromDegrees(ltn.get());
-      this.velocityRPS = new LoggedTunableNumber("Arm/" + this.name(), velocityRPS);
+      this.velocityRPS = new LoggedTunableNumber("Arm/" + this.name() + "/Velocity", velocityRPS);
     }
 
     public Rotation2d getAngle() {
@@ -176,8 +177,9 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   }
 
   public Command setStateAngleVelocity() {
-    return setPivotAndRollers(
-        () -> getState().position.get(), () -> getState().velocityRPS.getAsDouble());
+    // return setPivotAndRollers(
+    //     () -> getState().position.get(), () -> getState().velocityRPS.getAsDouble());
+    return this.run(() -> runRollerVelocity(getState().velocityRPS.getAsDouble()));
   }
 
   // TODO setSimCoral

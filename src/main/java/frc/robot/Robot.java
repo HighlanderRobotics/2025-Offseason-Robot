@@ -348,7 +348,7 @@ public class Robot extends LoggedRobot {
     // Set default commands
     // elevator.setDefaultCommand(elevator.setStateExtension());
     // arm.setDefaultCommand(arm.setStateAngleVelocity());
-    // intake.setDefaultCommand(intake.setStateAngleVoltage());
+    intake.setDefaultCommand(intake.setStateAngleVelocity());
     // climber.setDefaultCommand(climber.setStateAngleVoltage());
 
     driver.setDefaultCommand(driver.rumbleCmd(0.0, 0.0));

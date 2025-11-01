@@ -4,6 +4,7 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -25,6 +26,7 @@ public class PivotIOReal implements PivotIO {
 
   private final VoltageOut voltageOut = new VoltageOut(0.0).withEnableFOC(true);
   private final MotionMagicVoltage motionMagic = new MotionMagicVoltage(0.0);
+  private final PositionVoltage positionVoltage = new PositionVoltage(0.0).withEnableFOC(true);
 
   public PivotIOReal(int motorID, TalonFXConfiguration config) {
     motor = new TalonFX(motorID, "*");
@@ -74,7 +76,8 @@ public class PivotIOReal implements PivotIO {
 
   @Override
   public void setMotorPosition(Rotation2d targetPosition, int slot) {
-    motor.setControl(motionMagic.withPosition(targetPosition.getRotations()).withSlot(slot));
+    // motor.setControl(motionMagic.withPosition(targetPosition.getRotations()).withSlot(slot));
+    motor.setControl(positionVoltage.withPosition(targetPosition.getRotations()).withSlot(slot));
   }
 
   @Override

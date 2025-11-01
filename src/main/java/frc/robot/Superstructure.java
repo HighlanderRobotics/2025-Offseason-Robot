@@ -336,6 +336,11 @@ public class Superstructure {
         SuperState.INTAKE_CORAL_GROUND,
         intakeCoralReq.and(() -> Robot.getCoralIntakeTarget() == CoralIntakeTarget.GROUND));
 
+    // bindTransition(
+    //     SuperState.INTAKE_CORAL_GROUND,
+    //     SuperState.IDLE,
+    //     intakeCoralReq.negate().and(new Trigger(intake::hasGamePiece).negate()));
+
     bindTransition(
         SuperState.INTAKE_CORAL_GROUND,
         SuperState.READY_CORAL_INTAKE,

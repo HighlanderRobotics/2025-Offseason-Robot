@@ -51,8 +51,8 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   // TODO : change these values to the real ones
   public enum IntakeState {
     IDLE(0, 0.0),
-    INTAKE_CORAL(Units.radiansToDegrees(-2.05), 15.0),
-    READY_CORAL_INTAKE(0.0, 1.0),
+    INTAKE_CORAL(-2, 15.0),
+    READY_CORAL_INTAKE(90.0, 1.0),
     HANDOFF(Units.radiansToDegrees(1.96), -15.0),
     PRE_L1(-90, 1.0),
     SCORE_L1(-90, -5.0),
@@ -62,10 +62,12 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
     public final DoubleSupplier velocityRPS;
 
     private IntakeState(double positionDegrees, double velocityRPS) {
-      LoggedTunableNumber ltn = new LoggedTunableNumber("Intake/" + this.name(), positionDegrees);
+      LoggedTunableNumber ltn =
+          new LoggedTunableNumber("Intake/" + this.name() + "/Angle", positionDegrees);
       // we're in real life!! use degrees
       this.position = () -> Rotation2d.fromDegrees(ltn.get());
-      this.velocityRPS = new LoggedTunableNumber("Intake/" + this.name(), velocityRPS);
+      this.velocityRPS =
+          new LoggedTunableNumber("Intake/" + this.name() + "/Velocity", velocityRPS);
     }
 
     public Rotation2d getAngle() {
@@ -118,7 +120,8 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
 
   @AutoLogOutput(key = "Intake/Has Game Piece")
   public boolean hasGamePiece() {
-    return getleftCanrangeDistanceMeters() < 0.05 || getRightCanrangeDistanceMeters() < 0.05;
+    // return getleftCanrangeDistanceMeters() < 0.01 || getRightCanrangeDistanceMeters() < 0.01;
+    return leftCanrangeInputs.isDetected || rightCanrangeInputs.isDetected;
   }
 
   public Command zeroIntake() {
@@ -132,14 +135,15 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   }
 
   public Command rezero() {
-    return this.runOnce(() -> pivotIO.resetEncoder(Rotation2d.kCCW_90deg));
+    // return this.runOnce(() -> pivotIO.resetEncoder(Rotation2d.kCCW_90deg));
+    return this.runOnce(() -> pivotIO.resetEncoder(Rotation2d.kZero));
   }
 
   public boolean isNearAngle(Rotation2d target) {
     return isNear(target, TOLERANCE_DEGREES);
   }
 
-  public Command setStateAngleVoltage() {
+  public Command setStateAngleVelocity() {
     return this.run(
         () -> {
           Logger.recordOutput("Intake/Pivot Setpoint", state.position.get());
