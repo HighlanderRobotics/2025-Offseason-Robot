@@ -34,25 +34,25 @@ public class OffseasonBotSwerveConstants extends SwerveConstants {
   @Override
   public ModuleConstants getFrontLeftModuleConstants() {
     // TODO tune offsets
-    return new ModuleConstants(0, "Front Left", 0, 1, 0, Rotation2d.fromRotations(0.0));
+    return new ModuleConstants(0, "Front Left", 0, 1, 0, Rotation2d.fromRotations(-0.351));
   }
 
   @Override
   public ModuleConstants getFrontRightModuleConstants() {
     // TODO tune offsets
-    return new ModuleConstants(1, "Front Right", 2, 3, 1, Rotation2d.fromRotations(0.0));
+    return new ModuleConstants(1, "Front Right", 2, 3, 1, Rotation2d.fromRotations(-0.380859375));
   }
 
   @Override
   public ModuleConstants getBackLeftModuleConstants() {
     // TODO tune offsets
-    return new ModuleConstants(2, "Back Left", 4, 5, 2, Rotation2d.fromRotations(0.0));
+    return new ModuleConstants(2, "Back Left", 4, 5, 2, Rotation2d.fromRotations(0.469));
   }
 
   @Override
   public ModuleConstants getBackRightModuleConstants() {
     // TODO tune offsets
-    return new ModuleConstants(3, "Back Right", 6, 7, 3, Rotation2d.fromRotations(0.0));
+    return new ModuleConstants(3, "Back Right", 6, 7, 3, Rotation2d.fromRotations(-0.069));
   }
 
   @Override
@@ -173,7 +173,8 @@ public class OffseasonBotSwerveConstants extends SwerveConstants {
     // Does this make sense??
     // It comes out to like 3 m/s^2 (max speed in 1.5 seconds roughly)
     // Kelpie's was 14 but it seemed arbitrary...
-    return ((9.37 * getDriveGearRatio()) / getDriveRotorToMeters()) / getMass().in(Kilogram);
+    // return ((9.37 * getDriveGearRatio()) / getDriveRotorToMeters()) / getMass().in(Kilogram);
+    return 14.0;
   }
 
   @Override
