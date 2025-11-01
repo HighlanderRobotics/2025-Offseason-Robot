@@ -1,6 +1,7 @@
 package frc.robot.swerve.constants;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -121,6 +122,8 @@ public abstract class SwerveConstants {
 
   /** The CAN id of the Pigeon2 */
   public abstract int getGyroID();
+
+  public abstract Pigeon2Configuration getGyroConfig();
 
   // Hardware configurations
   /** The motor configuration for all of the drive motors */

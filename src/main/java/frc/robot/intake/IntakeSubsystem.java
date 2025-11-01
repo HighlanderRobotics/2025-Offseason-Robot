@@ -14,6 +14,9 @@ import frc.robot.canrange.CANrangeIOInputsAutoLogged;
 import frc.robot.pivot.PivotIO;
 import frc.robot.roller.RollerIO;
 import frc.robot.rollerpivot.RollerPivotSubsystem;
+import frc.robot.utils.LoggedTunableNumber;
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -55,20 +58,22 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
     SCORE_L1(-90, -5.0),
     CLIMB(0, 0.0);
 
-    public final Rotation2d position;
-    public final double velocityRPS;
+    public final Supplier<Rotation2d> position;
+    public final DoubleSupplier velocityRPS;
 
     private IntakeState(double positionDegrees, double velocityRPS) {
-      this.position = Rotation2d.fromDegrees(positionDegrees);
-      this.velocityRPS = velocityRPS;
+      LoggedTunableNumber ltn = new LoggedTunableNumber("Intake/" + this.name(), positionDegrees);
+      // we're in real life!! use degrees
+      this.position = () -> Rotation2d.fromDegrees(ltn.get());
+      this.velocityRPS = new LoggedTunableNumber("Intake/" + this.name(), velocityRPS);
     }
 
     public Rotation2d getAngle() {
-      return position;
+      return position.get();
     }
 
     public double getVelocityRPS() {
-      return velocityRPS;
+      return velocityRPS.getAsDouble();
     }
   }
 
@@ -127,7 +132,7 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   }
 
   public Command rezero() {
-    return this.run(() -> pivotIO.resetEncoder(Rotation2d.kZero));
+    return this.runOnce(() -> pivotIO.resetEncoder(Rotation2d.kCCW_90deg));
   }
 
   public boolean isNearAngle(Rotation2d target) {
@@ -137,9 +142,9 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   public Command setStateAngleVoltage() {
     return this.run(
         () -> {
-          Logger.recordOutput("Intake/Pivot Setpoint", state.position);
-          pivotIO.setMotorPosition(state.position, hasGamePiece() ? 1 : 0);
-          rollerIO.setRollerVelocity(state.velocityRPS);
+          Logger.recordOutput("Intake/Pivot Setpoint", state.position.get());
+          pivotIO.setMotorPosition(state.position.get(), hasGamePiece() ? 1 : 0);
+          rollerIO.setRollerVelocity(state.velocityRPS.getAsDouble());
         });
   }
 

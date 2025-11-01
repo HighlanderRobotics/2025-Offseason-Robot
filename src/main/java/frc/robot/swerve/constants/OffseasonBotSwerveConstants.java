@@ -1,9 +1,9 @@
 package frc.robot.swerve.constants;
 
-import static edu.wpi.first.units.Units.Kilogram;
 import static edu.wpi.first.units.Units.Pound;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -31,10 +31,11 @@ public class OffseasonBotSwerveConstants extends SwerveConstants {
     return "Offseason Bot";
   }
 
+  // TODO explain +0.5
   @Override
   public ModuleConstants getFrontLeftModuleConstants() {
     // TODO tune offsets
-    return new ModuleConstants(0, "Front Left", 0, 1, 0, Rotation2d.fromRotations(-0.351));
+    return new ModuleConstants(0, "Front Left", 0, 1, 0, Rotation2d.fromRotations(-0.351 + 0.5));
   }
 
   @Override
@@ -46,7 +47,7 @@ public class OffseasonBotSwerveConstants extends SwerveConstants {
   @Override
   public ModuleConstants getBackLeftModuleConstants() {
     // TODO tune offsets
-    return new ModuleConstants(2, "Back Left", 4, 5, 2, Rotation2d.fromRotations(0.469));
+    return new ModuleConstants(2, "Back Left", 4, 5, 2, Rotation2d.fromRotations(0.469 + 0.5));
   }
 
   @Override
@@ -58,6 +59,14 @@ public class OffseasonBotSwerveConstants extends SwerveConstants {
   @Override
   public int getGyroID() {
     return 0;
+  }
+
+  public Pigeon2Configuration getGyroConfig() {
+    Pigeon2Configuration config = new Pigeon2Configuration();
+    config.MountPose.MountPosePitch = -0.002175945555791259;
+    config.MountPose.MountPoseRoll = 0.120527483522892;
+    config.MountPose.MountPoseYaw = -89.22984313964844;
+    return config;
   }
 
   @Override

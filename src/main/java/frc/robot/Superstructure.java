@@ -42,7 +42,12 @@ public class Superstructure {
 
     READY_CORAL_INTAKE(ElevatorState.IDLE, ArmState.IDLE, IntakeState.READY_CORAL_INTAKE),
     PRE_HANDOFF(ElevatorState.HANDOFF, ArmState.PRE_HANDOFF, IntakeState.READY_CORAL_INTAKE),
-    HANDOFF(ElevatorState.HANDOFF, ArmState.HANDOFF, IntakeState.HANDOFF),
+    // "right handoff" means the robot is about to score on its right, meaning the arm goes to the
+    // left
+    RIGHT_HANDOFF(ElevatorState.HANDOFF, ArmState.RIGHT_HANDOFF, IntakeState.HANDOFF),
+    // "left handoff" means the robot is about to score on its left, meaning the arm goes to the
+    // right
+    LEFT_HANDOFF(ElevatorState.HANDOFF, ArmState.LEFT_HANDOFF, IntakeState.HANDOFF),
     READY_CORAL_ARM(ElevatorState.IDLE, ArmState.READY_CORAL_ARM, IntakeState.IDLE),
 
     INTAKE_CORAL_STACK(
@@ -122,7 +127,8 @@ public class Superstructure {
     public boolean isCoral() {
       return this == INTAKE_CORAL_GROUND
           || this == READY_CORAL_INTAKE
-          || this == HANDOFF
+          || this == RIGHT_HANDOFF
+          || this == LEFT_HANDOFF
           || this == INTAKE_CORAL_STACK
           || this == READY_CORAL_ARM
           || this == PRE_L1
@@ -344,12 +350,28 @@ public class Superstructure {
 
     bindTransition(
         SuperState.PRE_HANDOFF,
-        SuperState.HANDOFF,
+        SuperState.RIGHT_HANDOFF,
         // maybe this also needs prescore idk
-        atExtensionTrigger);
+        atExtensionTrigger.and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
     bindTransition(
-        SuperState.HANDOFF,
+        SuperState.PRE_HANDOFF,
+        SuperState.LEFT_HANDOFF,
+        // maybe this also needs prescore idk
+        atExtensionTrigger.and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
+
+    bindTransition(
+        SuperState.RIGHT_HANDOFF,
+        // uhhh may need another intermediate state
+        SuperState.READY_CORAL_ARM,
+        new Trigger(arm::hasGamePiece)
+            .debounce(0.1)
+            .and(intake::hasGamePiece)
+            .negate()
+            .and(atExtensionTrigger));
+
+    bindTransition(
+        SuperState.LEFT_HANDOFF,
         // uhhh may need another intermediate state
         SuperState.READY_CORAL_ARM,
         new Trigger(arm::hasGamePiece)

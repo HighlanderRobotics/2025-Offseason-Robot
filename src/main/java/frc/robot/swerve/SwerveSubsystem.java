@@ -28,7 +28,7 @@ import frc.robot.Robot.RobotType;
 import frc.robot.camera.Camera;
 import frc.robot.camera.CameraIOReal;
 import frc.robot.camera.CameraIOSim;
-import frc.robot.swerve.constants.KelpieSwerveConstants;
+import frc.robot.swerve.constants.OffseasonBotSwerveConstants;
 import frc.robot.swerve.constants.SwerveConstants;
 import frc.robot.swerve.gyro.GyroIO;
 import frc.robot.swerve.gyro.GyroIOInputsAutoLogged;
@@ -59,7 +59,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class SwerveSubsystem extends SubsystemBase {
-  public static final SwerveConstants SWERVE_CONSTANTS = new KelpieSwerveConstants();
+  public static final SwerveConstants SWERVE_CONSTANTS = new OffseasonBotSwerveConstants();
 
   private final Module[] modules; // Front Left, Front Right, Back Left, Back Right
   private final GyroIO gyroIO;
@@ -167,7 +167,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
     this.gyroIO =
         Robot.ROBOT_TYPE != RobotType.SIM
-            ? new GyroIOReal(SWERVE_CONSTANTS.getGyroID())
+            ? new GyroIOReal(SWERVE_CONSTANTS.getGyroID(), SWERVE_CONSTANTS.getGyroConfig())
             : new GyroIOSim(swerveSimulation.getGyroSimulation());
 
     this.swerveSimulation = swerveSimulation;
@@ -330,9 +330,9 @@ public class SwerveSubsystem extends SubsystemBase {
     final SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
     // Makes sure each wheel isn't asked to go above its max. Recalcs the states if needed
     SwerveDriveKinematics.desaturateWheelSpeeds(states, SWERVE_CONSTANTS.getMaxLinearSpeed());
-    if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("SwerveStates/Setpoints", states);
+    Logger.recordOutput("SwerveStates/Setpoints", states);
 
-    if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("Swerve/Target Speeds", speeds);
+    Logger.recordOutput("Swerve/Target Speeds", speeds);
 
     SwerveModuleState[] optimizedStates = new SwerveModuleState[modules.length];
 
@@ -351,8 +351,7 @@ public class SwerveSubsystem extends SubsystemBase {
       }
     }
 
-    if (Robot.ROBOT_TYPE != RobotType.REAL)
-      Logger.recordOutput("SwerveStates/SetpointsOptimized", optimizedStates);
+    Logger.recordOutput("SwerveStates/SetpointsOptimized", optimizedStates);
   }
 
   /**
@@ -374,6 +373,16 @@ public class SwerveSubsystem extends SubsystemBase {
   public Command driveClosedLoopFieldRelative(Supplier<ChassisSpeeds> speeds) {
     return this.run(
         () -> drive(ChassisSpeeds.fromFieldRelativeSpeeds(speeds.get(), getRotation()), false));
+  }
+
+  /**
+   * Drive closed-loop at field relative speeds (i.e. for autoaim)
+   *
+   * @param speeds
+   * @return a Command driving to the target speeds
+   */
+  public Command driveOpenLoopRobotRelative(Supplier<ChassisSpeeds> speeds) {
+    return this.run(() -> drive(speeds.get(), true));
   }
 
   /**
@@ -741,5 +750,9 @@ public class SwerveSubsystem extends SubsystemBase {
         Logger.recordOutput("Choreo/Feedback + FF Target Speeds Robot Relative", speeds);
       this.drive(speeds, false);
     };
+  }
+
+  public void setYaw(Rotation2d yaw) {
+    resetPose(new Pose2d(getPose().getTranslation(), yaw));
   }
 }

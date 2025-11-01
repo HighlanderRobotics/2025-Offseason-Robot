@@ -10,6 +10,9 @@ import frc.robot.cancoder.CANcoderIOInputsAutoLogged;
 import frc.robot.pivot.PivotIO;
 import frc.robot.roller.RollerIO;
 import frc.robot.rollerpivot.RollerPivotSubsystem;
+import frc.robot.utils.LoggedTunableNumber;
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -61,7 +64,8 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     IDLE(0, 0.0),
     // coral
     PRE_HANDOFF(0, 0.0),
-    HANDOFF(180, 5.0),
+    RIGHT_HANDOFF(180, 5.0),
+    LEFT_HANDOFF(-180, 5.0),
     READY_CORAL_ARM(0, 1.0),
     INTAKE_CORAL_STACK(100, 5.0),
 
@@ -97,20 +101,22 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     PRE_CLIMB(180, 0.0),
     CLIMB(180, 0.0);
 
-    public final Rotation2d position;
-    public final double velocityRPS;
+    public final Supplier<Rotation2d> position;
+    public final DoubleSupplier velocityRPS;
 
     private ArmState(double positionDegrees, double velocityRPS) {
-      this.position = Rotation2d.fromDegrees(positionDegrees);
-      this.velocityRPS = velocityRPS;
+      LoggedTunableNumber ltn = new LoggedTunableNumber("Arm/" + this.name(), positionDegrees);
+      // we're in real life!! use degrees
+      this.position = () -> Rotation2d.fromDegrees(ltn.get());
+      this.velocityRPS = new LoggedTunableNumber("Arm/" + this.name(), velocityRPS);
     }
 
     public Rotation2d getAngle() {
-      return position;
+      return position.get();
     }
 
     public double getVelocityRPS() {
-      return velocityRPS;
+      return velocityRPS.getAsDouble();
     }
   }
 
@@ -170,7 +176,8 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   }
 
   public Command setStateAngleVelocity() {
-    return setPivotAndRollers(() -> getState().position, () -> getState().velocityRPS);
+    return setPivotAndRollers(
+        () -> getState().position.get(), () -> getState().velocityRPS.getAsDouble());
   }
 
   // TODO setSimCoral

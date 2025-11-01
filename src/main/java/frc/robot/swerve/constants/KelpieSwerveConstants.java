@@ -3,6 +3,7 @@ package frc.robot.swerve.constants;
 import static edu.wpi.first.units.Units.Pound;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -120,6 +121,11 @@ public class KelpieSwerveConstants extends SwerveConstants {
   @Override
   public int getGyroID() {
     return 0;
+  }
+
+  // TODO we don't rly care tho
+  public Pigeon2Configuration getGyroConfig() {
+    return new Pigeon2Configuration();
   }
 
   @Override

@@ -3,7 +3,7 @@ package frc.robot.pivot;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -24,7 +24,7 @@ public class PivotIOReal implements PivotIO {
   private final StatusSignal<Temperature> motorTemperatureCelsius;
 
   private final VoltageOut voltageOut = new VoltageOut(0.0).withEnableFOC(true);
-  private final PositionVoltage motionMagic = new PositionVoltage(0.0);
+  private final MotionMagicVoltage motionMagic = new MotionMagicVoltage(0.0);
 
   public PivotIOReal(int motorID, TalonFXConfiguration config) {
     motor = new TalonFX(motorID, "*");

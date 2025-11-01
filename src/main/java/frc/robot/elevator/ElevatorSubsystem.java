@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
+import frc.robot.utils.LoggedTunableNumber;
 import java.util.function.DoubleSupplier;
 import java.util.function.Function;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -56,14 +57,15 @@ public class ElevatorSubsystem extends SubsystemBase {
     PRE_CLIMB(0),
     CLIMB(0);
 
-    private final double extensionMeters;
+    private final DoubleSupplier extensionMeters;
 
     private ElevatorState(double extensionInches) {
-      this.extensionMeters = Units.inchesToMeters(extensionInches);
+      this.extensionMeters =
+          new LoggedTunableNumber("Elevator/" + this.name(), Units.inchesToMeters(extensionInches));
     }
 
     public double getExtensionMeters() {
-      return extensionMeters;
+      return extensionMeters.getAsDouble();
     }
   }
 
