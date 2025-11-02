@@ -26,7 +26,7 @@ public class PivotIOSim implements PivotIO {
       TalonFXConfiguration config) {
     pivotSim =
         new SingleJointedArmSim(
-            DCMotor.getKrakenX60Foc(1),
+            new DCMotor(12.0, 4.05, 275, 1.4, 7530.0 / 60.0, 1),
             config.Feedback.SensorToMechanismRatio,
             0.1,
             length,

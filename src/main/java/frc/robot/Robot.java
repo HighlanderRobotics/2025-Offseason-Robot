@@ -28,6 +28,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -64,6 +65,9 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
@@ -293,6 +297,29 @@ public class Robot extends LoggedRobot {
   private final Autos autos;
   private Optional<Alliance> lastAlliance = Optional.empty();
   private final LoggedDashboardChooser<Command> autoChooser = new LoggedDashboardChooser<>("Autos");
+
+  // Mechanisms
+  private final LoggedMechanism2d elevatorMech2d =
+      new LoggedMechanism2d(3.0, Units.feetToMeters(4.0));
+  private final LoggedMechanismRoot2d
+      elevatorRoot = // CAD distance from origin to center of carriage at full retraction
+      elevatorMech2d.getRoot(
+              "Elevator", Units.inchesToMeters(5), 0.0); // now what on earth is this number
+  // doesn't get updated or actually do anything it's just so i remember there's actually an
+  // elevator there when i'm looking at glass
+  private final LoggedMechanismLigament2d firstStage =
+      new LoggedMechanismLigament2d("First Stage", Units.inchesToMeters(37), 90.0);
+  private final LoggedMechanismLigament2d carriageLigament =
+      new LoggedMechanismLigament2d("Carriage", 0, 90.0);
+  private final LoggedMechanismLigament2d armLigament =
+      new LoggedMechanismLigament2d("Arm", ArmSubsystem.LENGTH_METERS, 20.0);
+
+  private final LoggedMechanismRoot2d intakeRoot =
+      elevatorMech2d.getRoot("Intake", Units.inchesToMeters(11), 0);
+  private final LoggedMechanismLigament2d intakeBase =
+      new LoggedMechanismLigament2d("Intake Base", Units.inchesToMeters(9.5), 90);
+  private final LoggedMechanismLigament2d intakeLigament =
+      new LoggedMechanismLigament2d("Intake", IntakeSubsystem.LENGTH_METERS, 0.0);
 
   @SuppressWarnings("resource")
   public Robot() {
@@ -646,29 +673,60 @@ public class Robot extends LoggedRobot {
 
     Logger.recordOutput(
         "Mechanism Poses",
+        // new Pose3d[] {
+        //   new Pose3d( // first stage
+        //       new Translation3d(0, 0, elevator.getExtensionMeters() / 2.0), new Rotation3d()),
+        //   // carriage
+        //   new Pose3d(new Translation3d(0, 0, elevator.getExtensionMeters()), new Rotation3d()),
+        //   new Pose3d( // arm
+        //           Translation3d.kZero, new Rotation3d(0, arm.getPivotAngle().getRadians(), 0.0))
+        //       .transformBy(
+        //           new Transform3d(
+        //               new Translation3d(
+        //                   ArmSubsystem.VERTICAL_OFFSET_METERS
+        //                       * Math.cos(Math.PI / 2 - arm.getPivotAngle().getRadians()),
+        //                   0,
+        //                   elevator.getExtensionMeters()
+        //                   // - ArmSubsystem.VERTICAL_OFFSET_METERS
+        //                   //     * Math.sin(Math.PI / 2 - arm.getPivotAngle().getRadians())),
+        //                   ),
+        //               Rotation3d.kZero)),
+        //   new Pose3d( // intake
+        //       new Translation3d(0, 0, 0), // Units.inchesToMeters(10.265)
+        //       // new Rotation3d(Math.PI, intake.getPivotAngle().getRadians(), Math.PI))
+        //       new Rotation3d(intake.getPivotAngle().getRadians(), 0, 0))
+        // });
         new Pose3d[] {
-          new Pose3d( // first stage
+          new Pose3d(
+              // first stage
               new Translation3d(0, 0, elevator.getExtensionMeters() / 2.0), new Rotation3d()),
           // carriage
           new Pose3d(new Translation3d(0, 0, elevator.getExtensionMeters()), new Rotation3d()),
-          new Pose3d( // arm
-                  Translation3d.kZero, new Rotation3d(0, arm.getPivotAngle().getRadians(), 0.0))
+          Pose3d.kZero,
+          //   Pose3d.kZero
+          new Pose3d( // intake
+                  new Translation3d(0, 0, 0),
+                  // Units.inchesToMeters(10.265)
+                  // new Rotation3d(Math.PI, intake.getPivotAngle().getRadians(), Math.PI))
+                  new Rotation3d(intake.getPivotAngle().getRadians(), 0, 0))
               .transformBy(
                   new Transform3d(
                       new Translation3d(
-                          ArmSubsystem.VERTICAL_OFFSET_METERS
-                              * Math.cos(Math.PI / 2 - arm.getPivotAngle().getRadians()),
                           0,
-                          elevator.getExtensionMeters()
-                          // - ArmSubsystem.VERTICAL_OFFSET_METERS
-                          //     * Math.sin(Math.PI / 2 - arm.getPivotAngle().getRadians())),
-                          ),
-                      Rotation3d.kZero)),
-          new Pose3d( // intake
-              new Translation3d(0, 0, 0), // Units.inchesToMeters(10.265)
-              // new Rotation3d(Math.PI, intake.getPivotAngle().getRadians(), Math.PI))
-              new Rotation3d(intake.getPivotAngle().getRadians(), 0, 0))
+                          0,
+                          1
+                              * IntakeSubsystem.VERTICAL_OFFSET_METERS
+                              * Math.cos(intake.getPivotAngle().getRadians() / 2.0)),
+                      Rotation3d.kZero))
         });
+
+    carriageLigament.setLength(elevator.getExtensionMeters());
+    // Minus 90 to make it relative to horizontal
+    armLigament.setAngle(arm.getPivotAngle().getDegrees() - 90);
+    intakeLigament.setAngle(intake.getPivotAngle());
+
+    if (Robot.ROBOT_TYPE != RobotType.REAL)
+      Logger.recordOutput("Mechanism/Elevator", elevatorMech2d);
   }
 
   @Override

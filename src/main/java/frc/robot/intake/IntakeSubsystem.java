@@ -22,11 +22,14 @@ import org.littletonrobotics.junction.Logger;
 
 public class IntakeSubsystem extends RollerPivotSubsystem {
   public static final double PIVOT_RATIO = 12.5; // (15.0 / 1);
-  public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(180);
-  public static final Rotation2d MIN_ANGLE = Rotation2d.fromDegrees(0);
+  public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(130);
+  public static final Rotation2d MIN_ANGLE =
+      Rotation2d.fromRadians(-0.3); // Rotation2d.fromDegrees(0);
   public static final double LENGTH_METERS = 0.325;
   public static final double MAX_ACCELERATION = 10.0;
   public static final double MAX_VELOCITY = 10.0;
+  // for mech viz
+  public static final double VERTICAL_OFFSET_METERS = Units.inchesToMeters(7.566);
   // TODO tune
   // TODO THESE SUCK !
   public static final double KP = 47; // 80.0;
@@ -66,8 +69,7 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
           new LoggedTunableNumber("Intake/Angle/" + this.name(), positionDegrees);
       // we're in real life!! use degrees
       this.position = () -> Rotation2d.fromDegrees(ltn.get());
-      this.velocityRPS =
-          new LoggedTunableNumber("Intake/Velocity/" + this.name(), velocityRPS);
+      this.velocityRPS = new LoggedTunableNumber("Intake/Velocity/" + this.name(), velocityRPS);
     }
 
     public Rotation2d getAngle() {
