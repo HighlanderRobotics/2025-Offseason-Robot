@@ -346,8 +346,8 @@ public class Robot extends LoggedRobot {
     PhoenixOdometryThread.getInstance().start();
 
     // Set default commands
-    // elevator.setDefaultCommand(elevator.setStateExtension());
-    // arm.setDefaultCommand(arm.setStateAngleVelocity());
+    elevator.setDefaultCommand(elevator.setStateExtension());
+    arm.setDefaultCommand(arm.setStateAngleVelocity());
     intake.setDefaultCommand(intake.setStateAngleVelocity());
     // climber.setDefaultCommand(climber.setStateAngleVoltage());
 
@@ -378,9 +378,9 @@ public class Robot extends LoggedRobot {
     autos = new Autos(swerve, arm);
     // autoChooser.addDefaultOption("None", autos.getNoneAuto());
     // TODO add autos trigger
-    SmartDashboard.putData("rezero elevator", elevator.rezero().ignoringDisable(true));
-    SmartDashboard.putData("rezero arm", arm.rezeroFromEncoder().ignoringDisable(true));
-    SmartDashboard.putData("rezero intake", intake.rezero().ignoringDisable(true));
+    SmartDashboard.putData("rezero elevator", elevator.rezero().alongWith(Commands.print("dashboard rezero elevator")).ignoringDisable(true));
+    SmartDashboard.putData("rezero arm", arm.rezeroFromEncoder().alongWith(Commands.print("dashboard rezero arm")).ignoringDisable(true));
+    SmartDashboard.putData("rezero intake", intake.rezero().alongWith(Commands.print("dashboard rezero intake")).ignoringDisable(true));
   }
 
   private TalonFXConfiguration createRollerConfig(

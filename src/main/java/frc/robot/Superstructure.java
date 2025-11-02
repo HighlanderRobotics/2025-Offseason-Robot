@@ -357,7 +357,7 @@ public class Superstructure {
         SuperState.PRE_HANDOFF,
         SuperState.RIGHT_HANDOFF,
         // maybe this also needs prescore idk
-        atExtensionTrigger.and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
+        atExtensionTrigger.debounce(0.1).and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
     bindTransition(
         SuperState.PRE_HANDOFF,

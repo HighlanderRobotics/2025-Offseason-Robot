@@ -52,7 +52,7 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   public enum IntakeState {
     IDLE(0, 0.0),
     INTAKE_CORAL(-2, 15.0),
-    READY_CORAL_INTAKE(120.0, 1.0),
+    READY_CORAL_INTAKE(90.0, 1.0),
     HANDOFF(Units.radiansToDegrees(1.96), -15.0),
     PRE_L1(-90, 1.0),
     SCORE_L1(-90, -5.0),

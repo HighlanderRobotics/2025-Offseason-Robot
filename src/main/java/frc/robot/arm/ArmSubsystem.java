@@ -177,9 +177,9 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   }
 
   public Command setStateAngleVelocity() {
-    // return setPivotAndRollers(
-    //     () -> getState().position.get(), () -> getState().velocityRPS.getAsDouble());
-    return this.run(() -> runRollerVelocity(getState().velocityRPS.getAsDouble()));
+    return setPivotAndRollers(
+        () -> getState().position.get(), () -> getState().velocityRPS.getAsDouble());
+    // return this.run(() -> runRollerVelocity(getState().velocityRPS.getAsDouble()));
   }
 
   // TODO setSimCoral
