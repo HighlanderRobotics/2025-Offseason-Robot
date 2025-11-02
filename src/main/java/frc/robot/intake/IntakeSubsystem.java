@@ -29,12 +29,12 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   public static final double MAX_VELOCITY = 10.0;
   // TODO tune
   // TODO THESE SUCK !
-  public static final double KP = 80.0;
-  public static final double KI = 5.0;
-  public static final double KD = 3.0;
-  public static final double KS = 0.381;
-  public static final double KG = 2.0;
-  public static final double KV = 0.1;
+  public static final double KP = 47;//80.0;
+  public static final double KI = 0.0;//5.0;
+  public static final double KD = 4.7;//3.0;
+  public static final double KS = 0.3203125;//0.381;
+  public static final double KG = 0.3603515625; //2.0;
+  public static final double KV = 2; // 0.1;
   public static final double jKgMetersSquared = 0.01;
   public static final double TOLERANCE_DEGREES = 10.0;
   private final CANrangeIO leftCanrangeIO;
@@ -52,7 +52,7 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   public enum IntakeState {
     IDLE(0, 0.0),
     INTAKE_CORAL(-2, 15.0),
-    READY_CORAL_INTAKE(90.0, 1.0),
+    READY_CORAL_INTAKE(Units.radiansToDegrees(1.96), 1.0),
     HANDOFF(Units.radiansToDegrees(1.96), -15.0),
     PRE_L1(-90, 1.0),
     SCORE_L1(-90, -5.0),
@@ -136,7 +136,7 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
 
   public Command rezero() {
     // return this.runOnce(() -> pivotIO.resetEncoder(Rotation2d.kCCW_90deg));
-    return this.runOnce(() -> pivotIO.resetEncoder(Rotation2d.kZero));
+    return this.runOnce(() -> pivotIO.resetEncoder(Rotation2d.fromRadians(-0.3)));
   }
 
   public boolean isNearAngle(Rotation2d target) {
@@ -144,15 +144,15 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   }
 
   public Command setStateAngleVelocity() {
-    // return this.run(
-    //     () -> {
-    //       Logger.recordOutput("Intake/Pivot Setpoint", state.position.get());
-    //       pivotIO.setMotorPosition(state.position.get(), hasGamePiece() ? 1 : 0);
-    //       rollerIO.setRollerVelocity(state.velocityRPS.getAsDouble());
-    //     });
+    return this.run(
+        () -> {
+          Logger.recordOutput("Intake/Pivot Setpoint", state.position.get());
+          pivotIO.setMotorPosition(state.position.get(), hasGamePiece() ? 1 : 0);
+          rollerIO.setRollerVelocity(state.velocityRPS.getAsDouble());
+        });
 
-        //this is wrong?
-        return this.run(() -> setPivotAndRollers(getState().position, getState().velocityRPS));
+    // this is wrong?
+    // return this.run(() -> setPivotAndRollers(getState().position, getState().velocityRPS));
   }
 
   public static TalonFXConfiguration getIntakePivotConfig() {

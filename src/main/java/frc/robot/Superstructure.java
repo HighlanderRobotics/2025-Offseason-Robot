@@ -41,10 +41,17 @@ public class Superstructure {
     INTAKE_CORAL_GROUND(ElevatorState.IDLE, ArmState.IDLE, IntakeState.INTAKE_CORAL),
 
     READY_CORAL_INTAKE(ElevatorState.IDLE, ArmState.IDLE, IntakeState.READY_CORAL_INTAKE),
-    PRE_HANDOFF(ElevatorState.HANDOFF, ArmState.PRE_HANDOFF, IntakeState.READY_CORAL_INTAKE),
     // "right handoff" means the robot is about to score on its right, meaning the arm goes to the
     // left
+    RIGHT_PRE_PRE_HANDOFF(
+        ElevatorState.PRE_HANDOFF, ArmState.PRE_RIGHT_HANDOFF, IntakeState.READY_CORAL_INTAKE),
+    RIGHT_PRE_HANDOFF(
+        ElevatorState.HANDOFF, ArmState.RIGHT_HANDOFF, IntakeState.READY_CORAL_INTAKE),
     RIGHT_HANDOFF(ElevatorState.HANDOFF, ArmState.RIGHT_HANDOFF, IntakeState.HANDOFF),
+
+    // "left handoff" means the robot is about to score on its left, meaning the arm goes to the
+    // right
+    LEFT_PRE_HANDOFF(ElevatorState.HANDOFF, ArmState.LEFT_HANDOFF, IntakeState.READY_CORAL_INTAKE),
     // "left handoff" means the robot is about to score on its left, meaning the arm goes to the
     // right
     LEFT_HANDOFF(ElevatorState.HANDOFF, ArmState.LEFT_HANDOFF, IntakeState.HANDOFF),
@@ -349,21 +356,38 @@ public class Superstructure {
     // Handoff
     bindTransition(
         SuperState.READY_CORAL_INTAKE,
-        SuperState.PRE_HANDOFF,
+        SuperState.RIGHT_PRE_PRE_HANDOFF,
         // TODO maybe make the hascorals and stuff triggers inside intake?
-        preScoreReq.and(() -> Robot.getCoralScoreTarget() != CoralScoreTarget.L1));
+        preScoreReq
+            .and(() -> Robot.getCoralScoreTarget() != CoralScoreTarget.L1)
+            .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
     bindTransition(
-        SuperState.PRE_HANDOFF,
-        SuperState.RIGHT_HANDOFF,
+        SuperState.RIGHT_PRE_PRE_HANDOFF,
+        SuperState.RIGHT_PRE_HANDOFF,
         // maybe this also needs prescore idk
         atExtensionTrigger.debounce(0.1).and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
     bindTransition(
-        SuperState.PRE_HANDOFF,
+        SuperState.RIGHT_PRE_HANDOFF,
+        SuperState.RIGHT_HANDOFF,
+        // maybe this also needs prescore idk
+        atExtensionTrigger.debounce(0.25).and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
+
+    // Handoff
+    bindTransition(
+        SuperState.READY_CORAL_INTAKE,
+        SuperState.LEFT_PRE_HANDOFF,
+        // TODO maybe make the hascorals and stuff triggers inside intake?
+        preScoreReq
+            .and(() -> Robot.getCoralScoreTarget() != CoralScoreTarget.L1)
+            .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
+
+    bindTransition(
+        SuperState.LEFT_PRE_HANDOFF,
         SuperState.LEFT_HANDOFF,
         // maybe this also needs prescore idk
-        atExtensionTrigger.and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
+        atExtensionTrigger.debounce(0.25).and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
     bindTransition(
         SuperState.RIGHT_HANDOFF,
@@ -372,6 +396,7 @@ public class Superstructure {
         new Trigger(arm::hasGamePiece)
             .debounce(0.1)
             .and(intake::hasGamePiece)
+            .debounce(0.1)
             .negate()
             .and(atExtensionTrigger));
 
