@@ -63,11 +63,11 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
 
     private IntakeState(double positionDegrees, double velocityRPS) {
       LoggedTunableNumber ltn =
-          new LoggedTunableNumber("Intake/" + this.name() + "/Angle", positionDegrees);
+          new LoggedTunableNumber("Intake/Angle/" + this.name(), positionDegrees);
       // we're in real life!! use degrees
       this.position = () -> Rotation2d.fromDegrees(ltn.get());
       this.velocityRPS =
-          new LoggedTunableNumber("Intake/" + this.name() + "/Velocity", velocityRPS);
+          new LoggedTunableNumber("Intake/Velocity/" + this.name(), velocityRPS);
     }
 
     public Rotation2d getAngle() {

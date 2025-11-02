@@ -106,10 +106,10 @@ public class ArmSubsystem extends RollerPivotSubsystem {
 
     private ArmState(double positionDegrees, double velocityRPS) {
       LoggedTunableNumber ltn =
-          new LoggedTunableNumber("Arm/" + this.name() + "/Angle", positionDegrees);
+          new LoggedTunableNumber("Arm/Angle/" + this.name(), positionDegrees);
       // we're in real life!! use degrees
       this.position = () -> Rotation2d.fromDegrees(ltn.get());
-      this.velocityRPS = new LoggedTunableNumber("Arm/" + this.name() + "/Velocity", velocityRPS);
+      this.velocityRPS = new LoggedTunableNumber("Arm/Velocity" + this.name(), velocityRPS);
     }
 
     public Rotation2d getAngle() {
