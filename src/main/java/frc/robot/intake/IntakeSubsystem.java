@@ -144,12 +144,15 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   }
 
   public Command setStateAngleVelocity() {
-    return this.run(
-        () -> {
-          Logger.recordOutput("Intake/Pivot Setpoint", state.position.get());
-          pivotIO.setMotorPosition(state.position.get(), hasGamePiece() ? 1 : 0);
-          rollerIO.setRollerVelocity(state.velocityRPS.getAsDouble());
-        });
+    // return this.run(
+    //     () -> {
+    //       Logger.recordOutput("Intake/Pivot Setpoint", state.position.get());
+    //       pivotIO.setMotorPosition(state.position.get(), hasGamePiece() ? 1 : 0);
+    //       rollerIO.setRollerVelocity(state.velocityRPS.getAsDouble());
+    //     });
+
+        //this is wrong?
+        return this.run(() -> setPivotAndRollers(getState().position, getState().velocityRPS));
   }
 
   public static TalonFXConfiguration getIntakePivotConfig() {

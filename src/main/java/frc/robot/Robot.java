@@ -378,9 +378,20 @@ public class Robot extends LoggedRobot {
     autos = new Autos(swerve, arm);
     // autoChooser.addDefaultOption("None", autos.getNoneAuto());
     // TODO add autos trigger
-    SmartDashboard.putData("rezero elevator", elevator.rezero().alongWith(Commands.print("dashboard rezero elevator")).ignoringDisable(true));
-    SmartDashboard.putData("rezero arm", arm.rezeroFromEncoder().alongWith(Commands.print("dashboard rezero arm")).ignoringDisable(true));
-    SmartDashboard.putData("rezero intake", intake.rezero().alongWith(Commands.print("dashboard rezero intake")).ignoringDisable(true));
+    SmartDashboard.putData(
+        "rezero elevator",
+        elevator
+            .rezero()
+            .alongWith(Commands.print("dashboard rezero elevator"))
+            .ignoringDisable(true));
+    SmartDashboard.putData(
+        "rezero arm",
+        arm.rezeroFromEncoder()
+            .alongWith(Commands.print("dashboard rezero arm"))
+            .ignoringDisable(true));
+    SmartDashboard.putData(
+        "rezero intake",
+        intake.rezero().alongWith(Commands.print("dashboard rezero intake")).ignoringDisable(true));
   }
 
   private TalonFXConfiguration createRollerConfig(
@@ -648,9 +659,10 @@ public class Robot extends LoggedRobot {
                           ArmSubsystem.VERTICAL_OFFSET_METERS
                               * Math.cos(Math.PI / 2 - arm.getPivotAngle().getRadians()),
                           0,
-                          -elevator.getExtensionMeters()
-                              - ArmSubsystem.VERTICAL_OFFSET_METERS
-                                  * Math.sin(Math.PI / 2 - arm.getPivotAngle().getRadians())),
+                          elevator.getExtensionMeters()
+                          // - ArmSubsystem.VERTICAL_OFFSET_METERS
+                          //     * Math.sin(Math.PI / 2 - arm.getPivotAngle().getRadians())),
+                          ),
                       Rotation3d.kZero)),
           new Pose3d( // intake
               new Translation3d(0, 0, 0), // Units.inchesToMeters(10.265)

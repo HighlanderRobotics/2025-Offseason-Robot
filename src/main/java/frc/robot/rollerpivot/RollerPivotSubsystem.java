@@ -79,6 +79,8 @@ public class RollerPivotSubsystem extends SubsystemBase {
     // return cmd;
     return this.run(
         () -> {
+          Logger.recordOutput(name + "/Pivot Setpoint", pivotAngle.get());
+          Logger.recordOutput(name + "/Rollers Setpoint", rollerVelocity.getAsDouble());
           setPivotAngle(pivotAngle);
           runRollerVelocity(rollerVelocity.getAsDouble());
         });
