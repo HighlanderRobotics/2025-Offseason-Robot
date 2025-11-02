@@ -29,11 +29,11 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   public static final double MAX_VELOCITY = 10.0;
   // TODO tune
   // TODO THESE SUCK !
-  public static final double KP = 47;//80.0;
-  public static final double KI = 0.0;//5.0;
-  public static final double KD = 4.7;//3.0;
-  public static final double KS = 0.3203125;//0.381;
-  public static final double KG = 0.3603515625; //2.0;
+  public static final double KP = 47; // 80.0;
+  public static final double KI = 0.0; // 5.0;
+  public static final double KD = 4.7; // 3.0;
+  public static final double KS = 0.3203125; // 0.381;
+  public static final double KG = 0.3603515625; // 2.0;
   public static final double KV = 2; // 0.1;
   public static final double jKgMetersSquared = 0.01;
   public static final double TOLERANCE_DEGREES = 10.0;
@@ -50,8 +50,8 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
 
   // TODO : change these values to the real ones
   public enum IntakeState {
-    IDLE(0, 0.0),
-    INTAKE_CORAL(-2, 15.0),
+    IDLE(Units.radiansToDegrees(-0.3), 0.0),
+    INTAKE_CORAL(Units.radiansToDegrees(-0.3), 15.0),
     READY_CORAL_INTAKE(Units.radiansToDegrees(1.96), 1.0),
     HANDOFF(Units.radiansToDegrees(1.96), -15.0),
     PRE_L1(-90, 1.0),
@@ -146,8 +146,9 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   public Command setStateAngleVelocity() {
     return this.run(
         () -> {
+          int slot = hasGamePiece() ? 1 : 0;
           Logger.recordOutput("Intake/Pivot Setpoint", state.position.get());
-          pivotIO.setMotorPosition(state.position.get(), hasGamePiece() ? 1 : 0);
+          pivotIO.setMotorPosition(state.position.get(), slot);
           rollerIO.setRollerVelocity(state.velocityRPS.getAsDouble());
         });
 
