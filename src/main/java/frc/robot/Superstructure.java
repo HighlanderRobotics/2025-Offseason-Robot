@@ -236,16 +236,13 @@ public class Superstructure {
   }
 
   private void addTriggers() {
-    preScoreReq = driver.rightTrigger().or(Autos.autoPreScoreReq.and(DriverStation::isAutonomous));
+    preScoreReq = driver.rightTrigger().or(Autos.autoPreScoreReq);
 
-    scoreReq =
-        driver.rightTrigger().negate().or(Autos.autoScoreReq.and(DriverStation::isAutonomous));
+    scoreReq = driver.rightTrigger().negate().and(DriverStation::isTeleop).or(Autos.autoScoreReq);
 
-    intakeCoralReq =
-        driver.leftTrigger().or(Autos.autoIntakeCoralReq.and(DriverStation::isAutonomous));
+    intakeCoralReq = driver.leftTrigger().or(Autos.autoIntakeCoralReq);
 
-    intakeAlgaeReq =
-        driver.leftBumper().or(Autos.autoIntakeAlgaeReq.and(DriverStation::isAutonomous));
+    intakeAlgaeReq = driver.leftBumper().or(Autos.autoIntakeAlgaeReq);
 
     // TODO seems sus
     preClimbReq =
@@ -293,7 +290,7 @@ public class Superstructure {
     // to the end state IN PARALLEL to running the command that got passed in
     trigger
         .and(new Trigger(() -> state == start))
-        .onTrue(Commands.parallel(changeStateTo(end), cmd));
+        .onTrue(Commands.parallel(changeStateTo(end), cmd).withName("State change with cmd"));
   }
 
   public boolean atExtension(SuperState state) {
@@ -315,7 +312,8 @@ public class Superstructure {
               state = nextState;
               setSubstates();
             })
-        .ignoringDisable(true);
+        .ignoringDisable(true)
+        .withName("State Change Command");
   }
 
   private void setSubstates() {
@@ -464,7 +462,8 @@ public class Superstructure {
         new Trigger(arm::hasGamePiece)
             .negate()
             // TODO this is a different near reef (?)
-            .and(new Trigger(swerve::isNearL1Reef).negate().debounce(0.15)));
+            .and(new Trigger(swerve::isNearL1Reef).negate().debounce(0.15))
+            .and(Autos.autoScoreReq.negate()));
 
     bindTransition(
         SuperState.READY_CORAL_ARM,

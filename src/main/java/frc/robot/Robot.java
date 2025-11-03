@@ -373,6 +373,15 @@ public class Robot extends LoggedRobot {
     // Run auto when auto starts. Matches Choreolib's defer impl
     RobotModeTriggers.autonomous()
         .whileTrue(Commands.defer(() -> autoChooser.get().asProxy(), Set.of()));
+
+    CommandScheduler.getInstance()
+        .onCommandInterrupt(
+            (interrupted, interrupting) -> {
+              System.out.println("Interrupted: " + interrupted);
+              System.out.println(
+                  "Interrputing: "
+                      + (interrupting.isPresent() ? interrupting.get().getName() : "none"));
+            });
   }
 
   private TalonFXConfiguration createRollerConfig(InvertedValue inverted, double currentLimit) {
@@ -441,15 +450,16 @@ public class Robot extends LoggedRobot {
         .and(() -> coralScoreTarget == CoralScoreTarget.L1)
         .whileTrue(
             Commands.parallel(
-                swerve.autoAimToL1(
-                    () ->
-                        modifyJoystick(driver.getLeftY())
-                            * SwerveSubsystem.SWERVE_CONSTANTS.getMaxLinearSpeed(),
-                    () ->
-                        modifyJoystick(driver.getLeftX())
-                            * SwerveSubsystem.SWERVE_CONSTANTS.getMaxLinearSpeed()),
-                Commands.waitUntil(swerve::nearL1)
-                    .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy())));
+                    swerve.autoAimToL1(
+                        () ->
+                            modifyJoystick(driver.getLeftY())
+                                * SwerveSubsystem.SWERVE_CONSTANTS.getMaxLinearSpeed(),
+                        () ->
+                            modifyJoystick(driver.getLeftX())
+                                * SwerveSubsystem.SWERVE_CONSTANTS.getMaxLinearSpeed()),
+                    Commands.waitUntil(swerve::nearL1)
+                        .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy()))
+                .withName("Autoaim l1 Command"));
 
     // Autoaim to L2/3
     autoAimReq
@@ -459,9 +469,10 @@ public class Robot extends LoggedRobot {
                 coralScoreTarget == CoralScoreTarget.L2 || coralScoreTarget == CoralScoreTarget.L3)
         .whileTrue(
             Commands.parallel(
-                swerve.autoAimToL23(driver.leftBumper()),
-                Commands.waitUntil(swerve::nearL23)
-                    .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy())));
+                    swerve.autoAimToL23(driver.leftBumper()),
+                    Commands.waitUntil(swerve::nearL23)
+                        .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy()))
+                .withName("Autoaim l23"));
 
     // Autoaim to L4
     autoAimReq
@@ -469,42 +480,44 @@ public class Robot extends LoggedRobot {
         .and(() -> coralScoreTarget == CoralScoreTarget.L4)
         .whileTrue(
             Commands.parallel(
-                swerve.autoAimToL4(driver.leftBumper()),
-                Commands.waitUntil(swerve::nearL4)
-                    .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy())));
+                    swerve.autoAimToL4(driver.leftBumper()),
+                    Commands.waitUntil(swerve::nearL4)
+                        .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy()))
+                .withName("Autoaim l4 command"));
 
     // Autoaim to intake algae (high, low)
     autoAimReq
-        .and(superstructure::stateIsIntakeAlgaeReef)
-        .or(superstructure::stateIsIdle)
+        .and(() -> superstructure.stateIsIntakeAlgaeReef() || superstructure.stateIsIdle())
         .whileTrue(
             Commands.parallel(
-                Commands.sequence(
-                    Commands.runOnce(
-                        () ->
-                            Robot.setAlgaeIntakeTarget(
-                                AlgaeIntakeTargets.getClosestTarget(swerve.getPose()).height)),
-                    swerve
-                        .autoAimToOffsetAlgaePose()
-                        .until(
-                            new Trigger(swerve::nearIntakeAlgaeOffsetPose)
-                                // TODO figure out trigger order of operations? also this is just
-                                // bad
-                                .and(
-                                    () ->
-                                        superstructure.atExtension(
-                                            SuperState.INTAKE_ALGAE_HIGH_RIGHT))
-                                .or(
-                                    () ->
-                                        superstructure.atExtension(
-                                            SuperState.INTAKE_ALGAE_LOW_RIGHT))),
-                    swerve.approachAlgae()),
-                Commands.waitUntil(
-                        new Trigger(swerve::nearAlgaeIntakePose)
-                            .and(swerve::isNotMoving)
-                            .debounce(0.08))
-                    // .and(swerve::hasFrontTags)
-                    .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy())));
+                    Commands.sequence(
+                        Commands.runOnce(
+                            () ->
+                                Robot.setAlgaeIntakeTarget(
+                                    AlgaeIntakeTargets.getClosestTarget(swerve.getPose()).height)),
+                        swerve
+                            .autoAimToOffsetAlgaePose()
+                            .until(
+                                new Trigger(swerve::nearIntakeAlgaeOffsetPose)
+                                    // TODO figure out trigger order of operations? also this is
+                                    // just
+                                    // bad
+                                    .and(
+                                        () ->
+                                            superstructure.atExtension(
+                                                SuperState.INTAKE_ALGAE_HIGH_RIGHT))
+                                    .or(
+                                        () ->
+                                            superstructure.atExtension(
+                                                SuperState.INTAKE_ALGAE_LOW_RIGHT))),
+                        swerve.approachAlgae()),
+                    Commands.waitUntil(
+                            new Trigger(swerve::nearAlgaeIntakePose)
+                                .and(swerve::isNotMoving)
+                                .debounce(0.08))
+                        // .and(swerve::hasFrontTags)
+                        .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy()))
+                .withName("Autoaim algae"));
 
     // Autoaim to processor
     autoAimReq
@@ -512,9 +525,10 @@ public class Robot extends LoggedRobot {
         .and(() -> algaeScoreTarget == AlgaeScoreTarget.PROCESSOR)
         .whileTrue(
             Commands.parallel(
-                swerve.autoAimToProcessor(),
-                Commands.waitUntil(swerve::nearProcessor)
-                    .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy())));
+                    swerve.autoAimToProcessor(),
+                    Commands.waitUntil(swerve::nearProcessor)
+                        .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy()))
+                .withName("Autoaim algae"));
 
     // Autoaim to barge
     autoAimReq
@@ -522,12 +536,13 @@ public class Robot extends LoggedRobot {
         .and(() -> algaeScoreTarget == AlgaeScoreTarget.BARGE)
         .whileTrue(
             Commands.parallel(
-                swerve.autoAimToBarge(
-                    () ->
-                        modifyJoystick(driver.getLeftX())
-                            * SwerveSubsystem.SWERVE_CONSTANTS.getMaxLinearSpeed()),
-                Commands.waitUntil(swerve::nearBarge)
-                    .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy())));
+                    swerve.autoAimToBarge(
+                        () ->
+                            modifyJoystick(driver.getLeftX())
+                                * SwerveSubsystem.SWERVE_CONSTANTS.getMaxLinearSpeed()),
+                    Commands.waitUntil(swerve::nearBarge)
+                        .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy()))
+                .withName("Autoaim barge"));
 
     // Operator - Set scoring/intaking levels
     operator
