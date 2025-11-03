@@ -267,7 +267,10 @@ public class Autos {
     return Commands.sequence(
         path.getTrajectory(routine)
             .cmd()
-            .until(routine.observe(path.getTrajectory(routine).done())),
+            .until(
+                routine.observe(
+                    path.getTrajectory(routine)
+                        .atTime(path.getTrajectory(routine).getRawTrajectory().getTotalTime()))),
         scoreAlgaeBargeInAuto());
   }
 
@@ -278,6 +281,7 @@ public class Autos {
             Commands.runOnce(() -> Autos.autoPreScore = true),
             Commands.waitUntil(swerve::nearBarge),
             setAutoScoreReqTrue(),
+            Commands.runOnce(() -> arm.setSimAlgae(false)),
             Commands.waitUntil(() -> !arm.hasAlgae),
             // Also sets prescore false
             setAutoScoreReqFalse()));
@@ -370,9 +374,12 @@ public class Autos {
         swerve
             .approachAlgae()
             .until(arm::hasGamePiece)
-            .alongWith(Commands.either(Commands.sequence(
-              Commands.waitSeconds(1), Commands.runOnce(() -> arm.setSimAlgae(true))), Commands.none(), Robot::isSimulation)
-                ),
+            .alongWith(
+                Commands.either(
+                    Commands.sequence(
+                        Commands.waitSeconds(1), Commands.runOnce(() -> arm.setSimAlgae(true))),
+                    Commands.none(),
+                    Robot::isSimulation)),
         Commands.runOnce(() -> autoIntakeAlgae = false));
   }
 
