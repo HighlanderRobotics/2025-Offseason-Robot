@@ -162,7 +162,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public Command setStateAngleVoltage() {
     return setPivotAngleAndRollerVoltage(() -> state.position, () -> state.volts);
   }
-  
+
   public void setSimCoral(boolean b) {
     if (Robot.isSimulation()) {
       hasCoral = b;
