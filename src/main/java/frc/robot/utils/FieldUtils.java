@@ -82,7 +82,7 @@ public class FieldUtils {
 
     public static Pose2d getOffsetLocation(Pose2d original) {
       return original.transformBy(
-          new Transform2d((-0.3 - Units.inchesToMeters(6)), 0, Rotation2d.kZero));
+          new Transform2d(0, (-0.3 - Units.inchesToMeters(6)), Rotation2d.kZero));
     }
 
     /** Gets the closest offset target to the given pose. */
