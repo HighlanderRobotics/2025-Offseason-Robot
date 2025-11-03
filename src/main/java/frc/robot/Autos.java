@@ -92,7 +92,7 @@ public class Autos {
     H4toGH("H4", "GH", PathEndType.INTAKE_ALGAE),
     GHtoBR("GH", "BR", PathEndType.SCORE_ALGAE),
     BRtoIJ("BR", "IJ", PathEndType.INTAKE_ALGAE),
-    IJtoBR("BR", "IJ", PathEndType.SCORE_ALGAE);
+    IJtoBR("IJ", "BR", PathEndType.SCORE_ALGAE);
 
     private final String start;
     private final String end;
@@ -194,18 +194,6 @@ public class Autos {
     bindCoralElevatorExtension(routine);
     Path[] paths = {Path.CMtoH4, Path.GHtoBR, Path.BRtoIJ, Path.IJtoBR};
 
-    // Command autoCommand =
-    //     Commands.runOnce(() -> stateSetter.accept(SuperState.READY_CORAL_ARM))
-    //         .andThen(paths[2].getTrajectory(routine).resetOdometry());
-
-    // // for (Path path : paths) {
-    // //   autoCommand =
-    // //       autoCommand.andThen(
-    // //           Commands.print("Running path: " + path.toString()).andThen(runPath(path,
-    // // routine)));
-    // // }
-    // autoCommand = autoCommand.andThen(runPath(paths[2], routine));
-    // TODO ALL THE PATHS
     Command autoCommand =
         Commands.sequence(
             Commands.runOnce(() -> stateSetter.accept(SuperState.READY_CORAL_ARM)),
@@ -213,7 +201,9 @@ public class Autos {
             paths[0].getTrajectory(routine).resetOdometry(),
             runPath(paths[0], routine),
             intakeAlgaeInAuto(() -> paths[0].getTrajectory(routine).getFinalPose().get()),
-            runPath(paths[1], routine));
+            runPath(paths[1], routine),
+            runPath(paths[2], routine),
+            runPath(paths[3], routine));
 
     routine
         .active()
