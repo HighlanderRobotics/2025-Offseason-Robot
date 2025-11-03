@@ -537,8 +537,7 @@ public class Robot extends LoggedRobot {
 
     // Autoaim to intake algae (high, low)
     autoAimReq
-        .and(superstructure::stateIsIntakeAlgaeReef)
-        .or(superstructure::stateIsIdle)
+        .and(() -> superstructure.stateIsIntakeAlgaeReef() || superstructure.stateIsIdle())
         .whileTrue(
             Commands.parallel(
                 Commands.sequence(
