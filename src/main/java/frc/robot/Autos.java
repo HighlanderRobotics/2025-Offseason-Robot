@@ -370,9 +370,9 @@ public class Autos {
         swerve
             .approachAlgae()
             .until(arm::hasGamePiece)
-            .alongWith(
-                Commands.sequence(
-                    Commands.waitSeconds(1), Commands.runOnce(() -> arm.setSimAlgae(true)))),
+            .alongWith(Commands.either(Commands.sequence(
+              Commands.waitSeconds(1), Commands.runOnce(() -> arm.setSimAlgae(true))), Commands.none(), Robot::isSimulation)
+                ),
         Commands.runOnce(() -> autoIntakeAlgae = false));
   }
 
