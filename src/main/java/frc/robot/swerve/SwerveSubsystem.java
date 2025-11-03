@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.Robot.RobotType;
+import frc.robot.Robot.ScoringSide;
 import frc.robot.camera.Camera;
 import frc.robot.camera.CameraIOReal;
 import frc.robot.camera.CameraIOSim;
@@ -594,12 +595,18 @@ public class SwerveSubsystem extends SubsystemBase {
                   AutoAim.calculateSpeeds(
                       getPose(), FieldUtils.AlgaeIntakeTargets.getClosestTargetPose(getPose())),
                   getRotation());
-          calculatedSpeedsRobotRelative.vxMetersPerSecond =
-              isInAutoAimTolerance(FieldUtils.AlgaeIntakeTargets.getClosestTargetPose(getPose()))
-                  ? 0.0
-                  : AutoAim.ALGAE_APPROACH_SPEED_METERS_PER_SECOND;
+          if (isInAutoAimTolerance(FieldUtils.AlgaeIntakeTargets.getClosestTargetPose(getPose()))) {
+            calculatedSpeedsRobotRelative.vyMetersPerSecond = 0.0;
+          } else if (Robot.getScoringSide().equals(ScoringSide.LEFT)) {
+            calculatedSpeedsRobotRelative.vyMetersPerSecond =
+                -AutoAim.ALGAE_APPROACH_SPEED_METERS_PER_SECOND;
+          } else if (Robot.getScoringSide().equals(ScoringSide.RIGHT)) {
+            calculatedSpeedsRobotRelative.vyMetersPerSecond =
+                AutoAim.ALGAE_APPROACH_SPEED_METERS_PER_SECOND;
+          }
+
           // IDK why we have to do this but it was in reefscape so...
-          calculatedSpeedsRobotRelative.vyMetersPerSecond *= -1;
+          calculatedSpeedsRobotRelative.vxMetersPerSecond *= -1;
           return calculatedSpeedsRobotRelative;
         });
   }

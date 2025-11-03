@@ -367,7 +367,12 @@ public class Autos {
     return Commands.sequence(
         swerve.autoAimToOffsetAlgaePose().until(swerve::nearIntakeAlgaeOffsetPose),
         Commands.runOnce(() -> autoIntakeAlgae = true),
-        swerve.approachAlgae().until(arm::hasGamePiece),
+        swerve
+            .approachAlgae()
+            .until(arm::hasGamePiece)
+            .alongWith(
+                Commands.sequence(
+                    Commands.waitSeconds(1), Commands.runOnce(() -> arm.setSimAlgae(true)))),
         Commands.runOnce(() -> autoIntakeAlgae = false));
   }
 

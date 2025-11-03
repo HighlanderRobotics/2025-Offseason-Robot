@@ -163,9 +163,15 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     return setPivotAngleAndRollerVoltage(() -> state.position, () -> state.volts);
   }
 
-  public void setSimCoral(boolean b) {
+  public void setSimCoral(boolean hasCoral) {
     if (Robot.isSimulation()) {
-      hasCoral = b;
+      this.hasCoral = hasCoral;
+    }
+  }
+
+  public void setSimAlgae(boolean hasAlgae) {
+    if (Robot.isSimulation()) {
+      this.hasAlgae = hasAlgae;
     }
   }
 
