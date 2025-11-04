@@ -369,12 +369,11 @@ public class Superstructure {
         // maybe this also needs prescore idk
         atExtensionTrigger.debounce(0.1).and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
-    // bindTransition(
-    //     SuperState.RIGHT_PRE_HANDOFF,
-    //     SuperState.RIGHT_HANDOFF,
-    //     // maybe this also needs prescore idk
-    //     atExtensionTrigger.debounce(0.25).and(() -> Robot.getScoringSide() ==
-    // ScoringSide.RIGHT));
+    bindTransition(
+        SuperState.RIGHT_PRE_HANDOFF,
+        SuperState.RIGHT_HANDOFF,
+        // maybe this also needs prescore idk
+        atExtensionTrigger.debounce(0.25).and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
     bindTransition(
         SuperState.RIGHT_HANDOFF,

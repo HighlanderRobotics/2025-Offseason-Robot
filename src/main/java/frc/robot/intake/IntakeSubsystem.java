@@ -25,7 +25,8 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(130);
   public static final Rotation2d MIN_ANGLE =
       Rotation2d.fromRadians(-0.3); // Rotation2d.fromDegrees(0);
-  public static final Rotation2d ZEROING_ANGLE = Rotation2d.fromRadians(-0.42184471666855133);
+  public static final Rotation2d ZEROING_ANGLE =
+      Rotation2d.fromRadians(-0.5); // (-0.42184471666855133);
   public static final double LENGTH_METERS = 0.325;
   public static final double MAX_ACCELERATION = 10.0;
   public static final double MAX_VELOCITY = 10.0;
@@ -154,9 +155,11 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   public Command setStateAngleVelocity() {
     return this.run(
         () -> {
-          int slot = hasGamePiece() ? 1 : 0;
+          // int slot = hasGamePiece() ? 1 : 0;
           Logger.recordOutput("Intake/Pivot Setpoint", state.position.get());
-          pivotIO.setMotorPosition(state.position.get(), slot);
+          // pivotIO.setMotorPosition(state.position.get(), slot);
+
+          pivotIO.setMotorPosition(state.position.get(), 1);
           rollerIO.setRollerVelocity(state.velocityRPS.getAsDouble());
         });
 
