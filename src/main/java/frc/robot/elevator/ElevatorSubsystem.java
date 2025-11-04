@@ -19,7 +19,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class ElevatorSubsystem extends SubsystemBase {
-  public static final double GEAR_RATIO = 6.0 / 1.0;
+  public static final double GEAR_RATIO = 3.0 / 1.0;
   public static final double SPROCKET_DIAMETER_METERS = Units.inchesToMeters(1.257);
   public static final double MAX_EXTENSION_METERS = Units.inchesToMeters(68.0);
 
@@ -35,16 +35,16 @@ public class ElevatorSubsystem extends SubsystemBase {
     // inches
     // So the constructor handles the conversion
     IDLE(0),
-    PRE_HANDOFF(Units.metersToInches(0.451 / 2.0) + 8),
-    HANDOFF(Units.metersToInches(0.44)), // 0.451)),
+    PRE_HANDOFF(Units.metersToInches(0.88 / 2.0) + 14),
+    HANDOFF(Units.metersToInches(0.88)), // 0.451)),
     INTAKE_CORAL_STACK(0),
     // coral
     PRE_L2(0),
     L2(15),
     PRE_L3(25),
     L3(29),
-    PRE_L4(58.75),
-    L4(52),
+    PRE_L4(54.25), // 29.375), // 58.75),
+    L4(49), // 26), // 52),
     // algae
     INTAKE_ALGAE_REEF_HIGH(43),
     INTAKE_ALGAE_REEF_LOW(26),

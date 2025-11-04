@@ -505,8 +505,7 @@ public class Superstructure {
     bindTransition(
         SuperState.RIGHT_POST_HANDOFF,
         SuperState.PRE_L4_RIGHT,
-        preScoreReq
-            .and(atExtensionTrigger)
+        atExtensionTrigger
             .debounce(0.1)
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L4)
             .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
@@ -517,12 +516,10 @@ public class Superstructure {
         preScoreReq.negate().and(scoreReq).and(atExtensionTrigger));
 
     bindTransition(
-        SuperState.SCORE_L4_RIGHT,
-        SuperState.IDLE,
-        new Trigger(arm::hasGamePiece)
-            .negate()
-            // TODO this is a different near reef (?)
-            .and(new Trigger(swerve::isNearL1Reef).negate().debounce(0.15)));
+        SuperState.SCORE_L4_RIGHT, SuperState.IDLE, new Trigger(arm::hasGamePiece).negate()
+        // TODO this is a different near reef (?)
+        // .and(new Trigger(swerve::isNearL1Reef).negate().debounce(0.15)));
+        );
 
     bindTransition(
         SuperState.LEFT_POST_HANDOFF,
