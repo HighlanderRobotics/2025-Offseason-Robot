@@ -656,6 +656,20 @@ public class Robot extends LoggedRobot {
                             // : Rotation2d.kCCW_90deg)));
                             ? Rotation2d.kZero
                             : Rotation2d.k180deg)));
+
+    driver
+        .start()
+        .onTrue(
+            Commands.sequence(
+                intake.runCurrentZeroing(),
+                // probably a smarter way to do this but setting pivot to safe angle so the elevator
+                // doent slam it againt something else
+                Commands.runOnce(
+                    () -> arm.setPivotAngle(() -> Rotation2d.fromDegrees(arm.SAFE_ZEROING_ANGLE))),
+                elevator.runCurrentZeroing(),
+                arm.runCurrentZeroing()
+                // () -> arm.rezeroFromEncoder(),
+                ));
   }
 
   private void addAutos() {

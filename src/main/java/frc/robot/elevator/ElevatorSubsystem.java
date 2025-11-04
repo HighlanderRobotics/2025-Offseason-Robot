@@ -156,6 +156,7 @@ public class ElevatorSubsystem extends SubsystemBase {
               if (!interrupted) {
                 io.resetEncoder();
                 hasZeroed = true;
+                Commands.print("Elevator Zeroed");
               }
             });
   }

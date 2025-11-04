@@ -46,7 +46,7 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   private final CANrangeIO rightCanrangeIO;
   private final CANrangeIOInputsAutoLogged leftCanrangeInputs = new CANrangeIOInputsAutoLogged();
   private final CANrangeIOInputsAutoLogged rightCanrangeInputs = new CANrangeIOInputsAutoLogged();
-  private final Rotation2d ZEROING_POSITION = Rotation2d.fromDegrees(-10.0);
+  private final Rotation2d ZEROING_POSITION = Rotation2d.fromRadians(-0.5);
   private final double CURRENT_THRESHOLD = 10.0;
 
   private boolean hasGamePieceSim = false;
@@ -128,8 +128,8 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
     return leftCanrangeInputs.isDetected || rightCanrangeInputs.isDetected;
   }
 
-  public Command zeroIntake() {
-    return this.run(() -> setPivotAngle(() -> Rotation2d.fromDegrees(-80)))
+  public Command runCurrentZeroing() {
+    return this.run(() -> setPivotVoltage(() -> -2.0))
         .until(new Trigger(() -> Math.abs(currentFilterValue) > CURRENT_THRESHOLD).debounce(0.25))
         .andThen(
             Commands.parallel(

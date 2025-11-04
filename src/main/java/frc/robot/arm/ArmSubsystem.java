@@ -24,6 +24,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public static final double MAX_ACCELERATION = 10.0;
   public static final double MAX_VELOCITY = 10.0;
   public static final double ROLLERS_RATIO = (44.0 / 16.0) * 23;
+  public static final double ZEROING_CURRENT_THRESHOLD_AMPS = 30.0;
 
   public static final double ZEROING_ANGLE = -108;
 
@@ -44,6 +45,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public static final double CORAL_CURRENT_THRESHOLD = 30.0;
   public static final double TOLERANCE_DEGREES = 10.0;
   public static final double VERTICAL_OFFSET_METERS = Units.inchesToMeters(12.0);
+  public static final double SAFE_ZEROING_ANGLE = 120.0; // idk
 
   public static final double CANCODER_OFFSET = -0.281; // -0.368896484375;
   // this is because we want it to wrap around from -180 to 180, which is when it's pointed straight
@@ -55,6 +57,8 @@ public class ArmSubsystem extends RollerPivotSubsystem {
 
   public boolean hasAlgae = false;
   public boolean hasCoral = false;
+
+  public boolean armZeroed = false;
 
   /**
    * 0 for position is vertical with the EE up. We consider the front of the robot to be the intake,
@@ -204,5 +208,17 @@ public class ArmSubsystem extends RollerPivotSubsystem {
 
   public Command rezeroAgainstRightBumper() {
     return zeroPivot(() -> Rotation2d.fromDegrees(ZEROING_ANGLE));
+  }
+
+  public Command runCurrentZeroing() {
+    return this.run(() -> setPivotVoltage(() -> -3.0))
+        .until(
+            new Trigger(() -> Math.abs(currentFilterValue) > ZEROING_CURRENT_THRESHOLD_AMPS)
+                .debounce(0.25))
+        .andThen(
+            Commands.parallel(
+                Commands.runOnce(() -> armZeroed = true),
+                Commands.print("Arm Zeroed"),
+                rezeroAgainstRightBumper()));
   }
 }

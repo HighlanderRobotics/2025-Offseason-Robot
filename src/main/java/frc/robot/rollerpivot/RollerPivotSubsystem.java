@@ -39,7 +39,7 @@ public class RollerPivotSubsystem extends SubsystemBase {
     rollerIO.setRollerVelocity(velocityRPS);
   }
 
-  protected void setPivotAngle(Supplier<Rotation2d> target) {
+  public void setPivotAngle(Supplier<Rotation2d> target) {
     Logger.recordOutput(name + "/Pivot Setpoint", target.get());
     pivotIO.setMotorPosition(target.get());
   }
