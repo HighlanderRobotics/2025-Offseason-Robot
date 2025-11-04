@@ -41,8 +41,8 @@ public class ElevatorSubsystem extends SubsystemBase {
     // coral
     PRE_L2(0),
     L2(15),
-    PRE_L3(25),
-    L3(29),
+    PRE_L3(21),
+    L3(24),
     PRE_L4(54.25), // 29.375), // 58.75),
     L4(49), // 26), // 52),
     // algae

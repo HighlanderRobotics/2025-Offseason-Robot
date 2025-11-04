@@ -233,51 +233,44 @@ public class OffseasonBotSwerveConstants extends SwerveConstants {
         new CameraConstants(
             "Right_Elevator",
             new Transform3d(
-                new Translation3d(
-                    Units.inchesToMeters(-11.600),
-                    Units.inchesToMeters(11.400),
-                    Units.inchesToMeters(9.052)),
+                new Translation3d(0.287, -0.139, 0.821),
                 new Rotation3d(
                     Units.degreesToRadians(0.0),
-                    Units.degreesToRadians(-(90 - 76.875000)),
-                    Units.degreesToRadians(150))),
+                    Units.degreesToRadians(135 + 90 + 180),
+                    Units.degreesToRadians(90))),
             RIGHT_ELEVATOR_CAMERA_MATRIX,
             RIGHT_ELEVATOR_DIST_COEFFS);
     final CameraConstants rightDrivebaseCamConstants =
         new CameraConstants(
             "Right_Drivebase",
             new Transform3d(
-                new Translation3d(
-                    Units.inchesToMeters(-11.600),
-                    Units.inchesToMeters(-11.416),
-                    Units.inchesToMeters(9.061)),
-                new Rotation3d(
-                    0, Units.degreesToRadians(-(90 - 76.875000)), Units.degreesToRadians(210))),
+                new Translation3d(-0.287, -0.299, 0.227),
+                new Rotation3d(0, Units.degreesToRadians(-28.125), Units.degreesToRadians(-30))),
             RIGHT_DRIVEBASE_CAMERA_MATRIX,
             RIGHT_DRIVEBASE_DIST_COEFFS);
     final CameraConstants leftElevatorCamConstants =
         new CameraConstants(
             "Left_Elevator",
             new Transform3d(
-                new Translation3d(
-                    Units.inchesToMeters(6.664129),
-                    Units.inchesToMeters(-12.320709),
-                    Units.inchesToMeters(8.885504)),
-                new Rotation3d(0, Units.degreesToRadians(-10), Units.degreesToRadians(30))),
+                new Translation3d(0.287, 0.139, 0.821),
+                new Rotation3d(
+                    0, Units.degreesToRadians(135 + 90 + 180), Units.degreesToRadians(-90))),
             LEFT_ELEVATOR_CAMERA_MATRIX,
             LEFT_ELEVATORDIST_COEFFS);
     final CameraConstants leftDrivebaseCamConstants =
         new CameraConstants(
             "Left_Drivebase",
             new Transform3d(
-                new Translation3d(
-                    Units.inchesToMeters(6.664129),
-                    Units.inchesToMeters(12.320709),
-                    Units.inchesToMeters(8.885504)),
-                new Rotation3d(0, Units.degreesToRadians(-10), Units.degreesToRadians(-30))),
+                new Translation3d(-0.1, 0.33, 0.15),
+                new Rotation3d(0, Units.degreesToRadians(-28.125), Units.degreesToRadians(47))),
             LEFT_DRIVEBASE_CAMERA_MATRIX,
             LEFT_DRIVEBASE_DIST_COEFFS);
-    return new CameraConstants[] {leftElevatorCamConstants, leftDrivebaseCamConstants};
+    return new CameraConstants[] {
+      rightElevatorCamConstants,
+      rightDrivebaseCamConstants,
+      leftElevatorCamConstants,
+      leftDrivebaseCamConstants
+    };
   }
 
   // TODO

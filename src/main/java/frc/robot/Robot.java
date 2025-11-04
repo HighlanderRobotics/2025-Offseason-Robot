@@ -114,7 +114,7 @@ public class Robot extends LoggedRobot {
     RIGHT
   }
 
-  @AutoLogOutput private static CoralScoreTarget coralScoreTarget = CoralScoreTarget.L4;
+  @AutoLogOutput private static CoralScoreTarget coralScoreTarget = CoralScoreTarget.L3;
   @AutoLogOutput private static CoralIntakeTarget coralIntakeTarget = CoralIntakeTarget.GROUND;
   @AutoLogOutput private static AlgaeIntakeTarget algaeIntakeTarget = AlgaeIntakeTarget.STACK;
   @AutoLogOutput private static AlgaeScoreTarget algaeScoreTarget = AlgaeScoreTarget.BARGE;

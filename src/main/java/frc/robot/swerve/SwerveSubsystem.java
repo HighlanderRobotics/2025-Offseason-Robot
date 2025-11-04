@@ -136,7 +136,9 @@ public class SwerveSubsystem extends SubsystemBase {
       cameras =
           new Camera[] {
             new Camera(new CameraIOSim(SWERVE_CONSTANTS.getCameraConstants()[0])),
-            new Camera(new CameraIOSim(SWERVE_CONSTANTS.getCameraConstants()[1]))
+            new Camera(new CameraIOSim(SWERVE_CONSTANTS.getCameraConstants()[1])),
+            new Camera(new CameraIOSim(SWERVE_CONSTANTS.getCameraConstants()[2])),
+            new Camera(new CameraIOSim(SWERVE_CONSTANTS.getCameraConstants()[3]))
           };
     } else {
       // Add real modules
@@ -155,7 +157,9 @@ public class SwerveSubsystem extends SubsystemBase {
       cameras =
           new Camera[] {
             new Camera(new CameraIOReal(SWERVE_CONSTANTS.getCameraConstants()[0])),
-            new Camera(new CameraIOReal(SWERVE_CONSTANTS.getCameraConstants()[1]))
+            new Camera(new CameraIOReal(SWERVE_CONSTANTS.getCameraConstants()[1])),
+            new Camera(new CameraIOReal(SWERVE_CONSTANTS.getCameraConstants()[2])),
+            new Camera(new CameraIOReal(SWERVE_CONSTANTS.getCameraConstants()[3]))
           };
     }
 
@@ -303,7 +307,7 @@ public class SwerveSubsystem extends SubsystemBase {
       cameras[i].updateCamera(estimator);
       cameraPoses[i] = cameras[i].getPose();
     }
-    Logger.recordOutput("Vision/Front Cameras Have Tags", hasFrontTags);
+    // Logger.recordOutput("Vision/Front Cameras Have Tags", hasFrontTags);
     // TODO
     // if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("Vision/Camera Poses",
     // cameraPoses);
