@@ -56,7 +56,7 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   // TODO : change these values to the real ones
   public enum IntakeState {
     IDLE(Units.radiansToDegrees(1.96), 0.0),
-    INTAKE_CORAL(Units.radiansToDegrees(-0.45), 15.0),
+    INTAKE_CORAL(Units.radiansToDegrees(-0.5), 15.0),
     READY_CORAL_INTAKE(Units.radiansToDegrees(1.96), 1.0),
     HANDOFF(Units.radiansToDegrees(1.96), -15.0),
     PRE_L1(90, 1.0),

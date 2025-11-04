@@ -222,6 +222,7 @@ public class Superstructure {
   @AutoLogOutput(key = "Superstructure/Climb Cancel Request")
   public Trigger climbCancelReq;
 
+  @AutoLogOutput(key = "Superstructure/At Extension?")
   public Trigger atExtensionTrigger = new Trigger(this::atExtension);
 
   /** Creates a new Superstructure. */
@@ -423,13 +424,13 @@ public class Superstructure {
         new Trigger(arm::hasGamePiece).debounce(0.1));
 
     // ---L2---
-    bindTransition(
-        SuperState.RIGHT_POST_HANDOFF,
-        SuperState.PRE_L2_RIGHT,
-        preScoreReq
-            .and(atExtensionTrigger)
-            .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L2)
-            .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
+    // bindTransition(
+    //     SuperState.RIGHT_POST_HANDOFF,
+    //     SuperState.PRE_L2_RIGHT,
+    //     preScoreReq
+    //         .and(atExtensionTrigger)
+    //         .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L2)
+    //         .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
     bindTransition(
         SuperState.PRE_L2_RIGHT, SuperState.SCORE_L2_RIGHT, scoreReq.and(atExtensionTrigger));
@@ -462,13 +463,13 @@ public class Superstructure {
             .and(new Trigger(swerve::isNearL1Reef).negate().debounce(0.15)));
 
     // ---L3---
-    bindTransition(
-        SuperState.RIGHT_POST_HANDOFF,
-        SuperState.PRE_L3_RIGHT,
-        preScoreReq
-            .and(atExtensionTrigger)
-            .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L3)
-            .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
+    // bindTransition(
+    //     SuperState.RIGHT_POST_HANDOFF,
+    //     SuperState.PRE_L3_RIGHT,
+    //     preScoreReq
+    //         .and(atExtensionTrigger)
+    //         .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L3)
+    //         .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
     bindTransition(
         SuperState.PRE_L3_RIGHT, SuperState.SCORE_L3_RIGHT, scoreReq.and(atExtensionTrigger));
@@ -506,11 +507,14 @@ public class Superstructure {
         SuperState.PRE_L4_RIGHT,
         preScoreReq
             .and(atExtensionTrigger)
+            .debounce(0.1)
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L4)
             .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
     bindTransition(
-        SuperState.PRE_L4_RIGHT, SuperState.SCORE_L4_RIGHT, scoreReq.and(atExtensionTrigger));
+        SuperState.PRE_L4_RIGHT,
+        SuperState.SCORE_L4_RIGHT,
+        preScoreReq.negate().and(scoreReq).and(atExtensionTrigger));
 
     bindTransition(
         SuperState.SCORE_L4_RIGHT,

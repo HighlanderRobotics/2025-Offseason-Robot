@@ -41,7 +41,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public static final double ALGAE_INTAKE_VOLTAGE = 8.0;
   public static final double CORAL_INTAKE_VOLTAGE = 5.0;
   public static final double ALGAE_CURRENT_THRESHOLD = 20.0;
-  public static final double CORAL_CURRENT_THRESHOLD = 20.0;
+  public static final double CORAL_CURRENT_THRESHOLD = 30.0;
   public static final double TOLERANCE_DEGREES = 10.0;
   public static final double VERTICAL_OFFSET_METERS = Units.inchesToMeters(12.0);
 
@@ -131,6 +131,12 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public ArmSubsystem(RollerIO rollerIO, PivotIO pivotIO, CANcoderIO cancoderIO, String name) {
     super(rollerIO, pivotIO, name);
     this.cancoderIO = cancoderIO;
+
+    new Trigger(() -> Math.abs(currentFilterValue) > CORAL_CURRENT_THRESHOLD)
+        .debounce(0.25)
+        .whileTrue(Commands.runOnce(() -> hasCoral = true))
+        .whileFalse(Commands.runOnce(() -> hasCoral = false));
+    ;
   }
 
   @AutoLogOutput(key = "Arm/State")
