@@ -441,7 +441,7 @@ public class SwerveSubsystem extends SubsystemBase {
                 .alongWith(
                     Commands.run(
                         () -> {
-                          Logger.recordOutput("AutoAim/TargetPose", target.get());
+                          Logger.recordOutput("AutoAim/Target Pose", target.get());
                           Logger.recordOutput("AutoAim/Speeds Modifier", speedsModifier.get());
                         })));
   }
