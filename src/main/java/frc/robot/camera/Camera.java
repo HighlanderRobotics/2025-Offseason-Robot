@@ -166,26 +166,26 @@ public class Camera {
                   inputs.result.metadata.captureTimestampMicros / 1.0e6,
                   deviations
                       // .times(DriverStation.isAutonomous() ? 2.0 : 1.0)
-                      .times(
-                          getName().equals("Front_Left_Camera")
-                                  || getName().equals("Front_Right_Camera")
-                              ? 0.75
-                              : 2.0)
+                      // .times(
+                      //     getName().equals("Front_Left_Camera")
+                      //             || getName().equals("Front_Right_Camera")
+                      //         ? 0.75
+                      //         : 2.0)
                       // reef positions
-                      .times(
-                          (getName().equals("Front_Left_Camera")
-                                      || getName().equals("Front_Right_Camera"))
-                                  && (Superstructure.getState().isScoreCoral()
-                                      || Superstructure.getState()
-                                          == SuperState.INTAKE_ALGAE_HIGH_LEFT
-                                      || Superstructure.getState()
-                                          == SuperState.INTAKE_ALGAE_HIGH_RIGHT
-                                      || Superstructure.getState()
-                                          == SuperState.INTAKE_ALGAE_LOW_LEFT
-                                      || Superstructure.getState()
-                                          == SuperState.INTAKE_ALGAE_LOW_RIGHT)
-                              ? 0.5
-                              : 1.5) // TODO tune these sorts of numbers
+                      // .times(
+                      //     (getName().equals("Front_Left_Camera")
+                      //                 || getName().equals("Front_Right_Camera"))
+                      //             && (Superstructure.getState().isScoreCoral()
+                      //                 || Superstructure.getState()
+                      //                     == SuperState.INTAKE_ALGAE_HIGH_LEFT
+                      //                 || Superstructure.getState()
+                      //                     == SuperState.INTAKE_ALGAE_HIGH_RIGHT
+                      //                 || Superstructure.getState()
+                      //                     == SuperState.INTAKE_ALGAE_LOW_LEFT
+                      //                 || Superstructure.getState()
+                      //                     == SuperState.INTAKE_ALGAE_LOW_RIGHT)
+                      //         ? 0.5
+                      //         : 1.5) // TODO tune these sorts of numbers
                       // hp tags
                       .times(
                           // !camera.getName().equals("Front_Camera")

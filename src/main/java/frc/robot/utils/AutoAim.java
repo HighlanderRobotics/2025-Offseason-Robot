@@ -80,7 +80,7 @@ public class AutoAim {
     return new ChassisSpeeds(
         VX_CONTROLLER.calculate(robotPose.getX(), target.getX())
             + VX_CONTROLLER.getSetpoint().velocity,
-        VY_CONTROLLER.calculate(robotPose.getX(), target.getY())
+        VY_CONTROLLER.calculate(robotPose.getY(), target.getY())
             + VY_CONTROLLER.getSetpoint().velocity,
         HEADING_CONTROLLER.calculate(
                 robotPose.getRotation().getRadians(), target.getRotation().getRadians())
