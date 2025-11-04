@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -24,8 +27,6 @@ import frc.robot.intake.IntakeSubsystem;
 import frc.robot.intake.IntakeSubsystem.IntakeState;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.utils.CommandXboxControllerSubsystem;
-import org.littletonrobotics.junction.AutoLogOutput;
-import org.littletonrobotics.junction.Logger;
 
 public class Superstructure {
 
@@ -39,8 +40,8 @@ public class Superstructure {
     IDLE(ElevatorState.IDLE, ArmState.IDLE, IntakeState.IDLE),
 
     INTAKE_CORAL_GROUND(ElevatorState.IDLE, ArmState.IDLE, IntakeState.INTAKE_CORAL),
-
     READY_CORAL_INTAKE(ElevatorState.IDLE, ArmState.IDLE, IntakeState.READY_CORAL_INTAKE),
+
     // "right handoff" means the robot is about to score on its right, meaning the arm goes to the
     // left
     RIGHT_PRE_PRE_HANDOFF(
@@ -48,17 +49,19 @@ public class Superstructure {
     RIGHT_PRE_HANDOFF(
         ElevatorState.HANDOFF, ArmState.RIGHT_HANDOFF, IntakeState.READY_CORAL_INTAKE),
     RIGHT_HANDOFF(ElevatorState.HANDOFF, ArmState.RIGHT_HANDOFF, IntakeState.HANDOFF),
+    //this is to make it "take the long way around". it's kind of stupid but
+    RIGHT_POST_HANDOFF(ElevatorState.HANDOFF, ArmState.RIGHT_POST_HANDOFF, IntakeState.HANDOFF),
 
     // "left handoff" means the robot is about to score on its left, meaning the arm goes to the
     // right
     LEFT_PRE_HANDOFF(ElevatorState.HANDOFF, ArmState.LEFT_HANDOFF, IntakeState.READY_CORAL_INTAKE),
-    // "left handoff" means the robot is about to score on its left, meaning the arm goes to the
-    // right
     LEFT_HANDOFF(ElevatorState.HANDOFF, ArmState.LEFT_HANDOFF, IntakeState.HANDOFF),
-    READY_CORAL_ARM(ElevatorState.IDLE, ArmState.READY_CORAL_ARM, IntakeState.IDLE),
-
+    //this is to make it "take the long way around". it's kind of stupid but
+    LEFT_POST_HANDOFF(ElevatorState.HANDOFF, ArmState.LEFT_POST_HANDOFF, IntakeState.HANDOFF),
+    
     INTAKE_CORAL_STACK(
         ElevatorState.INTAKE_CORAL_STACK, ArmState.INTAKE_CORAL_STACK, IntakeState.CLIMB),
+    READY_CORAL_ARM(ElevatorState.IDLE, ArmState.READY_CORAL_ARM, IntakeState.IDLE),
 
     PRE_L1(ElevatorState.IDLE, ArmState.IDLE, IntakeState.PRE_L1),
     L1(ElevatorState.IDLE, ArmState.IDLE, IntakeState.SCORE_L1),
@@ -137,7 +140,6 @@ public class Superstructure {
           || this == RIGHT_HANDOFF
           || this == LEFT_HANDOFF
           || this == INTAKE_CORAL_STACK
-          || this == READY_CORAL_ARM
           || this == PRE_L1
           || this == L1
           || this == PRE_L2_RIGHT
@@ -343,10 +345,10 @@ public class Superstructure {
         SuperState.INTAKE_CORAL_GROUND,
         intakeCoralReq.and(() -> Robot.getCoralIntakeTarget() == CoralIntakeTarget.GROUND));
 
-    // bindTransition(
-    //     SuperState.INTAKE_CORAL_GROUND,
-    //     SuperState.IDLE,
-    //     intakeCoralReq.negate().and(new Trigger(intake::hasGamePiece).negate()));
+    bindTransition(
+        SuperState.INTAKE_CORAL_GROUND,
+        SuperState.IDLE,
+        intakeCoralReq.negate().and(new Trigger(intake::hasGamePiece).negate()));
 
     bindTransition(
         SuperState.INTAKE_CORAL_GROUND,
@@ -374,6 +376,15 @@ public class Superstructure {
         // maybe this also needs prescore idk
         atExtensionTrigger.debounce(0.25).and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
+    bindTransition(
+        SuperState.RIGHT_HANDOFF,
+        // uhhh may need another intermediate state
+        SuperState.RIGHT_POST_HANDOFF,
+        new Trigger(arm::hasGamePiece)
+            .debounce(0.1)
+            .and(new Trigger(intake::hasGamePiece).negate().debounce(0.1))
+            .and(atExtensionTrigger));
+
     // Handoff
     bindTransition(
         SuperState.READY_CORAL_INTAKE,
@@ -390,20 +401,9 @@ public class Superstructure {
         atExtensionTrigger.debounce(0.25).and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
     bindTransition(
-        SuperState.RIGHT_HANDOFF,
-        // uhhh may need another intermediate state
-        SuperState.READY_CORAL_ARM,
-        new Trigger(arm::hasGamePiece)
-            .debounce(0.1)
-            .and(intake::hasGamePiece)
-            .debounce(0.1)
-            .negate()
-            .and(atExtensionTrigger));
-
-    bindTransition(
         SuperState.LEFT_HANDOFF,
         // uhhh may need another intermediate state
-        SuperState.READY_CORAL_ARM,
+        SuperState.LEFT_POST_HANDOFF,
         new Trigger(arm::hasGamePiece)
             .debounce(0.1)
             .and(intake::hasGamePiece)
@@ -425,9 +425,10 @@ public class Superstructure {
 
     // ---L2---
     bindTransition(
-        SuperState.READY_CORAL_ARM,
+        SuperState.RIGHT_POST_HANDOFF,
         SuperState.PRE_L2_RIGHT,
         preScoreReq
+            .and(atExtensionTrigger)
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L2)
             .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
@@ -443,9 +444,11 @@ public class Superstructure {
             .and(new Trigger(swerve::isNearL1Reef).negate().debounce(0.15)));
 
     bindTransition(
-        SuperState.READY_CORAL_ARM,
+        SuperState.LEFT_POST_HANDOFF,
         SuperState.PRE_L2_LEFT,
         preScoreReq
+        .and(atExtensionTrigger)
+
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L2)
             .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
@@ -462,9 +465,10 @@ public class Superstructure {
 
     // ---L3---
     bindTransition(
-        SuperState.READY_CORAL_ARM,
+        SuperState.RIGHT_POST_HANDOFF,
         SuperState.PRE_L3_RIGHT,
         preScoreReq
+        .and(atExtensionTrigger)
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L3)
             .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
@@ -480,9 +484,11 @@ public class Superstructure {
             .and(new Trigger(swerve::isNearL1Reef).negate().debounce(0.15)));
 
     bindTransition(
-        SuperState.READY_CORAL_ARM,
+        SuperState.LEFT_POST_HANDOFF,
         SuperState.PRE_L3_LEFT,
         preScoreReq
+        .and(atExtensionTrigger)
+
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L3)
             .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
@@ -499,9 +505,10 @@ public class Superstructure {
 
     // ---L4---
     bindTransition(
-        SuperState.READY_CORAL_ARM,
+        SuperState.RIGHT_POST_HANDOFF,
         SuperState.PRE_L4_RIGHT,
         preScoreReq
+        .and(atExtensionTrigger)
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L4)
             .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
@@ -517,9 +524,11 @@ public class Superstructure {
             .and(new Trigger(swerve::isNearL1Reef).negate().debounce(0.15)));
 
     bindTransition(
-        SuperState.READY_CORAL_ARM,
+        SuperState.LEFT_POST_HANDOFF,
         SuperState.PRE_L4_LEFT,
         preScoreReq
+        .and(atExtensionTrigger)
+
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L4)
             .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
