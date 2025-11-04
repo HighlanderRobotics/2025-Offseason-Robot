@@ -25,6 +25,8 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public static final double MAX_VELOCITY = 10.0;
   public static final double ROLLERS_RATIO = (44.0 / 16.0) * 23;
 
+  public static final double ZEROING_ANGLE = -108;
+
   public static final double SUPPLY_CURRENT_LIMIT = 40.0;
   public static final double STATOR_CURRENT_LIMIT = 60.0;
   public static final double SENSOR_TO_MECH_RATIO = PIVOT_RATIO;
@@ -192,5 +194,9 @@ public class ArmSubsystem extends RollerPivotSubsystem {
 
   public Command rezeroFromEncoder() {
     return zeroPivot(() -> getCANcoderPosition());
+  }
+
+  public Command rezeroAgainstRightBumper() {
+    return zeroPivot(() -> Rotation2d.fromDegrees(ZEROING_ANGLE));
   }
 }

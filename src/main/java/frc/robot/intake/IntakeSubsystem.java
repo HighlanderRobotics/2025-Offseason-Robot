@@ -25,6 +25,7 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(130);
   public static final Rotation2d MIN_ANGLE =
       Rotation2d.fromRadians(-0.3); // Rotation2d.fromDegrees(0);
+  public static final Rotation2d ZEROING_ANGLE = Rotation2d.fromRadians(-0.42184471666855133);
   public static final double LENGTH_METERS = 0.325;
   public static final double MAX_ACCELERATION = 10.0;
   public static final double MAX_VELOCITY = 10.0;
@@ -54,7 +55,7 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   // TODO : change these values to the real ones
   public enum IntakeState {
     IDLE(Units.radiansToDegrees(1.96), 0.0),
-    INTAKE_CORAL(Units.radiansToDegrees(-0.3), 15.0),
+    INTAKE_CORAL(Units.radiansToDegrees(-0.45), 15.0),
     READY_CORAL_INTAKE(Units.radiansToDegrees(1.96), 1.0),
     HANDOFF(Units.radiansToDegrees(1.96), -15.0),
     PRE_L1(90, 1.0),
@@ -138,7 +139,12 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
 
   public Command rezero() {
     // return this.runOnce(() -> pivotIO.resetEncoder(Rotation2d.kCCW_90deg));
-    return this.runOnce(() -> pivotIO.resetEncoder(Rotation2d.fromRadians(-0.3)));
+    return this.runOnce(() -> pivotIO.resetEncoder(ZEROING_ANGLE));
+  }
+
+  public Command ninety() {
+    // return this.runOnce(() -> pivotIO.resetEncoder(Rotation2d.kCCW_90deg));
+    return this.runOnce(() -> pivotIO.resetEncoder(Rotation2d.fromDegrees(90)));
   }
 
   public boolean isNearAngle(Rotation2d target) {

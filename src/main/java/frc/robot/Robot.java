@@ -412,13 +412,21 @@ public class Robot extends LoggedRobot {
             .alongWith(Commands.print("dashboard rezero elevator"))
             .ignoringDisable(true));
     SmartDashboard.putData(
-        "rezero arm",
+        "rezero arm against cancoder",
         arm.rezeroFromEncoder()
-            .alongWith(Commands.print("dashboard rezero arm"))
+            .alongWith(Commands.print("dashboard rezero arm against cancoder"))
+            .ignoringDisable(true));
+    SmartDashboard.putData(
+        "rezero arm against bumper",
+        arm.rezeroAgainstRightBumper()
+            .alongWith(Commands.print("dashboard rezero arm against bumper"))
             .ignoringDisable(true));
     SmartDashboard.putData(
         "rezero intake",
         intake.rezero().alongWith(Commands.print("dashboard rezero intake")).ignoringDisable(true));
+    SmartDashboard.putData(
+        "ninety intake",
+        intake.ninety().alongWith(Commands.print("dashboard ninety intake")).ignoringDisable(true));
   }
 
   private TalonFXConfiguration createRollerConfig(

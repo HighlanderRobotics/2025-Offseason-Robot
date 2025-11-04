@@ -205,33 +205,33 @@ public class OffseasonBotSwerveConstants extends SwerveConstants {
   // TODO: NEW CONSTANTS
   @Override
   public CameraConstants[] getCameraConstants() {
-    final Matrix<N3, N3> BACK_LEFT_CAMERA_MATRIX =
+    final Matrix<N3, N3> RIGHT_ELEVATOR_CAMERA_MATRIX =
         MatBuilder.fill(
             Nat.N3(), Nat.N3(), 906.46, 0.0, 675.30, 0.0, 907.49, 394.45, 0.0, 0.0, 1.0);
-    final Matrix<N8, N1> BACK_LEFT_DIST_COEFFS =
+    final Matrix<N8, N1> RIGHT_ELEVATOR_DIST_COEFFS =
         MatBuilder.fill(
             Nat.N8(), Nat.N1(), 0.039, -0.057, -0.005, 0.001, -0.004, -0.001, 0.003, 0.001);
-    final Matrix<N3, N3> BACK_RIGHT_CAMERA_MATRIX =
+    final Matrix<N3, N3> RIGHT_DRIVEBASE_CAMERA_MATRIX =
         MatBuilder.fill(
             Nat.N3(), Nat.N3(), 925.82, 0.0, 633.65, 0.0, 927.87, 386.90, 0.0, 0.0, 1.0);
-    final Matrix<N8, N1> BACK_RIGHT_DIST_COEFFS =
+    final Matrix<N8, N1> RIGHT_DRIVEBASE_DIST_COEFFS =
         MatBuilder.fill(
             Nat.N8(), Nat.N1(), 0.058, -0.09, 0.006, -0.003, 0.022, -0.002, 0.004, -0.001);
-    final Matrix<N3, N3> FRONT_RIGHT_CAMERA_MATRIX =
+    final Matrix<N3, N3> LEFT_ELEVATOR_CAMERA_MATRIX =
         MatBuilder.fill(
             Nat.N3(), Nat.N3(), 911.67, 0.0, 663.03, 0.0, 909.82, 408.72, 0.0, 0.0, 1.0);
-    final Matrix<N8, N1> FRONT_RIGHT_DIST_COEFFS =
+    final Matrix<N8, N1> LEFT_ELEVATORDIST_COEFFS =
         MatBuilder.fill(
             Nat.N8(), Nat.N1(), 0.044, -0.069, 0.001, 0.001, 0.013, -0.002, 0.004, 0.001);
-    final Matrix<N3, N3> FRONT_LEFT_CAMERA_MATRIX =
+    final Matrix<N3, N3> LEFT_DRIVEBASE_CAMERA_MATRIX =
         MatBuilder.fill(
             Nat.N3(), Nat.N3(), 920.37, 0.0, 657.16, 0.0, 921.82, 412.98, 0.0, 0.0, 1.0);
-    final Matrix<N8, N1> FRONT_LEFT_DIST_COEFFS =
+    final Matrix<N8, N1> LEFT_DRIVEBASE_DIST_COEFFS =
         MatBuilder.fill(
             Nat.N8(), Nat.N1(), 0.057, -0.09, -0.001, 0.002, 0.043, -0.002, 0.004, -0.002);
-    final CameraConstants backLeftCamConstants =
+    final CameraConstants rightElevatorCamConstants =
         new CameraConstants(
-            "Back_Left",
+            "Right_Elevator",
             new Transform3d(
                 new Translation3d(
                     Units.inchesToMeters(-11.600),
@@ -241,11 +241,11 @@ public class OffseasonBotSwerveConstants extends SwerveConstants {
                     Units.degreesToRadians(0.0),
                     Units.degreesToRadians(-(90 - 76.875000)),
                     Units.degreesToRadians(150))),
-            BACK_LEFT_CAMERA_MATRIX,
-            BACK_LEFT_DIST_COEFFS);
-    final CameraConstants backRightCamConstants =
+            RIGHT_ELEVATOR_CAMERA_MATRIX,
+            RIGHT_ELEVATOR_DIST_COEFFS);
+    final CameraConstants rightDrivebaseCamConstants =
         new CameraConstants(
-            "Back_Right",
+            "Right_Drivebase",
             new Transform3d(
                 new Translation3d(
                     Units.inchesToMeters(-11.600),
@@ -253,31 +253,31 @@ public class OffseasonBotSwerveConstants extends SwerveConstants {
                     Units.inchesToMeters(9.061)),
                 new Rotation3d(
                     0, Units.degreesToRadians(-(90 - 76.875000)), Units.degreesToRadians(210))),
-            BACK_RIGHT_CAMERA_MATRIX,
-            BACK_RIGHT_DIST_COEFFS);
-    final CameraConstants frontRightCamConstants =
+            RIGHT_DRIVEBASE_CAMERA_MATRIX,
+            RIGHT_DRIVEBASE_DIST_COEFFS);
+    final CameraConstants leftElevatorCamConstants =
         new CameraConstants(
-            "Front_Right_Camera",
+            "Left_Elevator",
             new Transform3d(
                 new Translation3d(
                     Units.inchesToMeters(6.664129),
                     Units.inchesToMeters(-12.320709),
                     Units.inchesToMeters(8.885504)),
                 new Rotation3d(0, Units.degreesToRadians(-10), Units.degreesToRadians(30))),
-            FRONT_RIGHT_CAMERA_MATRIX,
-            FRONT_RIGHT_DIST_COEFFS);
-    final CameraConstants frontLeftCamConstants =
+            LEFT_ELEVATOR_CAMERA_MATRIX,
+            LEFT_ELEVATORDIST_COEFFS);
+    final CameraConstants leftDrivebaseCamConstants =
         new CameraConstants(
-            "Front_Left_Camera",
+            "Left_Drivebase",
             new Transform3d(
                 new Translation3d(
                     Units.inchesToMeters(6.664129),
                     Units.inchesToMeters(12.320709),
                     Units.inchesToMeters(8.885504)),
                 new Rotation3d(0, Units.degreesToRadians(-10), Units.degreesToRadians(-30))),
-            FRONT_LEFT_CAMERA_MATRIX,
-            FRONT_LEFT_DIST_COEFFS);
-    return new CameraConstants[] {frontRightCamConstants, frontLeftCamConstants};
+            LEFT_DRIVEBASE_CAMERA_MATRIX,
+            LEFT_DRIVEBASE_DIST_COEFFS);
+    return new CameraConstants[] {leftElevatorCamConstants, leftDrivebaseCamConstants};
   }
 
   // TODO
