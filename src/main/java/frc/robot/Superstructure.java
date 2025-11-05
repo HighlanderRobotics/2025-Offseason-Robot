@@ -117,6 +117,7 @@ public class Superstructure {
     public final ArmState armState;
     public final IntakeState intakeState;
     public final ClimberState climberState;
+    public final Trigger trigger;
 
     private SuperState(
         ElevatorState elevatorState,
@@ -127,6 +128,7 @@ public class Superstructure {
       this.armState = armState;
       this.intakeState = intakeState;
       this.climberState = climberState;
+      trigger = new Trigger(() -> state == this);
     }
 
     private SuperState(ElevatorState elevatorState, ArmState armState, IntakeState intakeState) {
@@ -134,6 +136,11 @@ public class Superstructure {
       this.armState = armState;
       this.intakeState = intakeState;
       this.climberState = ClimberState.IDLE;
+      trigger = new Trigger(() -> state == this);
+    }
+
+    public Trigger getTrigger() {
+      return trigger;
     }
 
     public boolean isCoral() {
@@ -231,7 +238,7 @@ public class Superstructure {
   @AutoLogOutput(key = "Superstructure/Intake Has Game Piece?")
   public Trigger intakeHasGamePieceTrigger;
 
-  //May need to distinguish between coral and algae
+  // May need to distinguish between coral and algae
   @AutoLogOutput(key = "Superstructure/Arm Has Game Piece?")
   public Trigger armHasGamePieceTrigger;
 
@@ -305,7 +312,7 @@ public class Superstructure {
   private void bindTransition(SuperState start, SuperState end, Trigger trigger) {
     // when 1) the robot is in the start state and 2) the trigger is true, the robot changes state
     // to the end state
-    trigger.and(new Trigger(() -> state == start)).onTrue(changeStateTo(end));
+    trigger.and(start.getTrigger()).onTrue(changeStateTo(end));
   }
 
   /**
@@ -318,9 +325,7 @@ public class Superstructure {
   private void bindTransition(SuperState start, SuperState end, Trigger trigger, Command cmd) {
     // when 1) the robot is in the start state and 2) the trigger is true, the robot changes state
     // to the end state IN PARALLEL to running the command that got passed in
-    trigger
-        .and(new Trigger(() -> state == start))
-        .onTrue(Commands.parallel(changeStateTo(end), cmd));
+    trigger.and(start.getTrigger()).onTrue(Commands.parallel(changeStateTo(end), cmd));
   }
 
   public boolean atExtension(SuperState state) {
