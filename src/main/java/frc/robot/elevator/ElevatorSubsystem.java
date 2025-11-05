@@ -40,8 +40,8 @@ public class ElevatorSubsystem extends SubsystemBase {
     POST_HANDOFF(Units.metersToInches(0.89)),
     INTAKE_CORAL_STACK(0),
     // coral
-    PRE_L2(0),
-    L2(15),
+    PRE_L2(Units.metersToInches(0.12)),
+    L2(Units.metersToInches(0.23)),
     PRE_L3(21),
     L3(24),
     PRE_L4(Units.metersToInches(1.37795)), // 54.25), // 29.375), // 58.75),
