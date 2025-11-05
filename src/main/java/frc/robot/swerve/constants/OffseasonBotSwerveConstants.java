@@ -207,7 +207,9 @@ public class OffseasonBotSwerveConstants extends SwerveConstants {
   public CameraConstants[] getCameraConstants() {
     final Matrix<N3, N3> RIGHT_ELEVATOR_CAMERA_INTRINSICS =
         MatBuilder.fill(
-            Nat.N3(), Nat.N3(),             913.3459639243549,
+            Nat.N3(),
+            Nat.N3(),
+            913.3459639243549,
             0.0,
             654.21164902256,
             0.0,
@@ -216,10 +218,12 @@ public class OffseasonBotSwerveConstants extends SwerveConstants {
             0.0,
             0.0,
             1.0);
-            //not sure if java is ok with scientific notation
+    // not sure if java is ok with scientific notation
     final Matrix<N8, N1> RIGHT_ELEVATOR_DIST_COEFFS =
         MatBuilder.fill(
-            Nat.N8(), Nat.N1(),             0.05105666053513881,
+            Nat.N8(),
+            Nat.N1(),
+            0.05105666053513881,
             -0.0851020439698792,
             1.6403586037918962E-4,
             1.4631274866318736E-4,
@@ -229,7 +233,9 @@ public class OffseasonBotSwerveConstants extends SwerveConstants {
             -9.803976647692152E-4);
     final Matrix<N3, N3> RIGHT_DRIVEBASE_CAMERA_INTRINSICS =
         MatBuilder.fill(
-            Nat.N3(), Nat.N3(),             913.7374772109177,
+            Nat.N3(),
+            Nat.N3(),
+            913.7374772109177,
             0.0,
             649.9523505968294,
             0.0,
@@ -240,7 +246,9 @@ public class OffseasonBotSwerveConstants extends SwerveConstants {
             1.0);
     final Matrix<N8, N1> RIGHT_DRIVEBASE_DIST_COEFFS =
         MatBuilder.fill(
-            Nat.N8(), Nat.N1(),             0.05036490156210035,
+            Nat.N8(),
+            Nat.N1(),
+            0.05036490156210035,
             -0.07581268532820391,
             -0.0013038584793272766,
             -6.07909967325906E-4,
@@ -250,7 +258,9 @@ public class OffseasonBotSwerveConstants extends SwerveConstants {
             4.3831144132513674E-4);
     final Matrix<N3, N3> LEFT_ELEVATOR_CAMERA_INTRINSICS =
         MatBuilder.fill(
-            Nat.N3(), Nat.N3(),             919.5001918618356,
+            Nat.N3(),
+            Nat.N3(),
+            919.5001918618356,
             0.0,
             828.0140509099408,
             0.0,
@@ -260,11 +270,12 @@ public class OffseasonBotSwerveConstants extends SwerveConstants {
             0.0,
             1.0);
     final Matrix<N8, N1> LEFT_ELEVATOR_DIST_COEFFS =
-        MatBuilder.fill(
-            Nat.N8(), Nat.N1(), 0.026, -0.048, 0, 0, 0.073, -0.024, 0.031, 0.053);
+        MatBuilder.fill(Nat.N8(), Nat.N1(), 0.026, -0.048, 0, 0, 0.073, -0.024, 0.031, 0.053);
     final Matrix<N3, N3> LEFT_DRIVEBASE_CAMERA_INTRINSICS =
         MatBuilder.fill(
-            Nat.N3(), Nat.N3(),             910.4543686924517,
+            Nat.N3(),
+            Nat.N3(),
+            910.4543686924517,
             0.0,
             636.0626170515789,
             0.0,
@@ -275,7 +286,9 @@ public class OffseasonBotSwerveConstants extends SwerveConstants {
             1.0);
     final Matrix<N8, N1> LEFT_DRIVEBASE_DIST_COEFFS =
         MatBuilder.fill(
-            Nat.N8(), Nat.N1(),             0.040119422316274016,
+            Nat.N8(),
+            Nat.N1(),
+            0.040119422316274016,
             -0.04835252969283134,
             -9.763490623926644E-4,
             -0.0013527552120382006,
@@ -283,7 +296,7 @@ public class OffseasonBotSwerveConstants extends SwerveConstants {
             -9.426338337651241E-4,
             0.006453303380916122,
             0.003459079233022941);
-            
+
     final CameraConstants rightElevatorCamConstants =
         new CameraConstants(
             "Right_Elevator",

@@ -344,7 +344,7 @@ public class Superstructure {
         SuperState.IDLE,
         SuperState.INTAKE_CORAL_GROUND,
         intakeCoralReq.and(() -> Robot.getCoralIntakeTarget() == CoralIntakeTarget.GROUND));
-    
+
     bindTransition(
         SuperState.INTAKE_CORAL_GROUND,
         SuperState.READY_CORAL_INTAKE,
@@ -412,7 +412,8 @@ public class Superstructure {
 
     // ---Intake coral stack---
     // No intake coral stack -> L1 cause why would you do that
-    // READY_CORAL_ARM is the counterpart to READY_CORAL_INTAKE, as in it's essentially idle except it has a coral
+    // READY_CORAL_ARM is the counterpart to READY_CORAL_INTAKE, as in it's essentially idle except
+    // it has a coral
     // TODO maybe add intake coral straight to l4 or smth for auto (only?)
     bindTransition(
         SuperState.IDLE,
@@ -444,7 +445,7 @@ public class Superstructure {
             // TODO this is a different near reef (?)
             .and(new Trigger(swerve::isNearL1Reef).negate().debounce(0.15)));
 
-    //---Left L2---
+    // ---Left L2---
     bindTransition(
         SuperState.LEFT_POST_HANDOFF,
         SuperState.PRE_L2_LEFT,
@@ -481,7 +482,7 @@ public class Superstructure {
     bindTransition(
         SuperState.SCORE_L3_RIGHT, SuperState.IDLE, new Trigger(arm::hasGamePiece).negate()
         // TODO this is a different near reef (?)
-        // .and(new Trigger(swerve::isNearL1Reef).negate().debounce(0.15)));
+        .and(new Trigger(swerve::isNearL1Reef).negate().debounce(0.15))
         );
 
     // ---Left L3---
