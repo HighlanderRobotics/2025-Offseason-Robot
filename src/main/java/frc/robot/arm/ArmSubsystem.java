@@ -47,7 +47,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public static final double VERTICAL_OFFSET_METERS = Units.inchesToMeters(12.0);
   public static final double SAFE_ZEROING_ANGLE = 120.0; // idk
 
-  public static final double CANCODER_OFFSET = -0.281; // -0.368896484375;
+  public static final double CANCODER_OFFSET = -0.3545; // -0.368896484375;
   // this is because we want it to wrap around from -180 to 180, which is when it's pointed straight
   // down
   public static final double CANCODER_DISCONTINUITY_POINT = 0.5;
@@ -69,13 +69,13 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public enum ArmState {
     IDLE(0, 0.0),
     // coral
-    PRE_RIGHT_HANDOFF(90, 5.0),
-    RIGHT_HANDOFF(180, 5.0),
-    RIGHT_POST_HANDOFF(89, 5.0),
+    PRE_RIGHT_HANDOFF(90, 7.0),
+    RIGHT_HANDOFF(180, 7.0),
+    RIGHT_POST_HANDOFF(89, 7.0),
 
-    PRE_LEFT_HANDOFF(-90, 5.0),
-    LEFT_HANDOFF(-180, 5.0),
-    LEFT_POST_HANDOFF(-89, 5.0),
+    PRE_LEFT_HANDOFF(-90, 7.0),
+    LEFT_HANDOFF(-180, 7.0),
+    LEFT_POST_HANDOFF(-89, 7.0),
 
     INTAKE_CORAL_STACK(100, 5.0),
     READY_CORAL_ARM(0, 1.0),
@@ -117,10 +117,10 @@ public class ArmSubsystem extends RollerPivotSubsystem {
 
     private ArmState(double positionDegrees, double velocityRPS) {
       LoggedTunableNumber ltn =
-          new LoggedTunableNumber("Arm/Angle/" + this.name(), positionDegrees);
+          new LoggedTunableNumber("Arm/Angle: " + this.name(), positionDegrees);
       // we're in real life!! use degrees
       this.position = () -> Rotation2d.fromDegrees(ltn.get());
-      this.velocityRPS = new LoggedTunableNumber("Arm/Velocity" + this.name(), velocityRPS);
+      this.velocityRPS = new LoggedTunableNumber("Arm/Velocity: " + this.name(), velocityRPS);
     }
 
     public Rotation2d getAngle() {

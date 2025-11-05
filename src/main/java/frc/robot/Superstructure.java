@@ -347,15 +347,16 @@ public class Superstructure {
 
     bindTransition(
         SuperState.INTAKE_CORAL_GROUND,
-        SuperState.IDLE,
-        intakeCoralReq.negate().and(new Trigger(intake::hasGamePiece).negate()));
-
-    bindTransition(
-        SuperState.INTAKE_CORAL_GROUND,
         SuperState.READY_CORAL_INTAKE,
         new Trigger(intake::hasGamePiece).debounce(0.1));
 
-    // Handoff
+    // ---Cancel intake coral ground
+    bindTransition(
+        SuperState.INTAKE_CORAL_GROUND,
+        SuperState.IDLE,
+        intakeCoralReq.negate().and(new Trigger(intake::hasGamePiece).negate()));
+
+    // ---Right Handoff---
     bindTransition(
         SuperState.READY_CORAL_INTAKE,
         SuperState.RIGHT_PRE_PRE_HANDOFF,
@@ -378,14 +379,13 @@ public class Superstructure {
 
     bindTransition(
         SuperState.RIGHT_HANDOFF,
-        // uhhh may need another intermediate state
         SuperState.RIGHT_POST_HANDOFF,
         new Trigger(arm::hasGamePiece)
             .debounce(0.1)
-            .and(new Trigger(intake::hasGamePiece).negate().debounce(0.1))
+            .and(new Trigger(intake::hasGamePiece).negate().debounce(0.05))
             .and(atExtensionTrigger));
 
-    // Handoff
+    // ---Left Handoff---
     bindTransition(
         SuperState.READY_CORAL_INTAKE,
         SuperState.LEFT_PRE_HANDOFF,
@@ -412,6 +412,8 @@ public class Superstructure {
 
     // ---Intake coral stack---
     // No intake coral stack -> L1 cause why would you do that
+    // READY_CORAL_ARM is the counterpart to READY_CORAL_INTAKE, as in it's essentially idle except
+    // it has a coral
     // TODO maybe add intake coral straight to l4 or smth for auto (only?)
     bindTransition(
         SuperState.IDLE,
@@ -423,7 +425,7 @@ public class Superstructure {
         SuperState.READY_CORAL_ARM,
         new Trigger(arm::hasGamePiece).debounce(0.1));
 
-    // ---L2---
+    // ---Right L2---
     // bindTransition(
     //     SuperState.RIGHT_POST_HANDOFF,
     //     SuperState.PRE_L2_RIGHT,
@@ -443,6 +445,7 @@ public class Superstructure {
             // TODO this is a different near reef (?)
             .and(new Trigger(swerve::isNearL1Reef).negate().debounce(0.15)));
 
+    // ---Left L2---
     bindTransition(
         SuperState.LEFT_POST_HANDOFF,
         SuperState.PRE_L2_LEFT,
@@ -462,7 +465,7 @@ public class Superstructure {
             // TODO this is a different near reef (?)
             .and(new Trigger(swerve::isNearL1Reef).negate().debounce(0.15)));
 
-    // ---L3---
+    // ---Right L3---
     bindTransition(
         SuperState.RIGHT_POST_HANDOFF,
         SuperState.PRE_L3_RIGHT,
@@ -477,11 +480,14 @@ public class Superstructure {
         preScoreReq.negate().and(scoreReq).and(atExtensionTrigger));
 
     bindTransition(
-        SuperState.SCORE_L3_RIGHT, SuperState.IDLE, new Trigger(arm::hasGamePiece).negate()
-        // TODO this is a different near reef (?)
-        // .and(new Trigger(swerve::isNearL1Reef).negate().debounce(0.15)));
-        );
+        SuperState.SCORE_L3_RIGHT,
+        SuperState.IDLE,
+        new Trigger(arm::hasGamePiece)
+            .negate()
+            // TODO this is a different near reef (?)
+            .and(new Trigger(swerve::isNearL1Reef).negate().debounce(0.15)));
 
+    // ---Left L3---
     bindTransition(
         SuperState.LEFT_POST_HANDOFF,
         SuperState.PRE_L3_LEFT,
@@ -501,12 +507,11 @@ public class Superstructure {
             // TODO this is a different near reef (?)
             .and(new Trigger(swerve::isNearL1Reef).negate().debounce(0.15)));
 
-    // ---L4---
+    // ---Right L4---
     bindTransition(
         SuperState.RIGHT_POST_HANDOFF,
         SuperState.PRE_L4_RIGHT,
         atExtensionTrigger
-            .debounce(0.1)
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L4)
             .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
@@ -521,6 +526,7 @@ public class Superstructure {
         // .and(new Trigger(swerve::isNearL1Reef).negate().debounce(0.15)));
         );
 
+    // ---Left L4---
     bindTransition(
         SuperState.LEFT_POST_HANDOFF,
         SuperState.PRE_L4_LEFT,
