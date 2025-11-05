@@ -86,8 +86,8 @@ public class FieldUtils {
       return original.transformBy(
           new Transform2d(
               0,
-              -(-0.3 - Units.inchesToMeters(6)),
-              // * (Robot.getScoringSide() == ScoringSide.LEFT ? -1 : -1),
+              (-0.3 - Units.inchesToMeters(6))
+                  * (Robot.getScoringSide() == ScoringSide.LEFT ? 1 : -1),
               Rotation2d.kZero));
     }
 
