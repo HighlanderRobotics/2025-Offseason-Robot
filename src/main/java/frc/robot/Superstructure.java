@@ -485,6 +485,7 @@ public class Superstructure {
         SuperState.IDLE,
         new Trigger(arm::hasGamePiece)
             .negate()
+            .debounce(0.1)
             // TODO this is a different near reef (?)
             .and(new Trigger(() -> !swerve.isNearL1Reef()).debounce(0.15)));
 
