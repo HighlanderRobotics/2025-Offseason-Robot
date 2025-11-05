@@ -75,10 +75,9 @@ public class Camera {
   }
 
   // MUST CALL FROM SUBSYSTEM! NOT PART OF COMMAND SCHEDULER
-  public void periodic(SwerveDrivePoseEstimator swerveEstimator) {
+  public void periodic() {
     Tracer.trace("Update inputs", this::updateInputs);
     Tracer.trace("Process april tag inputs", this::processApriltagInputs);
-    Tracer.trace("Add vision estimate", () -> updateCamera(swerveEstimator));
   }
 
   public void updateInputs() {

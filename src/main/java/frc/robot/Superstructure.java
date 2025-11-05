@@ -480,10 +480,12 @@ public class Superstructure {
         preScoreReq.negate().and(scoreReq).and(atExtensionTrigger));
 
     bindTransition(
-        SuperState.SCORE_L3_RIGHT, SuperState.IDLE, new Trigger(arm::hasGamePiece).negate()
-        // TODO this is a different near reef (?)
-        .and(new Trigger(swerve::isNearL1Reef).negate().debounce(0.15))
-        );
+        SuperState.SCORE_L3_RIGHT,
+        SuperState.IDLE,
+        new Trigger(arm::hasGamePiece)
+            .negate()
+            // TODO this is a different near reef (?)
+            .and(new Trigger(swerve::isNearL1Reef).negate().debounce(0.15)));
 
     // ---Left L3---
     bindTransition(

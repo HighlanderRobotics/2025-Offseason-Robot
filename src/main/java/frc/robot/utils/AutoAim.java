@@ -97,8 +97,8 @@ public class AutoAim {
   public static Rotation2d getClosestBargeRotation(Pose2d pose) {
     return (Math.abs(pose.getX() - FieldUtils.BLUE_NET_X)
                 > Math.abs(pose.getX() - FieldUtils.RED_NET_X)
-            ? Rotation2d.kZero
-            : Rotation2d.k180deg)
+            ? Rotation2d.kCW_90deg
+            : Rotation2d.kCCW_90deg)
         // TODO: TUNE
         .plus(Rotation2d.fromDegrees(20.0));
   }

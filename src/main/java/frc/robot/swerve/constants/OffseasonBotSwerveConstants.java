@@ -301,7 +301,7 @@ public class OffseasonBotSwerveConstants extends SwerveConstants {
         new CameraConstants(
             "Right_Elevator",
             new Transform3d(
-                new Translation3d(0.287, -0.139, 0.821),
+                new Translation3d(-0.139, -0.211, 0.798),
                 new Rotation3d(
                     Units.degreesToRadians(0.0),
                     Units.degreesToRadians(135 + 90 + 180),
@@ -320,7 +320,7 @@ public class OffseasonBotSwerveConstants extends SwerveConstants {
         new CameraConstants(
             "Left_Elevator",
             new Transform3d(
-                new Translation3d(0.287, 0.139, 0.821),
+                new Translation3d(-0.139, 0.211, 0.798),
                 new Rotation3d(
                     0, Units.degreesToRadians(135 + 90 + 180), Units.degreesToRadians(90))),
             LEFT_ELEVATOR_CAMERA_INTRINSICS,
