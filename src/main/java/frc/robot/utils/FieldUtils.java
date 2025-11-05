@@ -66,20 +66,29 @@ public class FieldUtils {
       this.height = height;
     }
 
-    private static final List<Pose2d> transformedPoses =
+    private static final List<Pose2d> transformedPosesLeft =
         Arrays.stream(values())
             .map(
                 (AlgaeIntakeTargets targets) -> {
-                  return AlgaeIntakeTargets.getRobotTargetLocation(targets.location);
+                  return AlgaeIntakeTargets.getRobotTargetLocation(
+                      targets.location, ScoringSide.LEFT);
+                })
+            .toList();
+    private static final List<Pose2d> transformedPosesRight =
+        Arrays.stream(values())
+            .map(
+                (AlgaeIntakeTargets targets) -> {
+                  return AlgaeIntakeTargets.getRobotTargetLocation(
+                      targets.location, ScoringSide.RIGHT);
                 })
             .toList();
 
-    public static Pose2d getRobotTargetLocation(Pose2d original) {
+    public static Pose2d getRobotTargetLocation(Pose2d original, ScoringSide scoringSide) {
       return original.transformBy(
           new Transform2d(
               (SwerveSubsystem.SWERVE_CONSTANTS.getBumperLength() / 2),
               0,
-              Rotation2d.fromDegrees(Robot.getScoringSide() == ScoringSide.LEFT ? 90.0 : 270.0)));
+              Rotation2d.fromDegrees(scoringSide == ScoringSide.LEFT ? 90.0 : 270.0)));
     }
 
     public static Pose2d getOffsetLocation(Pose2d original) {
@@ -93,7 +102,10 @@ public class FieldUtils {
 
     /** Gets the closest offset target to the given pose. */
     public static Pose2d getClosestTargetPose(Pose2d pose) {
-      return pose.nearest(transformedPoses);
+      return pose.nearest(
+          Robot.getScoringSide() == ScoringSide.LEFT
+              ? transformedPosesLeft
+              : transformedPosesRight);
     }
 
     public static AlgaeIntakeTargets getClosestTarget(Pose2d pose) {
