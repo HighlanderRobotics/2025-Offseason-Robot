@@ -61,7 +61,7 @@ public class ClimberSubsystem extends RollerPivotSubsystem {
   }
 
   public Command setStateAngleVoltage() {
-    return setPivotAndRollers(() -> state.position, () -> state.volts);
+    return setPivotAndRollers(state.position, state.volts);
   }
 
   public boolean isNearAngle(Rotation2d target) {

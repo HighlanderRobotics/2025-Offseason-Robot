@@ -45,7 +45,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public static final double CORAL_CURRENT_THRESHOLD = 30.0;
   public static final double TOLERANCE_DEGREES = 10.0;
   public static final double VERTICAL_OFFSET_METERS = Units.inchesToMeters(12.0);
-  public static final double SAFE_ZEROING_ANGLE = 120.0; // idk
+  public static final double SAFE_ZEROING_ANGLE = -80.0; // idk
 
   public static final double CANCODER_OFFSET = -0.3545; // -0.368896484375;
   // this is because we want it to wrap around from -180 to 180, which is when it's pointed straight
@@ -166,7 +166,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   }
 
   public Command intakeAlgae() {
-    return this.run(() -> runRollerVoltage(() -> ALGAE_INTAKE_VOLTAGE))
+    return this.run(() -> runRollerVoltage(ALGAE_INTAKE_VOLTAGE))
         .until(
             new Trigger(() -> Math.abs(currentFilterValue) > ALGAE_CURRENT_THRESHOLD)
                 .debounce(0.25))
@@ -174,7 +174,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   }
 
   public Command intakeCoral() {
-    return this.run(() -> runRollerVoltage(() -> CORAL_INTAKE_VOLTAGE))
+    return this.run(() -> runRollerVoltage(CORAL_INTAKE_VOLTAGE))
         .until(
             new Trigger(() -> Math.abs(currentFilterValue) > CORAL_CURRENT_THRESHOLD)
                 .debounce(0.25))
@@ -194,8 +194,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   }
 
   public Command setStateAngleVelocity() {
-    return setPivotAndRollers(
-        () -> getState().position.get(), () -> getState().velocityRPS.getAsDouble());
+    return setPivotAndRollers(state.position.get(), state.velocityRPS.getAsDouble());
     // return this.run(() -> runRollerVelocity(getState().velocityRPS.getAsDouble()));
   }
 
@@ -211,7 +210,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   }
 
   public Command runCurrentZeroing() {
-    return this.run(() -> setPivotVoltage(() -> -3.0))
+    return this.run(() -> setPivotVoltage(3.0))
         .until(
             new Trigger(() -> Math.abs(currentFilterValue) > ZEROING_CURRENT_THRESHOLD_AMPS)
                 .debounce(0.25))

@@ -644,6 +644,14 @@ public class Robot extends LoggedRobot {
     // operator.povRight().onTrue(Commands.runOnce(() -> leftHandedTarget = false));
 
     // heading reset
+    // figure out how to make sure it doesnt jump back to default make add into zeroing button
+    operator.povLeft().whileTrue(Commands.runOnce(() -> arm.setPivotVoltage(-3.0)));
+
+    operator.povRight().whileTrue(Commands.runOnce(() -> arm.setPivotVoltage(3.0)));
+
+    // makes it hold position might be dumb
+    operator.povUp().whileTrue(Commands.runOnce(() -> arm.setPivotVoltage(0.0)));
+
     driver
         .leftStick()
         .and(driver.rightStick())
@@ -659,16 +667,12 @@ public class Robot extends LoggedRobot {
 
     driver
         .start()
-        .onTrue(
+        .whileTrue(
             Commands.sequence(
-                intake.runCurrentZeroing(),
-                // probably a smarter way to do this but setting pivot to safe angle so the elevator
-                // doent slam it againt something else
-                Commands.runOnce(
-                    () -> arm.setPivotAngle(() -> Rotation2d.fromDegrees(arm.SAFE_ZEROING_ANGLE))),
-                elevator.runCurrentZeroing(),
-                arm.runCurrentZeroing()
-                // () -> arm.rezeroFromEncoder(),
+                intake.runCurrentZeroing(), elevator.runCurrentZeroing(), arm.rezeroFromEncoder()
+                // TODO add transition to specific states after zeroing
+                // only use if cancoder is cooked use:
+                // arm.runCurrentZeroing()
                 ));
   }
 
