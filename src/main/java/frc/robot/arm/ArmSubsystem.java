@@ -60,7 +60,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
    * 0 for position is vertical with the EE up. We consider the front of the robot to be the intake,
    * so left and right are based on that. Positive is counterclockwise from the robot's POV (which
    * is to the left). We're in real life!! use degrees. degrees -> Rotation2d gets handled in the
-   * constructor Positive voltage is intaking, negative is outtaking. (TODO)
+   * constructor Positive voltage is intaking, negative is outtaking.
    */
   public enum ArmState {
     IDLE(0, 0.0),

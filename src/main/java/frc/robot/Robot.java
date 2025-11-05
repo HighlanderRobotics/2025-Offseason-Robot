@@ -83,8 +83,6 @@ public class Robot extends LoggedRobot {
     REPLAY
   }
 
-  // TODO add tuning mode switch
-
   public static enum CoralScoreTarget {
     L1,
     L2,
@@ -129,7 +127,6 @@ public class Robot extends LoggedRobot {
       new ElevatorSubsystem(
           ROBOT_TYPE != RobotType.SIM ? new ElevatorIOReal() : new ElevatorIOSim());
 
-  // TODO tune these config values
   TalonFXConfiguration armRollerConfig =
       createRollerConfig(InvertedValue.Clockwise_Positive, 20.0, 6.62, 0.48, 0.25, 0.0);
 
