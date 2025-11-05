@@ -54,6 +54,8 @@ public class Superstructure {
 
     // "left handoff" means the robot is about to score on its left, meaning the arm goes to the
     // right
+    LEFT_PRE_PRE_HANDOFF(
+        ElevatorState.PRE_HANDOFF, ArmState.PRE_LEFT_HANDOFF, IntakeState.READY_CORAL_INTAKE),
     LEFT_PRE_HANDOFF(ElevatorState.HANDOFF, ArmState.LEFT_HANDOFF, IntakeState.READY_CORAL_INTAKE),
     LEFT_HANDOFF(ElevatorState.HANDOFF, ArmState.LEFT_HANDOFF, IntakeState.HANDOFF),
     // this is to make it "take the long way around". it's kind of stupid but
@@ -408,30 +410,34 @@ public class Superstructure {
             .and(new Trigger(intake::hasGamePiece).negate().debounce(0.05))
             .and(atExtensionTrigger));
 
-    // ---Left Handoff---
-    // bindTransition(
-    //     SuperState.READY_CORAL_INTAKE,
-    //     SuperState.LEFT_PRE_HANDOFF,
-    //     // TODO maybe make the hascorals and stuff triggers inside intake?
-    //     preScoreReq
-    //         .and(() -> Robot.getCoralScoreTarget() != CoralScoreTarget.L1)
-    //         .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
-
-    bindTransition(
-        SuperState.LEFT_PRE_HANDOFF,
-        SuperState.LEFT_HANDOFF,
-        // maybe this also needs prescore idk
-        atExtensionTrigger.debounce(0.25).and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
-
-    bindTransition(
-        SuperState.LEFT_HANDOFF,
-        // uhhh may need another intermediate state
-        SuperState.LEFT_POST_HANDOFF,
-        new Trigger(arm::hasGamePiece)
-            .debounce(0.1)
-            .and(intake::hasGamePiece)
-            .negate()
-            .and(atExtensionTrigger));
+        // ---Left Handoff---
+        bindTransition(
+            SuperState.READY_CORAL_INTAKE,
+            SuperState.LEFT_PRE_PRE_HANDOFF,
+            // TODO maybe make the hascorals and stuff triggers inside intake?
+            preScoreReq
+                .and(() -> Robot.getCoralScoreTarget() != CoralScoreTarget.L1)
+                .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
+    
+        bindTransition(
+            SuperState.LEFT_PRE_PRE_HANDOFF,
+            SuperState.LEFT_PRE_HANDOFF,
+            // maybe this also needs prescore idk
+            atExtensionTrigger.debounce(0.1).and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
+    
+        bindTransition(
+            SuperState.LEFT_PRE_HANDOFF,
+            SuperState.LEFT_HANDOFF,
+            // maybe this also needs prescore idk
+            atExtensionTrigger.debounce(0.25).and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
+    
+        bindTransition(
+            SuperState.LEFT_HANDOFF,
+            SuperState.LEFT_POST_HANDOFF,
+            new Trigger(arm::hasGamePiece)
+                .debounce(0.1)
+                .and(new Trigger(intake::hasGamePiece).negate().debounce(0.05))
+                .and(atExtensionTrigger));
 
     // ---Intake coral stack---
     // No intake coral stack -> L1 cause why would you do that
@@ -475,21 +481,24 @@ public class Superstructure {
     bindTransition(
         SuperState.LEFT_POST_HANDOFF,
         SuperState.PRE_L2_LEFT,
-        preScoreReq
-            .and(atExtensionTrigger)
+        atExtensionTrigger
+            .debounce(0.1)
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L2)
             .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
     bindTransition(
-        SuperState.PRE_L2_LEFT, SuperState.SCORE_L2_LEFT, scoreReq.and(atExtensionTrigger));
+        SuperState.PRE_L2_LEFT,
+        SuperState.SCORE_L2_LEFT,
+        preScoreReq.negate().and(scoreReq).and(atExtensionTrigger));
 
     bindTransition(
         SuperState.SCORE_L2_LEFT,
         SuperState.IDLE,
         new Trigger(arm::hasGamePiece)
             .negate()
+            .debounce(0.1)
             // TODO this is a different near reef (?)
-            .and(new Trigger(swerve::isNearL1Reef).negate().debounce(0.15)));
+            .and(new Trigger(() -> !swerve.isNearL1Reef()).debounce(0.15)));
 
     // ---Right L3---
     bindTransition(
@@ -518,21 +527,24 @@ public class Superstructure {
     bindTransition(
         SuperState.LEFT_POST_HANDOFF,
         SuperState.PRE_L3_LEFT,
-        preScoreReq
-            .and(atExtensionTrigger)
+        atExtensionTrigger
+            .debounce(0.1)
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L3)
             .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
     bindTransition(
-        SuperState.PRE_L3_LEFT, SuperState.SCORE_L3_LEFT, scoreReq.and(atExtensionTrigger));
+        SuperState.PRE_L3_LEFT,
+        SuperState.SCORE_L3_LEFT,
+        preScoreReq.negate().and(scoreReq).and(atExtensionTrigger));
 
     bindTransition(
         SuperState.SCORE_L3_LEFT,
         SuperState.IDLE,
         new Trigger(arm::hasGamePiece)
             .negate()
+            .debounce(0.1)
             // TODO this is a different near reef (?)
-            .and(new Trigger(swerve::isNearL1Reef).negate().debounce(0.15)));
+            .and(new Trigger(() -> !swerve.isNearL1Reef()).debounce(0.15)));
 
     // ---Right L4---
     bindTransition(
@@ -560,21 +572,23 @@ public class Superstructure {
     bindTransition(
         SuperState.LEFT_POST_HANDOFF,
         SuperState.PRE_L4_LEFT,
-        preScoreReq
-            .and(atExtensionTrigger)
+        atExtensionTrigger
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L4)
             .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
     bindTransition(
-        SuperState.PRE_L4_LEFT, SuperState.SCORE_L4_LEFT, scoreReq.and(atExtensionTrigger));
+        SuperState.PRE_L4_LEFT,
+        SuperState.SCORE_L4_LEFT,
+        preScoreReq.negate().and(scoreReq).and(atExtensionTrigger));
 
     bindTransition(
         SuperState.SCORE_L4_LEFT,
         SuperState.IDLE,
         new Trigger(arm::hasGamePiece)
             .negate()
+            .debounce(0.1)
             // TODO this is a different near reef (?)
-            .and(new Trigger(swerve::isNearL1Reef).negate().debounce(0.15)));
+            .and(new Trigger(() -> !swerve.isNearL1Reef()).debounce(0.15)));
 
     // ---Intake Algae Ground---
     bindTransition(
@@ -598,7 +612,7 @@ public class Superstructure {
         SuperState.READY_ALGAE,
         new Trigger(arm::hasGamePiece).debounce(0.1));
 
-    // ---Intake Algae Low---
+    // ---Right Intake Algae Low---
     bindTransition(
         SuperState.IDLE,
         SuperState.INTAKE_ALGAE_LOW_RIGHT,
@@ -611,6 +625,7 @@ public class Superstructure {
         SuperState.READY_ALGAE,
         new Trigger(arm::hasGamePiece).debounce(0.1));
 
+    // ---Left Intake Algae Low---
     bindTransition(
         SuperState.IDLE,
         SuperState.INTAKE_ALGAE_LOW_LEFT,
@@ -623,7 +638,7 @@ public class Superstructure {
         SuperState.READY_ALGAE,
         new Trigger(arm::hasGamePiece).debounce(0.1));
 
-    // ---Intake Algae High---
+    // ---Right Intake Algae High---
     bindTransition(
         SuperState.IDLE,
         SuperState.INTAKE_ALGAE_HIGH_RIGHT,
@@ -636,6 +651,7 @@ public class Superstructure {
         SuperState.READY_ALGAE,
         new Trigger(arm::hasGamePiece).debounce(0.1));
 
+    // ---Left Intake Algae High---
     bindTransition(
         SuperState.IDLE,
         SuperState.INTAKE_ALGAE_HIGH_LEFT,
@@ -648,7 +664,7 @@ public class Superstructure {
         SuperState.READY_ALGAE,
         new Trigger(arm::hasGamePiece).debounce(0.1));
 
-    // ---Score Barge---
+    // ---Right Score Barge---
     bindTransition(
         SuperState.READY_ALGAE,
         SuperState.PRE_BARGE_RIGHT,
@@ -668,6 +684,7 @@ public class Superstructure {
             .negate()
             .debounce(0.2));
 
+    // ---Left Score Barge---
     bindTransition(
         SuperState.READY_ALGAE,
         SuperState.PRE_BARGE_LEFT,
