@@ -2,6 +2,7 @@ package frc.robot.climber;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.pivot.PivotIO;
 import frc.robot.roller.RollerIO;
 import frc.robot.rollerpivot.RollerPivotSubsystem;
@@ -28,6 +29,7 @@ public class ClimberSubsystem extends RollerPivotSubsystem {
   public enum ClimberState {
     IDLE(Rotation2d.fromDegrees(0), 0.0),
     // climbing
+    //TODO climber stuff is very tbd rn
     PRE_CLIMB(Rotation2d.fromDegrees(0), 0.0),
     CLIMB(Rotation2d.fromDegrees(20), 0.0);
 
@@ -70,5 +72,13 @@ public class ClimberSubsystem extends RollerPivotSubsystem {
 
   public boolean atClimbExtension() {
     return isNearAngle(CLIMB_EXTENSION_DEGREES);
+  }
+
+  public Command retract() {
+    return this.run(() -> setPivotVoltage(() -> -8.0));
+  }
+
+  public Command rezero() {
+    return Commands.runOnce(() -> pivotIO.resetEncoder(Rotation2d.kZero));
   }
 }
