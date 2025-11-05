@@ -56,9 +56,9 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   // TODO : change these values to the real ones
   public enum IntakeState {
     IDLE(Units.radiansToDegrees(1.96), 0.0),
-    INTAKE_CORAL(Units.radiansToDegrees(-0.5), 15.0),
+    INTAKE_CORAL(Units.radiansToDegrees(-0.5), 17.0),
     READY_CORAL_INTAKE(Units.radiansToDegrees(1.96), 1.0),
-    HANDOFF(Units.radiansToDegrees(1.96), -15.0),
+    HANDOFF(110.867, -17.0), // Units.radiansToDegrees(1.96)
     PRE_L1(90, 1.0),
     SCORE_L1(90, -5.0),
     CLIMB(Units.radiansToDegrees(-0.3), 0.0);
@@ -68,10 +68,10 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
 
     private IntakeState(double positionDegrees, double velocityRPS) {
       LoggedTunableNumber ltn =
-          new LoggedTunableNumber("Intake/Angle/" + this.name(), positionDegrees);
+          new LoggedTunableNumber("Intake/Angle: " + this.name(), positionDegrees);
       // we're in real life!! use degrees
       this.position = () -> Rotation2d.fromDegrees(ltn.get());
-      this.velocityRPS = new LoggedTunableNumber("Intake/Velocity/" + this.name(), velocityRPS);
+      this.velocityRPS = new LoggedTunableNumber("Intake/Velocity: " + this.name(), velocityRPS);
     }
 
     public Rotation2d getAngle() {
