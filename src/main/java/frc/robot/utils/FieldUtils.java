@@ -236,46 +236,68 @@ public class FieldUtils {
       this.leftHanded = leftHanded;
     }
 
-    private static final List<Pose2d> TRANSFORMED_POSES_L23 =
+    private static final List<Pose2d> TRANSFORMED_POSES_L23_LEFT =
         Arrays.stream(values())
             .map(
                 (CoralTargets targets) -> {
-                  return CoralTargets.getRobotTargetLocationL23(targets.location);
+                  return CoralTargets.getRobotTargetLocationL23(targets.location, ScoringSide.LEFT);
                 })
             .toList();
-    private static final List<Pose2d> TRANSFORMED_POSES_L4 =
+    private static final List<Pose2d> TRANSFORMED_POSES_L4_LEFT =
         Arrays.stream(values())
-            .map((CoralTargets target) -> CoralTargets.getRobotTargetLocationL4(target.location))
+            .map(
+                (CoralTargets target) ->
+                    CoralTargets.getRobotTargetLocationL4(target.location, ScoringSide.LEFT))
+            .toList();
+    private static final List<Pose2d> TRANSFORMED_POSES_L23_RIGHT =
+        Arrays.stream(values())
+            .map(
+                (CoralTargets targets) -> {
+                  return CoralTargets.getRobotTargetLocationL23(
+                      targets.location, ScoringSide.RIGHT);
+                })
+            .toList();
+    private static final List<Pose2d> TRANSFORMED_POSES_L4_RIGHT =
+        Arrays.stream(values())
+            .map(
+                (CoralTargets target) ->
+                    CoralTargets.getRobotTargetLocationL4(target.location, ScoringSide.RIGHT))
             .toList();
 
-    public static Pose2d getRobotTargetLocationL23(Pose2d original) {
+    public static Pose2d getRobotTargetLocationL23(Pose2d original, ScoringSide scoringSide) {
       // 0.248 for trough
       // -7.879 in for arm offset
       return original.transformBy(
           new Transform2d(
               0.291 + (SwerveSubsystem.SWERVE_CONSTANTS.getBumperLength() / 2),
-              Units.inchesToMeters(-7.879) * (Robot.getScoringSide() == ScoringSide.LEFT ? 1 : -1),
-              Rotation2d.fromDegrees(Robot.getScoringSide() == ScoringSide.LEFT ? 90.0 : 270.0)));
+              Units.inchesToMeters(-7.879) * (scoringSide == ScoringSide.LEFT ? 1 : -1),
+              Rotation2d.fromDegrees(scoringSide == ScoringSide.LEFT ? 90.0 : 270.0)));
     }
 
-    public static Pose2d getRobotTargetLocationL4(Pose2d original) {
+    public static Pose2d getRobotTargetLocationL4(Pose2d original, ScoringSide scoringSide) {
       // Additional 4.7 inches to make scoring ling up.
       return original.transformBy(
           new Transform2d(
               0.291
                   + (SwerveSubsystem.SWERVE_CONSTANTS.getBumperLength() / 2)
                   + Units.inchesToMeters(4.7),
-              Units.inchesToMeters(-7.879) * (Robot.getScoringSide() == ScoringSide.LEFT ? 1 : -1),
-              Rotation2d.fromDegrees(Robot.getScoringSide() == ScoringSide.LEFT ? 90.0 : 270.0)));
+              Units.inchesToMeters(-7.879) * (scoringSide == ScoringSide.LEFT ? 1 : -1),
+              Rotation2d.fromDegrees(scoringSide == ScoringSide.LEFT ? 90.0 : 270.0)));
     }
 
     /** Gets the closest offset target to the given pose. */
     public static Pose2d getClosestTargetL23(Pose2d pose) {
-      return pose.nearest(TRANSFORMED_POSES_L23);
+      return pose.nearest(
+          Robot.getScoringSide() == ScoringSide.LEFT
+              ? TRANSFORMED_POSES_L23_LEFT
+              : TRANSFORMED_POSES_L23_RIGHT);
     }
 
     public static Pose2d getClosestTargetL4(Pose2d pose) {
-      return pose.nearest(TRANSFORMED_POSES_L4);
+      return pose.nearest(
+          Robot.getScoringSide() == ScoringSide.LEFT
+              ? TRANSFORMED_POSES_L4_LEFT
+              : TRANSFORMED_POSES_L4_RIGHT);
     }
 
     /** Gets the closest offset target to the given pose. */
@@ -285,7 +307,8 @@ public class FieldUtils {
               .filter((target) -> target.leftHanded == leftHanded)
               .map(
                   (CoralTargets targets) -> {
-                    return CoralTargets.getRobotTargetLocationL23(targets.location);
+                    return CoralTargets.getRobotTargetLocationL23(
+                        targets.location, Robot.getScoringSide());
                   })
               .toList());
     }
@@ -297,7 +320,8 @@ public class FieldUtils {
               .filter((target) -> target.leftHanded == leftHanded)
               .map(
                   (CoralTargets targets) -> {
-                    return CoralTargets.getRobotTargetLocationL4(targets.location);
+                    return CoralTargets.getRobotTargetLocationL4(
+                        targets.location, Robot.getScoringSide());
                   })
               .toList());
     }
