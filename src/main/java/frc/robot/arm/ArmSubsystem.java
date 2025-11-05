@@ -80,7 +80,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     SCORE_L2_RIGHT(-90, -10.0),
     PRE_L3_RIGHT(-45, 1.0),
     SCORE_L3_RIGHT(-90, -10.0),
-    PRE_L4_RIGHT(-70, 1.0),
+    PRE_L4_RIGHT(-60, 1.0),
     SCORE_L4_RIGHT(-90, -14.0),
 
     PRE_L2_LEFT(45, 1.0),
