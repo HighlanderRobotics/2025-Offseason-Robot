@@ -49,14 +49,15 @@ public class Superstructure {
         ElevatorState.HANDOFF, ArmState.RIGHT_HANDOFF, IntakeState.READY_CORAL_INTAKE),
     RIGHT_HANDOFF(ElevatorState.HANDOFF, ArmState.RIGHT_HANDOFF, IntakeState.HANDOFF),
     // this is to make it "take the long way around". it's kind of stupid but
-    RIGHT_POST_HANDOFF(ElevatorState.HANDOFF, ArmState.RIGHT_POST_HANDOFF, IntakeState.HANDOFF),
+    RIGHT_POST_HANDOFF(
+        ElevatorState.POST_HANDOFF, ArmState.RIGHT_POST_HANDOFF, IntakeState.HANDOFF),
 
     // "left handoff" means the robot is about to score on its left, meaning the arm goes to the
     // right
     LEFT_PRE_HANDOFF(ElevatorState.HANDOFF, ArmState.LEFT_HANDOFF, IntakeState.READY_CORAL_INTAKE),
     LEFT_HANDOFF(ElevatorState.HANDOFF, ArmState.LEFT_HANDOFF, IntakeState.HANDOFF),
     // this is to make it "take the long way around". it's kind of stupid but
-    LEFT_POST_HANDOFF(ElevatorState.HANDOFF, ArmState.LEFT_POST_HANDOFF, IntakeState.HANDOFF),
+    LEFT_POST_HANDOFF(ElevatorState.POST_HANDOFF, ArmState.LEFT_POST_HANDOFF, IntakeState.HANDOFF),
 
     INTAKE_CORAL_STACK(
         ElevatorState.INTAKE_CORAL_STACK, ArmState.INTAKE_CORAL_STACK, IntakeState.CLIMB),
@@ -484,8 +485,9 @@ public class Superstructure {
         SuperState.IDLE,
         new Trigger(arm::hasGamePiece)
             .negate()
+            .debounce(0.1)
             // TODO this is a different near reef (?)
-            .and(new Trigger(swerve::isNearL1Reef).negate().debounce(0.15)));
+            .and(new Trigger(() -> !swerve.isNearL1Reef()).debounce(0.15)));
 
     // ---Left L3---
     bindTransition(
