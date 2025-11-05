@@ -59,8 +59,8 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
     INTAKE_CORAL(Units.radiansToDegrees(-0.5), 17.0),
     READY_CORAL_INTAKE(Units.radiansToDegrees(1.96), 1.0),
     HANDOFF(110.867, -17.0), // Units.radiansToDegrees(1.96)
-    PRE_L1(90, 1.0),
-    SCORE_L1(90, -5.0),
+    PRE_L1(76, 1.0),
+    SCORE_L1(76, -7.0),
     CLIMB(Units.radiansToDegrees(-0.3), 0.0);
 
     public final Supplier<Rotation2d> position;

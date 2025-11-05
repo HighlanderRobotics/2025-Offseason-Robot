@@ -356,6 +356,28 @@ public class Superstructure {
         SuperState.INTAKE_CORAL_GROUND,
         SuperState.IDLE,
         intakeCoralReq.negate().and(new Trigger(intake::hasGamePiece).negate()));
+    // L1
+    bindTransition(
+        SuperState.READY_CORAL_INTAKE,
+        SuperState.PRE_L1,
+        atExtensionTrigger
+            .debounce(0.1)
+            .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L1)
+            .and(preScoreReq));
+
+    bindTransition(
+        SuperState.PRE_L1,
+        SuperState.L1,
+        preScoreReq.negate().and(scoreReq).and(atExtensionTrigger));
+
+    bindTransition(
+        SuperState.L1,
+        SuperState.IDLE,
+        new Trigger(intake::hasGamePiece)
+            .negate()
+            .debounce(0.1)
+            // TODO this is a different near reef (?)
+            .and(new Trigger(() -> !swerve.isNearL1Reef()).debounce(0.15)));
 
     // ---Right Handoff---
     bindTransition(
