@@ -76,7 +76,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     INTAKE_CORAL_STACK(100, 5.0),
     READY_CORAL_ARM(0, 1.0),
 
-    PRE_L2_RIGHT(-45, 1.0),
+    PRE_L2_RIGHT(-35, 1.0),
     SCORE_L2_RIGHT(-90, -10.0),
     PRE_L3_RIGHT(-45, 1.0),
     SCORE_L3_RIGHT(-90, -10.0),
