@@ -154,7 +154,7 @@ public class Robot extends LoggedRobot {
 
   CANcoderConfiguration armCANcoderConfig =
       createCANcoderConfig(
-          SensorDirectionValue.Clockwise_Positive,
+          SensorDirectionValue.CounterClockwise_Positive,
           ArmSubsystem.CANCODER_OFFSET,
           ArmSubsystem.CANCODER_DISCONTINUITY_POINT);
 

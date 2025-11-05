@@ -45,7 +45,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public static final double TOLERANCE_DEGREES = 10.0;
   public static final double VERTICAL_OFFSET_METERS = Units.inchesToMeters(12.0);
 
-  public static final double CANCODER_OFFSET = -0.281; // -0.368896484375;
+  public static final double CANCODER_OFFSET = -0.3545; // -0.368896484375;
   // this is because we want it to wrap around from -180 to 180, which is when it's pointed straight
   // down
   public static final double CANCODER_DISCONTINUITY_POINT = 0.5;

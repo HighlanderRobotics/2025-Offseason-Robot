@@ -13,7 +13,9 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import frc.robot.Robot;
 import frc.robot.Robot.AlgaeIntakeTarget;
+import frc.robot.Robot.ScoringSide;
 import frc.robot.swerve.SwerveSubsystem;
 import java.util.Arrays;
 import java.util.Collections;
@@ -77,12 +79,16 @@ public class FieldUtils {
           new Transform2d(
               (SwerveSubsystem.SWERVE_CONSTANTS.getBumperLength() / 2),
               0,
-              Rotation2d.fromDegrees(90.0)));
+              Rotation2d.fromDegrees(Robot.getScoringSide() == ScoringSide.LEFT ? 90.0 : 270.0)));
     }
 
     public static Pose2d getOffsetLocation(Pose2d original) {
       return original.transformBy(
-          new Transform2d(0, (-0.3 - Units.inchesToMeters(6)), Rotation2d.kZero));
+          new Transform2d(
+              0,
+              -(-0.3 - Units.inchesToMeters(6)),
+              // * (Robot.getScoringSide() == ScoringSide.LEFT ? -1 : -1),
+              Rotation2d.kZero));
     }
 
     /** Gets the closest offset target to the given pose. */
@@ -236,8 +242,8 @@ public class FieldUtils {
       return original.transformBy(
           new Transform2d(
               0.291 + (SwerveSubsystem.SWERVE_CONSTANTS.getBumperLength() / 2),
-              Units.inchesToMeters(-7.879),
-              Rotation2d.fromDegrees(90.0)));
+              Units.inchesToMeters(-7.879) * (Robot.getScoringSide() == ScoringSide.LEFT ? 1 : -1),
+              Rotation2d.fromDegrees(Robot.getScoringSide() == ScoringSide.LEFT ? 90.0 : 270.0)));
     }
 
     public static Pose2d getRobotTargetLocationL4(Pose2d original) {
@@ -247,8 +253,8 @@ public class FieldUtils {
               0.291
                   + (SwerveSubsystem.SWERVE_CONSTANTS.getBumperLength() / 2)
                   + Units.inchesToMeters(4.7),
-              Units.inchesToMeters(-7.879),
-              Rotation2d.fromDegrees(90)));
+              Units.inchesToMeters(-7.879) * (Robot.getScoringSide() == ScoringSide.LEFT ? 1 : -1),
+              Rotation2d.fromDegrees(Robot.getScoringSide() == ScoringSide.LEFT ? 90.0 : 270.0)));
     }
 
     /** Gets the closest offset target to the given pose. */
