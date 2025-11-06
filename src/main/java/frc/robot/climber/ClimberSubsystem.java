@@ -29,7 +29,7 @@ public class ClimberSubsystem extends RollerPivotSubsystem {
   public enum ClimberState {
     IDLE(Rotation2d.fromDegrees(0), 0.0),
     // climbing
-    //TODO climber stuff is very tbd rn
+    // TODO climber stuff is very tbd rn
     PRE_CLIMB(Rotation2d.fromDegrees(0), 0.0),
     CLIMB(Rotation2d.fromDegrees(20), 0.0);
 
