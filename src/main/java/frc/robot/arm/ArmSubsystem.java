@@ -105,8 +105,8 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     PRE_PROCESSOR(180, 0.0),
     SCORE_PROCESSOR(180, -10.0),
     // climbing
-    PRE_CLIMB(180, 0.0),
-    CLIMB(180, 0.0);
+    PRE_CLIMB(0.0, 0.0),
+    CLIMB(0.0, 0.0);
 
     public final Supplier<Rotation2d> position;
     public final DoubleSupplier velocityRPS;

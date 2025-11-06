@@ -59,7 +59,7 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
     HANDOFF(110.867, -17.0), // Units.radiansToDegrees(1.96)
     PRE_L1(76, 1.0),
     SCORE_L1(76, -7.0),
-    CLIMB(Units.radiansToDegrees(-0.3), 0.0);
+    CLIMB(Units.radiansToDegrees(-0.5), 0.0);
 
     public final Supplier<Rotation2d> position;
     public final DoubleSupplier velocityRPS;
