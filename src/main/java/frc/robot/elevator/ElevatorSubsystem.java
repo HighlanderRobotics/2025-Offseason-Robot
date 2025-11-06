@@ -37,7 +37,9 @@ public class ElevatorSubsystem extends SubsystemBase {
     IDLE(0),
     PRE_HANDOFF(Units.metersToInches(0.88 / 2.0) + 14),
     HANDOFF(Units.metersToInches(0.849)), // 0.451)),
-    POST_HANDOFF(Units.metersToInches(0.89)),
+    // i have no idea why these are different
+    RIGHT_POST_HANDOFF(Units.metersToInches(0.89)),
+    LEFT_POST_HANDOFF(Units.metersToInches(0.91)),
     INTAKE_CORAL_STACK(0),
     // coral
     PRE_L2(Units.metersToInches(0.12)),
