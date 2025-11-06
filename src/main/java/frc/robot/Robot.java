@@ -579,6 +579,7 @@ public class Robot extends LoggedRobot {
     autoAimReq
         .and(superstructure::stateIsProcessor)
         .and(() -> algaeScoreTarget == AlgaeScoreTarget.PROCESSOR)
+        .and(driver.leftBumper().negate())
         .whileTrue(
             Commands.parallel(
                 swerve.autoAimToProcessor(),
@@ -589,6 +590,7 @@ public class Robot extends LoggedRobot {
     autoAimReq
         .and(superstructure::stateIsBarge)
         .and(() -> algaeScoreTarget == AlgaeScoreTarget.BARGE)
+        .and(driver.leftBumper().negate())
         .whileTrue(
             Commands.parallel(
                 swerve.autoAimToBarge(

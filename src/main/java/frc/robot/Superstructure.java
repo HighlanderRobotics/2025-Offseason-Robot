@@ -831,6 +831,16 @@ public class Superstructure {
         || state == SuperState.INTAKE_ALGAE_LOW_RIGHT;
   }
 
+  public static boolean stateIsVoltageControl() {
+    return state == SuperState.INTAKE_ALGAE_HIGH_RIGHT
+        || state == SuperState.INTAKE_ALGAE_LOW_RIGHT
+        || state == SuperState.INTAKE_ALGAE_HIGH_LEFT
+        || state == SuperState.INTAKE_ALGAE_LOW_LEFT
+        || state == SuperState.INTAKE_ALGAE_GROUND
+        || state == SuperState.INTAKE_ALGAE_STACK
+        || state == SuperState.READY_ALGAE;
+  }
+
   public boolean stateIsIdle() {
     return state == SuperState.IDLE;
   }

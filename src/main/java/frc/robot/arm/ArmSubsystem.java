@@ -5,6 +5,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Superstructure;
 import frc.robot.cancoder.CANcoderIO;
 import frc.robot.cancoder.CANcoderIOInputsAutoLogged;
 import frc.robot.pivot.PivotIO;
@@ -90,11 +91,13 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     PRE_L4_LEFT(70, 1.0),
     SCORE_L4_LEFT(90, -10.0),
     // algae
+    // These all have voltage control
     INTAKE_ALGAE_REEF_RIGHT(-90, 10.0),
     INTAKE_ALGAE_REEF_LEFT(90, 10.0),
     INTAKE_ALGAE_GROUND(125, 15.0),
-    INTAKE_ALGAE_STACK(90, 10.0),
-    READY_ALGAE(0, 2.0),
+    // TODO: SET POS BACK TO 90 deg
+    INTAKE_ALGAE_STACK(90, 8.0),
+    READY_ALGAE(0, 8.0),
 
     PRE_BARGE_RIGHT(-20, 4.0),
     SCORE_BARGE_RIGHT(-20, -10.0),
@@ -190,9 +193,19 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   }
 
   public Command setStateAngleVelocity() {
-    return setPivotAndRollers(
-        () -> getState().position.get(), () -> getState().velocityRPS.getAsDouble());
+    // return setPivotAndRollers(
+    //     () -> getState().position.get(), () -> getState().velocityRPS.getAsDouble());
     // return this.run(() -> runRollerVelocity(getState().velocityRPS.getAsDouble()));
+    return this.run(
+        () -> {
+          pivotIO.setMotorPosition(state.getAngle());
+          // TODO: THIS SUCKS
+          if (Superstructure.stateIsVoltageControl()) {
+            rollerIO.setRollerVoltage(state.getVelocityRPS());
+          } else {
+            rollerIO.setRollerVelocity(state.getVelocityRPS());
+          }
+        });
   }
 
   // TODO setSimCoral
