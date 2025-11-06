@@ -73,8 +73,8 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     LEFT_HANDOFF(-180, 7.0),
     LEFT_POST_HANDOFF(-89, 7.0),
 
-    INTAKE_CORAL_STACK(100, 5.0),
-    READY_CORAL_ARM(0, 1.0),
+    INTAKE_CORAL_STACK(-100, 7.0),
+    READY_CORAL_ARM(0, 7.0),
 
     PRE_L2_RIGHT(-35, 1.0),
     SCORE_L2_RIGHT(-90, -10.0),

@@ -607,6 +607,7 @@ public class Robot extends LoggedRobot {
                   coralScoreTarget = CoralScoreTarget.L1;
                   algaeIntakeTarget = AlgaeIntakeTarget.GROUND;
                   algaeScoreTarget = AlgaeScoreTarget.PROCESSOR;
+                  coralIntakeTarget = CoralIntakeTarget.GROUND;
                 }));
     operator
         .x()
@@ -632,6 +633,7 @@ public class Robot extends LoggedRobot {
                   coralScoreTarget = CoralScoreTarget.L4;
                   algaeIntakeTarget = AlgaeIntakeTarget.HIGH;
                   algaeScoreTarget = AlgaeScoreTarget.BARGE;
+                  coralIntakeTarget = CoralIntakeTarget.STACK;
                 }));
 
     operator.leftTrigger().onTrue(Commands.runOnce(() -> scoringSide = ScoringSide.LEFT));

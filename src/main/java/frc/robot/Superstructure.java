@@ -482,15 +482,14 @@ public class Superstructure {
         SuperState.RIGHT_POST_HANDOFF,
         SuperState.PRE_L2_RIGHT,
         atExtensionTrigger
-            .debounce(0.1)
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L2)
             .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
     bindTransition(
         SuperState.READY_CORAL_ARM,
         SuperState.PRE_L2_RIGHT,
-        atExtensionTrigger
-            .debounce(0.1)
+        preScoreReq
+            .and(atExtensionTrigger)
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L2)
             .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
@@ -509,15 +508,14 @@ public class Superstructure {
         SuperState.LEFT_POST_HANDOFF,
         SuperState.PRE_L2_LEFT,
         atExtensionTrigger
-            .debounce(0.1)
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L2)
             .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
     bindTransition(
         SuperState.READY_CORAL_ARM,
         SuperState.PRE_L2_LEFT,
-        atExtensionTrigger
-            .debounce(0.1)
+        preScoreReq
+            .and(atExtensionTrigger)
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L2)
             .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
@@ -536,15 +534,14 @@ public class Superstructure {
         SuperState.RIGHT_POST_HANDOFF,
         SuperState.PRE_L3_RIGHT,
         atExtensionTrigger
-            .debounce(0.1)
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L3)
             .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
     bindTransition(
         SuperState.READY_CORAL_ARM,
         SuperState.PRE_L3_RIGHT,
-        atExtensionTrigger
-            .debounce(0.1)
+        preScoreReq
+            .and(atExtensionTrigger)
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L3)
             .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
@@ -563,15 +560,14 @@ public class Superstructure {
         SuperState.LEFT_POST_HANDOFF,
         SuperState.PRE_L3_LEFT,
         atExtensionTrigger
-            .debounce(0.1)
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L3)
             .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
     bindTransition(
         SuperState.READY_CORAL_ARM,
         SuperState.PRE_L3_LEFT,
-        atExtensionTrigger
-            .debounce(0.1)
+        preScoreReq
+            .and(atExtensionTrigger)
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L3)
             .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
@@ -596,7 +592,8 @@ public class Superstructure {
     bindTransition(
         SuperState.READY_CORAL_ARM,
         SuperState.PRE_L4_RIGHT,
-        atExtensionTrigger
+        preScoreReq
+            .and(atExtensionTrigger)
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L4)
             .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
@@ -621,7 +618,8 @@ public class Superstructure {
     bindTransition(
         SuperState.READY_CORAL_ARM,
         SuperState.PRE_L4_LEFT,
-        atExtensionTrigger
+        preScoreReq
+            .and(atExtensionTrigger)
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L4)
             .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
