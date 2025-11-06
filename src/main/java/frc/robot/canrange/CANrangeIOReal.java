@@ -17,8 +17,6 @@ public class CANrangeIOReal implements CANrangeIO {
     distance = canrange.getDistance();
     isDetected = canrange.getIsDetected();
 
-    // TODO: adjust config vlaues and may change depending also diff configs for each
-    // not completely sure which are needed
     final CANrangeConfiguration config = new CANrangeConfiguration();
     config.ToFParams.UpdateFrequency = 50; // update frequency in Hz
     config.ProximityParams.ProximityThreshold = 0.05;

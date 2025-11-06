@@ -39,7 +39,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Superstructure.SuperState;
 import frc.robot.arm.ArmSubsystem;
 import frc.robot.cancoder.CANcoderIOReal;
 import frc.robot.canrange.CANrangeIOReal;
@@ -55,7 +54,6 @@ import frc.robot.roller.RollerIOSim;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.swerve.odometry.PhoenixOdometryThread;
 import frc.robot.utils.CommandXboxControllerSubsystem;
-import frc.robot.utils.FieldUtils.AlgaeIntakeTargets;
 import java.util.Optional;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.COTS;
@@ -82,8 +80,6 @@ public class Robot extends LoggedRobot {
     SIM,
     REPLAY
   }
-
-  // TODO add tuning mode switch
 
   public static enum CoralScoreTarget {
     L1,
@@ -114,7 +110,7 @@ public class Robot extends LoggedRobot {
     RIGHT
   }
 
-  @AutoLogOutput private static CoralScoreTarget coralScoreTarget = CoralScoreTarget.L3;
+  @AutoLogOutput private static CoralScoreTarget coralScoreTarget = CoralScoreTarget.L4;
   @AutoLogOutput private static CoralIntakeTarget coralIntakeTarget = CoralIntakeTarget.GROUND;
   @AutoLogOutput private static AlgaeIntakeTarget algaeIntakeTarget = AlgaeIntakeTarget.STACK;
   @AutoLogOutput private static AlgaeScoreTarget algaeScoreTarget = AlgaeScoreTarget.BARGE;
@@ -129,7 +125,6 @@ public class Robot extends LoggedRobot {
       new ElevatorSubsystem(
           ROBOT_TYPE != RobotType.SIM ? new ElevatorIOReal() : new ElevatorIOSim());
 
-  // TODO tune these config values
   TalonFXConfiguration armRollerConfig =
       createRollerConfig(InvertedValue.Clockwise_Positive, 20.0, 6.62, 0.48, 0.25, 0.0);
 
@@ -427,6 +422,11 @@ public class Robot extends LoggedRobot {
     SmartDashboard.putData(
         "ninety intake",
         intake.ninety().alongWith(Commands.print("dashboard ninety intake")).ignoringDisable(true));
+    SmartDashboard.putData(
+        "retract climber", climber.retract().alongWith(Commands.print("climber retracting...")));
+    SmartDashboard.putData(
+        "rezero climber",
+        climber.rezero().alongWith(Commands.print("climber rezeroed")).ignoringDisable(true));
   }
 
   private TalonFXConfiguration createRollerConfig(
@@ -544,36 +544,36 @@ public class Robot extends LoggedRobot {
                     .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy())));
 
     // Autoaim to intake algae (high, low)
-    autoAimReq
-        .and(() -> superstructure.stateIsIntakeAlgaeReef() || superstructure.stateIsIdle())
-        .whileTrue(
-            Commands.parallel(
-                Commands.sequence(
-                    Commands.runOnce(
-                        () ->
-                            Robot.setAlgaeIntakeTarget(
-                                AlgaeIntakeTargets.getClosestTarget(swerve.getPose()).height)),
-                    swerve
-                        .autoAimToOffsetAlgaePose()
-                        .until(
-                            new Trigger(swerve::nearIntakeAlgaeOffsetPose)
-                                // TODO figure out trigger order of operations? also this is just
-                                // bad
-                                .and(
-                                    () ->
-                                        superstructure.atExtension(
-                                            SuperState.INTAKE_ALGAE_HIGH_RIGHT))
-                                .or(
-                                    () ->
-                                        superstructure.atExtension(
-                                            SuperState.INTAKE_ALGAE_LOW_RIGHT))),
-                    swerve.approachAlgae()),
-                Commands.waitUntil(
-                        new Trigger(swerve::nearAlgaeIntakePose)
-                            .and(swerve::isNotMoving)
-                            .debounce(0.08))
-                    // .and(swerve::hasFrontTags)
-                    .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy())));
+    // autoAimReq
+    //     .and(() -> superstructure.stateIsIntakeAlgaeReef() || superstructure.stateIsIdle())
+    //     .whileTrue(
+    //         Commands.parallel(
+    //             Commands.sequence(
+    //                 Commands.runOnce(
+    //                     () ->
+    //                         Robot.setAlgaeIntakeTarget(
+    //                             AlgaeIntakeTargets.getClosestTarget(swerve.getPose()).height)),
+    //                 swerve
+    //                     .autoAimToOffsetAlgaePose()
+    //                     .until(
+    //                         new Trigger(swerve::nearIntakeAlgaeOffsetPose)
+    //                             // TODO figure out trigger order of operations? also this is just
+    //                             // bad
+    //                             .and(
+    //                                 () ->
+    //                                     superstructure.atExtension(
+    //                                         SuperState.INTAKE_ALGAE_HIGH_RIGHT))
+    //                             .or(
+    //                                 () ->
+    //                                     superstructure.atExtension(
+    //                                         SuperState.INTAKE_ALGAE_LOW_RIGHT))),
+    //                 swerve.approachAlgae()),
+    //             Commands.waitUntil(
+    //                     new Trigger(swerve::nearAlgaeIntakePose)
+    //                         .and(swerve::isNotMoving)
+    //                         .debounce(0.08))
+    //                 // .and(swerve::hasFrontTags)
+    //                 .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy())));
 
     // Autoaim to processor
     autoAimReq
@@ -607,6 +607,7 @@ public class Robot extends LoggedRobot {
                   coralScoreTarget = CoralScoreTarget.L1;
                   algaeIntakeTarget = AlgaeIntakeTarget.GROUND;
                   algaeScoreTarget = AlgaeScoreTarget.PROCESSOR;
+                  coralIntakeTarget = CoralIntakeTarget.GROUND;
                 }));
     operator
         .x()
@@ -632,6 +633,7 @@ public class Robot extends LoggedRobot {
                   coralScoreTarget = CoralScoreTarget.L4;
                   algaeIntakeTarget = AlgaeIntakeTarget.HIGH;
                   algaeScoreTarget = AlgaeScoreTarget.BARGE;
+                  coralIntakeTarget = CoralIntakeTarget.STACK;
                 }));
 
     operator.leftTrigger().onTrue(Commands.runOnce(() -> scoringSide = ScoringSide.LEFT));

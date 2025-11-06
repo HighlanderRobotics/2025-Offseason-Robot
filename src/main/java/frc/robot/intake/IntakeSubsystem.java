@@ -32,8 +32,7 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   public static final double MAX_VELOCITY = 10.0;
   // for mech viz
   public static final double VERTICAL_OFFSET_METERS = Units.inchesToMeters(7.566);
-  // TODO tune
-  // TODO THESE SUCK !
+
   public static final double KP = 47; // 80.0;
   public static final double KI = 0.0; // 5.0;
   public static final double KD = 4.7; // 3.0;
@@ -53,14 +52,13 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
 
   public boolean intakeZeroed = false;
 
-  // TODO : change these values to the real ones
   public enum IntakeState {
     IDLE(Units.radiansToDegrees(1.96), 0.0),
     INTAKE_CORAL(Units.radiansToDegrees(-0.5), 17.0),
     READY_CORAL_INTAKE(Units.radiansToDegrees(1.96), 1.0),
     HANDOFF(110.867, -17.0), // Units.radiansToDegrees(1.96)
-    PRE_L1(90, 1.0),
-    SCORE_L1(90, -5.0),
+    PRE_L1(76, 1.0),
+    SCORE_L1(76, -7.0),
     CLIMB(Units.radiansToDegrees(-0.3), 0.0);
 
     public final Supplier<Rotation2d> position;
