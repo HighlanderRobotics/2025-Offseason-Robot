@@ -78,8 +78,11 @@ public class ElevatorSubsystem extends SubsystemBase {
   @AutoLogOutput(key = "Elevator/Current Filter Value")
   private double currentFilterValue = 0.0;
 
-  @AutoLogOutput(key = "Elevator/Has Zeroed")
-  private boolean hasZeroed = false;
+  @AutoLogOutput(key = "Elevator/has Zeroed Since Startup")
+  public boolean hasZeroedSinceStartup = false;
+
+  @AutoLogOutput(key = "Elevator/is Zeroing")
+  public boolean isZeroing = false;
 
   @AutoLogOutput(key = "Elevator/State")
   private ElevatorState state = ElevatorState.IDLE;
@@ -146,6 +149,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   }
 
   public Command runCurrentZeroing() {
+    isZeroing = true;
     return this.run(
             () -> {
               io.setVoltage(-2.0);
@@ -155,7 +159,8 @@ public class ElevatorSubsystem extends SubsystemBase {
             (interrupted) -> {
               if (!interrupted) {
                 io.resetEncoder();
-                hasZeroed = true;
+                hasZeroedSinceStartup = true;
+                isZeroing = false;
                 Commands.print("Elevator Zeroed");
               }
             });

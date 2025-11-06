@@ -643,14 +643,26 @@ public class Robot extends LoggedRobot {
     // operator.povLeft().onTrue(Commands.runOnce(() -> leftHandedTarget = true));
     // operator.povRight().onTrue(Commands.runOnce(() -> leftHandedTarget = false));
 
-    // heading reset
-    // figure out how to make sure it doesnt jump back to default make add into zeroing button
-    operator.povLeft().whileTrue(Commands.runOnce(() -> arm.setPivotVoltage(-3.0)));
+    // TODO add escape for hold??
+    operator
+        .povLeft()
+        .whileTrue(
+            Commands.parallel(
+                    Commands.runOnce(() -> intake.isZeroing = true),
+                    Commands.runOnce(() -> elevator.isZeroing = true),
+                    arm.setPivotVoltage(-3.0))
+                .withTimeout(0.05)
+                .andThen(arm.hold().until(() -> !elevator.isZeroing && !intake.isZeroing)));
 
-    operator.povRight().whileTrue(Commands.runOnce(() -> arm.setPivotVoltage(3.0)));
-
-    // makes it hold position might be dumb
-    operator.povUp().whileTrue(Commands.runOnce(() -> arm.setPivotVoltage(0.0)));
+    operator
+        .povRight()
+        .whileTrue(
+            Commands.parallel(
+                    Commands.runOnce(() -> intake.isZeroing = true),
+                    Commands.runOnce(() -> elevator.isZeroing = true),
+                    arm.setPivotVoltage(3.0))
+                .withTimeout(0.05)
+                .andThen(arm.hold().until(() -> !elevator.isZeroing && !intake.isZeroing)));
 
     driver
         .leftStick()
@@ -673,7 +685,20 @@ public class Robot extends LoggedRobot {
                 // TODO add transition to specific states after zeroing
                 // only use if cancoder is cooked use:
                 // arm.runCurrentZeroing()
-                ));
+                ))
+        // when releasing button/stopping zeroing deal with state transition
+        .onFalse(
+            Commands.parallel(
+                Commands.runOnce(() -> elevator.isZeroing = false),
+                Commands.runOnce(() -> intake.isZeroing = false),
+                superstructure.transitionAfterZeroing()));
+
+    new Trigger(() -> superstructure.stateIsIdle())
+        .and(() -> !elevator.hasZeroedSinceStartup || !intake.hasZeroedSinceStartup)
+        .and(DriverStation::isEnabled)
+        .onTrue(
+            Commands.sequence(
+                intake.runCurrentZeroing(), elevator.runCurrentZeroing(), arm.rezeroFromEncoder()));
   }
 
   private void addAutos() {

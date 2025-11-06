@@ -49,10 +49,6 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   private final Rotation2d ZEROING_POSITION = Rotation2d.fromRadians(-0.5);
   private final double CURRENT_THRESHOLD = 10.0;
 
-  private boolean hasGamePieceSim = false;
-
-  public boolean intakeZeroed = false;
-
   // TODO : change these values to the real ones
   public enum IntakeState {
     IDLE(Units.radiansToDegrees(1.96), 0.0),
@@ -98,6 +94,14 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
     this.rightCanrangeIO = rightCanrangeIO;
   }
 
+  private boolean hasGamePieceSim = false;
+
+  @AutoLogOutput(key = "Intake/has Zeroed Since Startup")
+  public boolean hasZeroedSinceStartup = false;
+
+  @AutoLogOutput(key = "Intake/is Zeroing")
+  public boolean isZeroing = false;
+
   @AutoLogOutput(key = "Intake/State")
   private IntakeState state = IntakeState.IDLE;
 
@@ -129,11 +133,13 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   }
 
   public Command runCurrentZeroing() {
+    isZeroing = true;
     return this.run(() -> setPivotVoltage(-2.0))
         .until(new Trigger(() -> Math.abs(currentFilterValue) > CURRENT_THRESHOLD).debounce(0.25))
         .andThen(
             Commands.parallel(
-                Commands.runOnce(() -> intakeZeroed = true),
+                Commands.runOnce(() -> hasZeroedSinceStartup = true),
+                Commands.runOnce(() -> isZeroing = false),
                 Commands.print("Intake Zeroed"),
                 zeroPivot(() -> ZEROING_POSITION)));
   }

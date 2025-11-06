@@ -338,6 +338,29 @@ public class Superstructure {
     climber.setState(state.climberState);
   }
 
+  // idk if this works right states confuse me
+  public Command transitionAfterZeroing() {
+    return Commands.runOnce(
+            () -> {
+              SuperState target;
+              // cant distinguish between coral and algae for intake so should that be fixed with
+              // the intake or what should i do here?
+              if (intake.hasGamePiece()) {
+                target = SuperState.READY_CORAL_INTAKE;
+              } else if (arm.hasAlgae) {
+                target = SuperState.READY_ALGAE;
+              } else if (arm.hasCoral) {
+                target = SuperState.READY_CORAL_ARM;
+              } else {
+                target = SuperState.IDLE;
+              }
+              System.out.println("Transitioning to " + target + " after zeroing");
+              changeStateTo(target).schedule();
+              ;
+            })
+        .ignoringDisable(true);
+  }
+
   private void addTransitions() {
     // ---Intake coral ground---
     bindTransition(

@@ -198,6 +198,15 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     // return this.run(() -> runRollerVelocity(getState().velocityRPS.getAsDouble()));
   }
 
+  public Command hold() {
+    return Commands.sequence(
+        Commands.runOnce(() -> setPivotAngle(cancoderInputs.cancoderPositionRotations))
+            // holds
+            .until(() -> true),
+        // keeps command active until interrupted
+        this.run(() -> {}));
+  }
+
   // TODO setSimCoral
   public void setSimCoral(boolean b) {}
 
