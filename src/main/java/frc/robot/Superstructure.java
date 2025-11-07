@@ -469,6 +469,8 @@ public class Superstructure {
         SuperState.INTAKE_CORAL_STACK,
         intakeCoralReq.and(() -> Robot.getCoralIntakeTarget() == CoralIntakeTarget.STACK));
 
+    bindTransition(SuperState.INTAKE_CORAL_STACK, SuperState.IDLE, intakeCoralReq.negate());
+
     bindTransition(
         SuperState.INTAKE_CORAL_STACK,
         SuperState.READY_CORAL_ARM,
@@ -827,6 +829,16 @@ public class Superstructure {
   public boolean stateIsIntakeAlgaeReef() {
     return state == SuperState.INTAKE_ALGAE_HIGH_RIGHT
         || state == SuperState.INTAKE_ALGAE_LOW_RIGHT;
+  }
+
+  public static boolean stateIsVoltageControl() {
+    return state == SuperState.INTAKE_ALGAE_HIGH_RIGHT
+        || state == SuperState.INTAKE_ALGAE_LOW_RIGHT
+        || state == SuperState.INTAKE_ALGAE_HIGH_LEFT
+        || state == SuperState.INTAKE_ALGAE_LOW_LEFT
+        || state == SuperState.INTAKE_ALGAE_GROUND
+        || state == SuperState.INTAKE_ALGAE_STACK
+        || state == SuperState.READY_ALGAE;
   }
 
   public boolean stateIsIdle() {
