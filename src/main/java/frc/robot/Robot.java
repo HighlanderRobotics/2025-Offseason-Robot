@@ -408,7 +408,10 @@ public class Robot extends LoggedRobot {
                     // otherwise set it to the blinking pattern
                     leds.setBlinkingCmd(
                         () -> getCoralScoreTarget().color,
-                        () -> Superstructure.getState() == SuperState.IDLE ? Color.kBlack : Color.kWhite,
+                        () ->
+                            Superstructure.getState() == SuperState.IDLE
+                                ? Color.kBlack
+                                : Color.kWhite,
                         5.0),
                     superstructure::stateIsAlgae),
                 // not enabled
@@ -460,7 +463,9 @@ public class Robot extends LoggedRobot {
             })
         .onTrue(
             Commands.runOnce(() -> addAutos())
-                .alongWith(leds.setBlinkingCmd(() -> Color.kWhite, () -> Color.kBlack, 20.0).withTimeout(1.0))
+                .alongWith(
+                    leds.setBlinkingCmd(() -> Color.kWhite, () -> Color.kBlack, 20.0)
+                        .withTimeout(1.0))
                 .ignoringDisable(true));
 
     // Add autos when first connecting to DS
@@ -473,7 +478,9 @@ public class Robot extends LoggedRobot {
         .onTrue(Commands.print("connected"))
         .onTrue(
             Commands.runOnce(() -> addAutos())
-                .alongWith(leds.setBlinkingCmd(() -> Color.kWhite, () -> Color.kBlack, 20.0).withTimeout(1.0))
+                .alongWith(
+                    leds.setBlinkingCmd(() -> Color.kWhite, () -> Color.kBlack, 20.0)
+                        .withTimeout(1.0))
                 .ignoringDisable(true));
     SmartDashboard.putData(
         "rezero elevator",
