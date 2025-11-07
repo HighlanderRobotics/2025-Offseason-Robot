@@ -17,13 +17,13 @@ import org.littletonrobotics.junction.Logger;
 
 public class RollerPivotSubsystem extends SubsystemBase {
   private final RollerIOInputsAutoLogged rollerInputs = new RollerIOInputsAutoLogged();
-  private final PivotIOInputsAutoLogged pivotInputs = new PivotIOInputsAutoLogged();
+  protected final PivotIOInputsAutoLogged pivotInputs = new PivotIOInputsAutoLogged();
   protected final RollerIO rollerIO;
   protected final PivotIO pivotIO;
   private final String name;
 
   private LinearFilter currentFilter = LinearFilter.movingAverage(10);
-  public double currentFilterValue = 0.0;
+  protected double currentFilterValue = 0.0;
 
   public RollerPivotSubsystem(RollerIO rollerIO, PivotIO pivotIO, String name) {
     this.rollerIO = rollerIO;

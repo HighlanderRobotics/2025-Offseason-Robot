@@ -249,7 +249,16 @@ public class Robot extends LoggedRobot {
 
   TalonFXConfiguration climberPivotConfig =
       createPivotConfig(
-          InvertedValue.CounterClockwise_Positive, 20.0, 40.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
+          InvertedValue.CounterClockwise_Positive,
+          20.0,
+          120.0,
+          ClimberSubsystem.PIVOT_RATIO,
+          ClimberSubsystem.KV,
+          ClimberSubsystem.KG,
+          ClimberSubsystem.KS,
+          ClimberSubsystem.KP,
+          ClimberSubsystem.KI,
+          ClimberSubsystem.KD);
 
   private final ClimberSubsystem climber =
       new ClimberSubsystem(
@@ -394,7 +403,8 @@ public class Robot extends LoggedRobot {
     elevator.setDefaultCommand(elevator.setStateExtension());
     arm.setDefaultCommand(arm.setStateAngleVelocity());
     intake.setDefaultCommand(intake.setStateAngleVelocity());
-    // climber.setDefaultCommand(climber.setStateAngleVoltage());
+    // Voltage control is intentional here
+    climber.setDefaultCommand(climber.setStateAngleVoltage());
 
     driver.setDefaultCommand(driver.rumbleCmd(0.0, 0.0));
     operator.setDefaultCommand(operator.rumbleCmd(0.0, 0.0));
@@ -499,16 +509,21 @@ public class Robot extends LoggedRobot {
             .alongWith(Commands.print("dashboard rezero arm against bumper"))
             .ignoringDisable(true));
     SmartDashboard.putData(
+        "Spool in climber (MANUAL STOP)",
+        Commands.parallel(
+            intake.setPivotVoltage(() -> -4.0),
+            Commands.waitUntil(
+                    () ->
+                        intake.getPivotCurrentFilterValueAmps() > IntakeSubsystem.CURRENT_THRESHOLD)
+                .andThen(climber.retract())));
+    SmartDashboard.putData("Extend climber (MANUAL STOP)", climber.extend());
+    SmartDashboard.putData("Rezero climber", climber.rezero());
+    SmartDashboard.putData(
         "rezero intake",
         intake.rezero().alongWith(Commands.print("dashboard rezero intake")).ignoringDisable(true));
     SmartDashboard.putData(
         "ninety intake",
         intake.ninety().alongWith(Commands.print("dashboard ninety intake")).ignoringDisable(true));
-    SmartDashboard.putData(
-        "retract climber", climber.retract().alongWith(Commands.print("climber retracting...")));
-    SmartDashboard.putData(
-        "rezero climber",
-        climber.rezero().alongWith(Commands.print("climber rezeroed")).ignoringDisable(true));
   }
 
   private TalonFXConfiguration createRollerConfig(
