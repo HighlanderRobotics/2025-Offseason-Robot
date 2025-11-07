@@ -1,9 +1,9 @@
 package frc.robot.swerve.constants;
 
-import static edu.wpi.first.units.Units.Kilogram;
 import static edu.wpi.first.units.Units.Pound;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -31,33 +31,38 @@ public class OffseasonBotSwerveConstants extends SwerveConstants {
     return "Offseason Bot";
   }
 
+  // TODO explain +0.5
   @Override
   public ModuleConstants getFrontLeftModuleConstants() {
-    // TODO tune offsets
-    return new ModuleConstants(0, "Front Left", 0, 1, 0, Rotation2d.fromRotations(0.0));
+    return new ModuleConstants(0, "Front Left", 0, 1, 0, Rotation2d.fromRotations(-0.351 + 0.5));
   }
 
   @Override
   public ModuleConstants getFrontRightModuleConstants() {
-    // TODO tune offsets
-    return new ModuleConstants(1, "Front Right", 2, 3, 1, Rotation2d.fromRotations(0.0));
+    return new ModuleConstants(1, "Front Right", 2, 3, 1, Rotation2d.fromRotations(-0.380859375));
   }
 
   @Override
   public ModuleConstants getBackLeftModuleConstants() {
-    // TODO tune offsets
-    return new ModuleConstants(2, "Back Left", 4, 5, 2, Rotation2d.fromRotations(0.0));
+    return new ModuleConstants(2, "Back Left", 4, 5, 2, Rotation2d.fromRotations(0.469 + 0.5));
   }
 
   @Override
   public ModuleConstants getBackRightModuleConstants() {
-    // TODO tune offsets
-    return new ModuleConstants(3, "Back Right", 6, 7, 3, Rotation2d.fromRotations(0.0));
+    return new ModuleConstants(3, "Back Right", 6, 7, 3, Rotation2d.fromRotations(-0.069));
   }
 
   @Override
   public int getGyroID() {
     return 0;
+  }
+
+  public Pigeon2Configuration getGyroConfig() {
+    Pigeon2Configuration config = new Pigeon2Configuration();
+    config.MountPose.MountPosePitch = -0.002175945555791259;
+    config.MountPose.MountPoseRoll = 0.120527483522892;
+    config.MountPose.MountPoseYaw = -89.22984313964844;
+    return config;
   }
 
   @Override
@@ -79,7 +84,6 @@ public class OffseasonBotSwerveConstants extends SwerveConstants {
     turnConfig.Feedback.SensorToMechanismRatio = 1.0;
     turnConfig.Feedback.FeedbackRotorOffset = 0.0;
     // Controls Gains
-    // TODO: TUNE
     // Copied from Kelpie
     turnConfig.Slot0.kV = 0.42962962963; // ((5800 / 60) / getTurnGearRatio()) / 12
     turnConfig.Slot0.kA = 0.031543;
@@ -173,7 +177,8 @@ public class OffseasonBotSwerveConstants extends SwerveConstants {
     // Does this make sense??
     // It comes out to like 3 m/s^2 (max speed in 1.5 seconds roughly)
     // Kelpie's was 14 but it seemed arbitrary...
-    return ((9.37 * getDriveGearRatio()) / getDriveRotorToMeters()) / getMass().in(Kilogram);
+    // return ((9.37 * getDriveGearRatio()) / getDriveRotorToMeters()) / getMass().in(Kilogram);
+    return 14.0;
   }
 
   @Override
@@ -192,81 +197,148 @@ public class OffseasonBotSwerveConstants extends SwerveConstants {
     return Units.inchesToMeters(23.729);
   }
 
-  // TODO: NEW CONSTANTS
   @Override
   public CameraConstants[] getCameraConstants() {
-    final Matrix<N3, N3> BACK_LEFT_CAMERA_MATRIX =
+    final Matrix<N3, N3> RIGHT_ELEVATOR_CAMERA_INTRINSICS =
         MatBuilder.fill(
-            Nat.N3(), Nat.N3(), 906.46, 0.0, 675.30, 0.0, 907.49, 394.45, 0.0, 0.0, 1.0);
-    final Matrix<N8, N1> BACK_LEFT_DIST_COEFFS =
+            Nat.N3(),
+            Nat.N3(),
+            913.3459639243549,
+            0.0,
+            654.21164902256,
+            0.0,
+            911.6840291055018,
+            390.9894635553962,
+            0.0,
+            0.0,
+            1.0);
+    // not sure if java is ok with scientific notation
+    final Matrix<N8, N1> RIGHT_ELEVATOR_DIST_COEFFS =
         MatBuilder.fill(
-            Nat.N8(), Nat.N1(), 0.039, -0.057, -0.005, 0.001, -0.004, -0.001, 0.003, 0.001);
-    final Matrix<N3, N3> BACK_RIGHT_CAMERA_MATRIX =
+            Nat.N8(),
+            Nat.N1(),
+            0.05105666053513881,
+            -0.0851020439698792,
+            1.6403586037918962E-4,
+            1.4631274866318736E-4,
+            0.026868333033731307,
+            -0.0020587869606236604,
+            0.004088029419887703,
+            -9.803976647692152E-4);
+    final Matrix<N3, N3> RIGHT_DRIVEBASE_CAMERA_INTRINSICS =
         MatBuilder.fill(
-            Nat.N3(), Nat.N3(), 925.82, 0.0, 633.65, 0.0, 927.87, 386.90, 0.0, 0.0, 1.0);
-    final Matrix<N8, N1> BACK_RIGHT_DIST_COEFFS =
+            Nat.N3(),
+            Nat.N3(),
+            913.7374772109177,
+            0.0,
+            649.9523505968294,
+            0.0,
+            912.2179388005287,
+            408.3423836218782,
+            0.0,
+            0.0,
+            1.0);
+    final Matrix<N8, N1> RIGHT_DRIVEBASE_DIST_COEFFS =
         MatBuilder.fill(
-            Nat.N8(), Nat.N1(), 0.058, -0.09, 0.006, -0.003, 0.022, -0.002, 0.004, -0.001);
-    final Matrix<N3, N3> FRONT_RIGHT_CAMERA_MATRIX =
+            Nat.N8(),
+            Nat.N1(),
+            0.05036490156210035,
+            -0.07581268532820391,
+            -0.0013038584793272766,
+            -6.07909967325906E-4,
+            0.01921938959039581,
+            -0.0027324349808302245,
+            0.006026186907998818,
+            4.3831144132513674E-4);
+    final Matrix<N3, N3> LEFT_ELEVATOR_CAMERA_INTRINSICS =
         MatBuilder.fill(
-            Nat.N3(), Nat.N3(), 911.67, 0.0, 663.03, 0.0, 909.82, 408.72, 0.0, 0.0, 1.0);
-    final Matrix<N8, N1> FRONT_RIGHT_DIST_COEFFS =
+            Nat.N3(),
+            Nat.N3(),
+            919.5001918618356,
+            0.0,
+            828.0140509099408,
+            0.0,
+            919.8653650079931,
+            703.8904313760787,
+            0.0,
+            0.0,
+            1.0);
+    final Matrix<N8, N1> LEFT_ELEVATOR_DIST_COEFFS =
+        MatBuilder.fill(Nat.N8(), Nat.N1(), 0.026, -0.048, 0, 0, 0.073, -0.024, 0.031, 0.053);
+    final Matrix<N3, N3> LEFT_DRIVEBASE_CAMERA_INTRINSICS =
         MatBuilder.fill(
-            Nat.N8(), Nat.N1(), 0.044, -0.069, 0.001, 0.001, 0.013, -0.002, 0.004, 0.001);
-    final Matrix<N3, N3> FRONT_LEFT_CAMERA_MATRIX =
+            Nat.N3(),
+            Nat.N3(),
+            910.4543686924517,
+            0.0,
+            636.0626170515789,
+            0.0,
+            909.9744395853056,
+            382.6154028749968,
+            0.0,
+            0.0,
+            1.0);
+    final Matrix<N8, N1> LEFT_DRIVEBASE_DIST_COEFFS =
         MatBuilder.fill(
-            Nat.N3(), Nat.N3(), 920.37, 0.0, 657.16, 0.0, 921.82, 412.98, 0.0, 0.0, 1.0);
-    final Matrix<N8, N1> FRONT_LEFT_DIST_COEFFS =
-        MatBuilder.fill(
-            Nat.N8(), Nat.N1(), 0.057, -0.09, -0.001, 0.002, 0.043, -0.002, 0.004, -0.002);
-    final CameraConstants backLeftCamConstants =
+            Nat.N8(),
+            Nat.N1(),
+            0.040119422316274016,
+            -0.04835252969283134,
+            -9.763490623926644E-4,
+            -0.0013527552120382006,
+            -0.005821189294822927,
+            -9.426338337651241E-4,
+            0.006453303380916122,
+            0.003459079233022941);
+
+    final CameraConstants rightElevatorCamConstants =
         new CameraConstants(
-            "Back_Left",
+            "Right_Elevator",
             new Transform3d(
-                new Translation3d(
-                    Units.inchesToMeters(-11.600),
-                    Units.inchesToMeters(11.400),
-                    Units.inchesToMeters(9.052)),
+                new Translation3d(-0.139, -0.211, 0.798),
                 new Rotation3d(
                     Units.degreesToRadians(0.0),
-                    Units.degreesToRadians(-(90 - 76.875000)),
-                    Units.degreesToRadians(150))),
-            BACK_LEFT_CAMERA_MATRIX,
-            BACK_LEFT_DIST_COEFFS);
-    final CameraConstants backRightCamConstants =
+                    Units.degreesToRadians(135 + 90 + 180),
+                    Units.degreesToRadians(90 + 180))),
+            RIGHT_ELEVATOR_CAMERA_INTRINSICS,
+            RIGHT_ELEVATOR_DIST_COEFFS);
+    final CameraConstants rightDrivebaseCamConstants =
         new CameraConstants(
-            "Back_Right",
+            "Right_Drivebase",
             new Transform3d(
-                new Translation3d(
-                    Units.inchesToMeters(-11.600),
-                    Units.inchesToMeters(-11.416),
-                    Units.inchesToMeters(9.061)),
+                new Translation3d(-0.287, -0.299, 0.227),
+                new Rotation3d(0, Units.degreesToRadians(-28.125), Units.degreesToRadians(-30))),
+            RIGHT_DRIVEBASE_CAMERA_INTRINSICS,
+            RIGHT_DRIVEBASE_DIST_COEFFS);
+    final CameraConstants leftElevatorCamConstants =
+        new CameraConstants(
+            "Left_Elevator",
+            new Transform3d(
+                new Translation3d(-0.139, 0.211, 0.798),
                 new Rotation3d(
-                    0, Units.degreesToRadians(-(90 - 76.875000)), Units.degreesToRadians(210))),
-            BACK_RIGHT_CAMERA_MATRIX,
-            BACK_RIGHT_DIST_COEFFS);
-    final CameraConstants frontRightCamConstants =
+                    0, Units.degreesToRadians(135 + 90 + 180), Units.degreesToRadians(90))),
+            LEFT_ELEVATOR_CAMERA_INTRINSICS,
+            LEFT_ELEVATOR_DIST_COEFFS);
+    final CameraConstants leftDrivebaseCamConstants =
         new CameraConstants(
-            "Front_Right_Camera",
+            "Left_Drivebase",
             new Transform3d(
-                new Translation3d(
-                    Units.inchesToMeters(6.664129),
-                    Units.inchesToMeters(-12.320709),
-                    Units.inchesToMeters(8.885504)),
-                new Rotation3d(0, Units.degreesToRadians(-10), Units.degreesToRadians(30))),
-            FRONT_RIGHT_CAMERA_MATRIX,
-            FRONT_RIGHT_DIST_COEFFS);
-    final CameraConstants frontLeftCamConstants =
-        new CameraConstants(
-            "Front_Left_Camera",
-            new Transform3d(
-                new Translation3d(
-                    Units.inchesToMeters(6.664129),
-                    Units.inchesToMeters(12.320709),
-                    Units.inchesToMeters(8.885504)),
-                new Rotation3d(0, Units.degreesToRadians(-10), Units.degreesToRadians(-30))),
-            FRONT_LEFT_CAMERA_MATRIX,
-            FRONT_LEFT_DIST_COEFFS);
-    return new CameraConstants[] {frontRightCamConstants, frontLeftCamConstants};
+                new Translation3d(-0.1, 0.33, 0.15),
+                new Rotation3d(0, Units.degreesToRadians(-28.125), Units.degreesToRadians(47))),
+            LEFT_DRIVEBASE_CAMERA_INTRINSICS,
+            LEFT_DRIVEBASE_DIST_COEFFS);
+    return new CameraConstants[] {
+      rightElevatorCamConstants,
+      rightDrivebaseCamConstants,
+      leftElevatorCamConstants,
+      leftDrivebaseCamConstants
+    };
+  }
+
+  // TODO
+  @Override
+  public double getHeadingVelocityKP() {
+    // Copied from Alpha
+    return 6.0;
   }
 }

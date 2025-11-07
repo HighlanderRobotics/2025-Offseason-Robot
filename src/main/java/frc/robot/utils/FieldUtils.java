@@ -13,7 +13,9 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import frc.robot.Robot;
 import frc.robot.Robot.AlgaeIntakeTarget;
+import frc.robot.Robot.ScoringSide;
 import frc.robot.swerve.SwerveSubsystem;
 import java.util.Arrays;
 import java.util.Collections;
@@ -64,30 +66,46 @@ public class FieldUtils {
       this.height = height;
     }
 
-    private static final List<Pose2d> transformedPoses =
+    private static final List<Pose2d> transformedPosesLeft =
         Arrays.stream(values())
             .map(
                 (AlgaeIntakeTargets targets) -> {
-                  return AlgaeIntakeTargets.getRobotTargetLocation(targets.location);
+                  return AlgaeIntakeTargets.getRobotTargetLocation(
+                      targets.location, ScoringSide.LEFT);
+                })
+            .toList();
+    private static final List<Pose2d> transformedPosesRight =
+        Arrays.stream(values())
+            .map(
+                (AlgaeIntakeTargets targets) -> {
+                  return AlgaeIntakeTargets.getRobotTargetLocation(
+                      targets.location, ScoringSide.RIGHT);
                 })
             .toList();
 
-    public static Pose2d getRobotTargetLocation(Pose2d original) {
+    public static Pose2d getRobotTargetLocation(Pose2d original, ScoringSide scoringSide) {
       return original.transformBy(
           new Transform2d(
               (SwerveSubsystem.SWERVE_CONSTANTS.getBumperLength() / 2),
               0,
-              Rotation2d.fromDegrees(180.0)));
+              Rotation2d.fromDegrees(scoringSide == ScoringSide.LEFT ? 90.0 : 270.0)));
     }
 
     public static Pose2d getOffsetLocation(Pose2d original) {
       return original.transformBy(
-          new Transform2d((-0.3 - Units.inchesToMeters(6)), 0, Rotation2d.kZero));
+          new Transform2d(
+              0,
+              (-0.3 - Units.inchesToMeters(6))
+                  * (Robot.getScoringSide() == ScoringSide.LEFT ? 1 : -1),
+              Rotation2d.kZero));
     }
 
     /** Gets the closest offset target to the given pose. */
     public static Pose2d getClosestTargetPose(Pose2d pose) {
-      return pose.nearest(transformedPoses);
+      return pose.nearest(
+          Robot.getScoringSide() == ScoringSide.LEFT
+              ? transformedPosesLeft
+              : transformedPosesRight);
     }
 
     public static AlgaeIntakeTargets getClosestTarget(Pose2d pose) {
@@ -218,46 +236,80 @@ public class FieldUtils {
       this.leftHanded = leftHanded;
     }
 
-    private static final List<Pose2d> TRANSFORMED_POSES_L23 =
+    private static final List<Pose2d> TRANSFORMED_POSES_L23_LEFT =
         Arrays.stream(values())
             .map(
                 (CoralTargets targets) -> {
-                  return CoralTargets.getRobotTargetLocationL23(targets.location);
+                  return CoralTargets.getRobotTargetLocationL23(targets.location, ScoringSide.LEFT);
                 })
             .toList();
-    private static final List<Pose2d> TRANSFORMED_POSES_L4 =
+    private static final List<Pose2d> TRANSFORMED_POSES_L4_LEFT =
         Arrays.stream(values())
-            .map((CoralTargets target) -> CoralTargets.getRobotTargetLocationL4(target.location))
+            .map(
+                (CoralTargets target) ->
+                    CoralTargets.getRobotTargetLocationL4(target.location, ScoringSide.LEFT))
+            .toList();
+    private static final List<Pose2d> TRANSFORMED_POSES_L23_RIGHT =
+        Arrays.stream(values())
+            .map(
+                (CoralTargets targets) -> {
+                  return CoralTargets.getRobotTargetLocationL23(
+                      targets.location, ScoringSide.RIGHT);
+                })
+            .toList();
+    private static final List<Pose2d> TRANSFORMED_POSES_L4_RIGHT =
+        Arrays.stream(values())
+            .map(
+                (CoralTargets target) ->
+                    CoralTargets.getRobotTargetLocationL4(target.location, ScoringSide.RIGHT))
             .toList();
 
-    public static Pose2d getRobotTargetLocationL23(Pose2d original) {
+    public static Pose2d getRobotTargetLocationL23(Pose2d original, ScoringSide scoringSide) {
       // 0.248 for trough
       // -7.879 in for arm offset
-      return original.transformBy(
-          new Transform2d(
-              0.291 + (SwerveSubsystem.SWERVE_CONSTANTS.getBumperLength() / 2),
-              Units.inchesToMeters(-7.879),
-              Rotation2d.fromDegrees(180.0)));
+      return original
+          .transformBy(
+              new Transform2d(
+                  0.0, 0.0, Rotation2d.fromDegrees(scoringSide == ScoringSide.LEFT ? 90.0 : 270.0)))
+          .transformBy(
+              new Transform2d(
+                  Units.inchesToMeters(-7.879),
+                  (0.291
+                          + (SwerveSubsystem.SWERVE_CONSTANTS.getBumperLength() / 2)
+                          + Units.inchesToMeters(4.5))
+                      * (Robot.getScoringSide() == ScoringSide.LEFT ? -1 : 1),
+                  Rotation2d.kZero));
     }
 
-    public static Pose2d getRobotTargetLocationL4(Pose2d original) {
+    public static Pose2d getRobotTargetLocationL4(Pose2d original, ScoringSide scoringSide) {
       // Additional 4.7 inches to make scoring ling up.
-      return original.transformBy(
-          new Transform2d(
-              0.291
-                  + (SwerveSubsystem.SWERVE_CONSTANTS.getBumperLength() / 2)
-                  + Units.inchesToMeters(4.7),
-              Units.inchesToMeters(-7.879),
-              Rotation2d.fromDegrees(180)));
+      return original
+          .transformBy(
+              new Transform2d(
+                  0.0, 0.0, Rotation2d.fromDegrees(scoringSide == ScoringSide.LEFT ? 90.0 : 270.0)))
+          .transformBy(
+              new Transform2d(
+                  Units.inchesToMeters(-7.879), // + Units.inchesToMeters(-3),
+                  (0.291
+                          + (SwerveSubsystem.SWERVE_CONSTANTS.getBumperLength() / 2)
+                          + Units.inchesToMeters(4.7 + 2.5))
+                      * (Robot.getScoringSide() == ScoringSide.LEFT ? -1 : 1),
+                  Rotation2d.kZero));
     }
 
     /** Gets the closest offset target to the given pose. */
     public static Pose2d getClosestTargetL23(Pose2d pose) {
-      return pose.nearest(TRANSFORMED_POSES_L23);
+      return pose.nearest(
+          Robot.getScoringSide() == ScoringSide.LEFT
+              ? TRANSFORMED_POSES_L23_LEFT
+              : TRANSFORMED_POSES_L23_RIGHT);
     }
 
     public static Pose2d getClosestTargetL4(Pose2d pose) {
-      return pose.nearest(TRANSFORMED_POSES_L4);
+      return pose.nearest(
+          Robot.getScoringSide() == ScoringSide.LEFT
+              ? TRANSFORMED_POSES_L4_LEFT
+              : TRANSFORMED_POSES_L4_RIGHT);
     }
 
     /** Gets the closest offset target to the given pose. */
@@ -267,7 +319,8 @@ public class FieldUtils {
               .filter((target) -> target.leftHanded == leftHanded)
               .map(
                   (CoralTargets targets) -> {
-                    return CoralTargets.getRobotTargetLocationL23(targets.location);
+                    return CoralTargets.getRobotTargetLocationL23(
+                        targets.location, Robot.getScoringSide());
                   })
               .toList());
     }
@@ -279,7 +332,8 @@ public class FieldUtils {
               .filter((target) -> target.leftHanded == leftHanded)
               .map(
                   (CoralTargets targets) -> {
-                    return CoralTargets.getRobotTargetLocationL4(targets.location);
+                    return CoralTargets.getRobotTargetLocationL4(
+                        targets.location, Robot.getScoringSide());
                   })
               .toList());
     }

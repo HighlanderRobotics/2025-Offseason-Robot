@@ -16,8 +16,8 @@ import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
 
 public class ElevatorIOReal implements ElevatorIO {
-  private TalonFX leader = new TalonFX(10);
-  private TalonFX follower = new TalonFX(11);
+  private TalonFX leader = new TalonFX(10, "*");
+  private TalonFX follower = new TalonFX(11, "*");
 
   // Conversion from angle to distance happens in sensor to mechanism ratio
   private final BaseStatusSignal leaderPositionMeters = leader.getPosition();
@@ -39,7 +39,6 @@ public class ElevatorIOReal implements ElevatorIO {
   private TorqueCurrentFOC torqueCurrent = new TorqueCurrentFOC(0.0);
 
   public ElevatorIOReal() {
-    // TODO: CONFIGS ETC.
     TalonFXConfiguration config = new TalonFXConfiguration();
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
@@ -50,17 +49,15 @@ public class ElevatorIOReal implements ElevatorIO {
     config.Feedback.SensorToMechanismRatio =
         ElevatorSubsystem.GEAR_RATIO / (Math.PI * ElevatorSubsystem.SPROCKET_DIAMETER_METERS);
 
-    // TODO: TUNE
     config.Slot0.GravityType = GravityTypeValue.Elevator_Static;
-    config.Slot0.kS = 0.0;
-    config.Slot0.kG = 0.0;
-    config.Slot0.kV = 0.0;
-    config.Slot0.kP = 0.0;
+    config.Slot0.kS = 0.24;
+    config.Slot0.kG = 0.56;
+    config.Slot0.kV = 0.6;
+    config.Slot0.kP = 110.0;
     config.Slot0.kD = 0.0;
 
-    // TODO: TUNE
     config.CurrentLimits.StatorCurrentLimit = 80.0;
-    config.CurrentLimits.StatorCurrentLimitEnable = false;
+    config.CurrentLimits.StatorCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimit = 60.0;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLowerLimit = 40.0;
@@ -151,5 +148,6 @@ public class ElevatorIOReal implements ElevatorIO {
   @Override
   public void resetEncoder(double position) {
     leader.setPosition(position);
+    follower.setPosition(position);
   }
 }

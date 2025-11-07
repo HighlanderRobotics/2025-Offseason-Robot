@@ -39,14 +39,32 @@ public class Superstructure {
     IDLE(ElevatorState.IDLE, ArmState.IDLE, IntakeState.IDLE),
 
     INTAKE_CORAL_GROUND(ElevatorState.IDLE, ArmState.IDLE, IntakeState.INTAKE_CORAL),
-
     READY_CORAL_INTAKE(ElevatorState.IDLE, ArmState.IDLE, IntakeState.READY_CORAL_INTAKE),
-    PRE_HANDOFF(ElevatorState.HANDOFF, ArmState.HANDOFF, IntakeState.READY_CORAL_INTAKE),
-    HANDOFF(ElevatorState.HANDOFF, ArmState.HANDOFF, IntakeState.HANDOFF),
-    READY_CORAL_ARM(ElevatorState.IDLE, ArmState.READY_CORAL_ARM, IntakeState.IDLE),
+
+    // "right handoff" means the robot is about to score on its right, meaning the arm goes to the
+    // left
+    RIGHT_PRE_PRE_HANDOFF(
+        ElevatorState.PRE_HANDOFF, ArmState.PRE_RIGHT_HANDOFF, IntakeState.READY_CORAL_INTAKE),
+    RIGHT_PRE_HANDOFF(
+        ElevatorState.HANDOFF, ArmState.RIGHT_HANDOFF, IntakeState.READY_CORAL_INTAKE),
+    RIGHT_HANDOFF(ElevatorState.HANDOFF, ArmState.RIGHT_HANDOFF, IntakeState.HANDOFF),
+    // this is to make it "take the long way around". it's kind of stupid but
+    RIGHT_POST_HANDOFF(
+        ElevatorState.RIGHT_POST_HANDOFF, ArmState.RIGHT_POST_HANDOFF, IntakeState.HANDOFF),
+
+    // "left handoff" means the robot is about to score on its left, meaning the arm goes to the
+    // right
+    LEFT_PRE_PRE_HANDOFF(
+        ElevatorState.PRE_HANDOFF, ArmState.PRE_LEFT_HANDOFF, IntakeState.READY_CORAL_INTAKE),
+    LEFT_PRE_HANDOFF(ElevatorState.HANDOFF, ArmState.LEFT_HANDOFF, IntakeState.READY_CORAL_INTAKE),
+    LEFT_HANDOFF(ElevatorState.HANDOFF, ArmState.LEFT_HANDOFF, IntakeState.HANDOFF),
+    // this is to make it "take the long way around". it's kind of stupid but
+    LEFT_POST_HANDOFF(
+        ElevatorState.LEFT_POST_HANDOFF, ArmState.LEFT_POST_HANDOFF, IntakeState.HANDOFF),
 
     INTAKE_CORAL_STACK(
         ElevatorState.INTAKE_CORAL_STACK, ArmState.INTAKE_CORAL_STACK, IntakeState.CLIMB),
+    READY_CORAL_ARM(ElevatorState.IDLE, ArmState.READY_CORAL_ARM, IntakeState.IDLE),
 
     PRE_L1(ElevatorState.IDLE, ArmState.IDLE, IntakeState.PRE_L1),
     L1(ElevatorState.IDLE, ArmState.IDLE, IntakeState.SCORE_L1),
@@ -100,6 +118,7 @@ public class Superstructure {
     public final ArmState armState;
     public final IntakeState intakeState;
     public final ClimberState climberState;
+    public final Trigger trigger;
 
     private SuperState(
         ElevatorState elevatorState,
@@ -110,6 +129,7 @@ public class Superstructure {
       this.armState = armState;
       this.intakeState = intakeState;
       this.climberState = climberState;
+      trigger = new Trigger(() -> state == this);
     }
 
     private SuperState(ElevatorState elevatorState, ArmState armState, IntakeState intakeState) {
@@ -117,14 +137,19 @@ public class Superstructure {
       this.armState = armState;
       this.intakeState = intakeState;
       this.climberState = ClimberState.IDLE;
+      trigger = new Trigger(() -> state == this);
+    }
+
+    public Trigger getTrigger() {
+      return trigger;
     }
 
     public boolean isCoral() {
       return this == INTAKE_CORAL_GROUND
           || this == READY_CORAL_INTAKE
-          || this == HANDOFF
+          || this == RIGHT_HANDOFF
+          || this == LEFT_HANDOFF
           || this == INTAKE_CORAL_STACK
-          || this == READY_CORAL_ARM
           || this == PRE_L1
           || this == L1
           || this == PRE_L2_RIGHT
@@ -208,7 +233,19 @@ public class Superstructure {
   @AutoLogOutput(key = "Superstructure/Climb Cancel Request")
   public Trigger climbCancelReq;
 
+  @AutoLogOutput(key = "Superstructure/At Extension?")
   public Trigger atExtensionTrigger = new Trigger(this::atExtension);
+
+  @AutoLogOutput(key = "Superstructure/Intake Has Game Piece?")
+  public Trigger intakeHasGamePieceTrigger;
+
+  // May need to distinguish between coral and algae
+  @AutoLogOutput(key = "Superstructure/Arm Has Game Piece?")
+  public Trigger armHasGamePieceTrigger;
+
+  // i'm fully aware this is an awful name
+  @AutoLogOutput(key = "Superstructure/Away From Reef?")
+  public Trigger awayFromReefTrigger;
 
   /** Creates a new Superstructure. */
   public Superstructure(
@@ -260,6 +297,12 @@ public class Superstructure {
             .y()
             .debounce(0.5)
             .or(operator.leftStick().and(operator.rightTrigger()).debounce(0.5));
+
+    intakeHasGamePieceTrigger = new Trigger(intake::hasGamePiece);
+
+    armHasGamePieceTrigger = new Trigger(arm::hasGamePiece);
+
+    awayFromReefTrigger = new Trigger(swerve::isNearL1Reef).negate();
   }
 
   public void periodic() {
@@ -276,7 +319,7 @@ public class Superstructure {
   private void bindTransition(SuperState start, SuperState end, Trigger trigger) {
     // when 1) the robot is in the start state and 2) the trigger is true, the robot changes state
     // to the end state
-    trigger.and(new Trigger(() -> state == start)).onTrue(changeStateTo(end));
+    trigger.and(start.getTrigger()).onTrue(changeStateTo(end));
   }
 
   /**
@@ -289,9 +332,7 @@ public class Superstructure {
   private void bindTransition(SuperState start, SuperState end, Trigger trigger, Command cmd) {
     // when 1) the robot is in the start state and 2) the trigger is true, the robot changes state
     // to the end state IN PARALLEL to running the command that got passed in
-    trigger
-        .and(new Trigger(() -> state == start))
-        .onTrue(Commands.parallel(changeStateTo(end), cmd));
+    trigger.and(start.getTrigger()).onTrue(Commands.parallel(changeStateTo(end), cmd));
   }
 
   public boolean atExtension(SuperState state) {
@@ -333,154 +374,267 @@ public class Superstructure {
     bindTransition(
         SuperState.INTAKE_CORAL_GROUND,
         SuperState.READY_CORAL_INTAKE,
-        new Trigger(intake::hasGamePiece).debounce(0.1));
+        intakeHasGamePieceTrigger.debounce(0.1));
 
-    // Handoff
+    // ---Cancel intake coral ground---
+    bindTransition(
+        SuperState.INTAKE_CORAL_GROUND,
+        SuperState.IDLE,
+        intakeCoralReq.negate().and(intakeHasGamePieceTrigger.negate()));
+
+    // ---In case coral drops from the intake for some reason---
     bindTransition(
         SuperState.READY_CORAL_INTAKE,
-        SuperState.PRE_HANDOFF,
-        // TODO maybe make the hascorals and stuff triggers inside intake?
-        preScoreReq.and(() -> Robot.getCoralScoreTarget() != CoralScoreTarget.L1));
+        SuperState.IDLE,
+        intakeHasGamePieceTrigger.negate().debounce(0.5));
 
+    // ---L1---
     bindTransition(
-        SuperState.PRE_HANDOFF,
-        SuperState.HANDOFF,
-        // maybe this also needs prescore idk
-        atExtensionTrigger);
-
-    bindTransition(
-        SuperState.HANDOFF,
-        // uhhh may need another intermediate state
-        SuperState.READY_CORAL_ARM,
-        new Trigger(arm::hasGamePiece)
+        SuperState.READY_CORAL_INTAKE,
+        SuperState.PRE_L1,
+        atExtensionTrigger
             .debounce(0.1)
-            .and(intake::hasGamePiece)
-            .negate()
+            .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L1)
+            .and(preScoreReq));
+
+    bindTransition(
+        SuperState.PRE_L1,
+        SuperState.L1,
+        preScoreReq.negate().and(scoreReq).and(atExtensionTrigger));
+
+    bindTransition(
+        SuperState.L1,
+        SuperState.IDLE,
+        intakeHasGamePieceTrigger.negate().debounce(0.1).and(awayFromReefTrigger.debounce(0.15)));
+
+    // ---Right Handoff---
+    bindTransition(
+        SuperState.READY_CORAL_INTAKE,
+        SuperState.RIGHT_PRE_PRE_HANDOFF,
+        preScoreReq
+            .and(() -> Robot.getCoralScoreTarget() != CoralScoreTarget.L1)
+            .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
+
+    bindTransition(
+        SuperState.RIGHT_PRE_PRE_HANDOFF,
+        SuperState.RIGHT_PRE_HANDOFF,
+        atExtensionTrigger.debounce(0.1).and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
+
+    bindTransition(
+        SuperState.RIGHT_PRE_HANDOFF,
+        SuperState.RIGHT_HANDOFF,
+        atExtensionTrigger.debounce(0.25).and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
+
+    bindTransition(
+        SuperState.RIGHT_HANDOFF,
+        SuperState.RIGHT_POST_HANDOFF,
+        armHasGamePieceTrigger
+            .debounce(0.1)
+            .and(intakeHasGamePieceTrigger.negate().debounce(0.05))
+            .and(atExtensionTrigger));
+
+    // ---Left Handoff---
+    bindTransition(
+        SuperState.READY_CORAL_INTAKE,
+        SuperState.LEFT_PRE_PRE_HANDOFF,
+        preScoreReq
+            .and(() -> Robot.getCoralScoreTarget() != CoralScoreTarget.L1)
+            .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
+
+    bindTransition(
+        SuperState.LEFT_PRE_PRE_HANDOFF,
+        SuperState.LEFT_PRE_HANDOFF,
+        atExtensionTrigger.debounce(0.1).and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
+
+    bindTransition(
+        SuperState.LEFT_PRE_HANDOFF,
+        SuperState.LEFT_HANDOFF,
+        atExtensionTrigger.debounce(0.25).and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
+
+    bindTransition(
+        SuperState.LEFT_HANDOFF,
+        SuperState.LEFT_POST_HANDOFF,
+        armHasGamePieceTrigger
+            .debounce(0.1)
+            .and(intakeHasGamePieceTrigger.negate().debounce(0.05))
             .and(atExtensionTrigger));
 
     // ---Intake coral stack---
     // No intake coral stack -> L1 cause why would you do that
+    // READY_CORAL_ARM is the counterpart to READY_CORAL_INTAKE, as in it's essentially idle except
+    // it has a coral
     // TODO maybe add intake coral straight to l4 or smth for auto (only?)
     bindTransition(
         SuperState.IDLE,
         SuperState.INTAKE_CORAL_STACK,
         intakeCoralReq.and(() -> Robot.getCoralIntakeTarget() == CoralIntakeTarget.STACK));
 
+    bindTransition(SuperState.INTAKE_CORAL_STACK, SuperState.IDLE, intakeCoralReq.negate());
+
     bindTransition(
         SuperState.INTAKE_CORAL_STACK,
         SuperState.READY_CORAL_ARM,
-        new Trigger(arm::hasGamePiece).debounce(0.1));
+        armHasGamePieceTrigger.debounce(0.1));
 
-    // ---L2---
+    // ---In case coral drops from the arm for some reason
     bindTransition(
-        SuperState.READY_CORAL_ARM,
+        SuperState.READY_CORAL_ARM, SuperState.IDLE, armHasGamePieceTrigger.negate().debounce(0.5));
+
+    // ---Right L2---
+    bindTransition(
+        SuperState.RIGHT_POST_HANDOFF,
         SuperState.PRE_L2_RIGHT,
-        preScoreReq
+        atExtensionTrigger
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L2)
             .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
     bindTransition(
-        SuperState.PRE_L2_RIGHT, SuperState.SCORE_L2_RIGHT, scoreReq.and(atExtensionTrigger));
+        SuperState.READY_CORAL_ARM,
+        SuperState.PRE_L2_RIGHT,
+        preScoreReq
+            .and(atExtensionTrigger)
+            .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L2)
+            .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
+
+    bindTransition(
+        SuperState.PRE_L2_RIGHT,
+        SuperState.SCORE_L2_RIGHT,
+        preScoreReq.negate().and(scoreReq).and(atExtensionTrigger));
 
     bindTransition(
         SuperState.SCORE_L2_RIGHT,
         SuperState.IDLE,
-        new Trigger(arm::hasGamePiece)
-            .negate()
-            // TODO this is a different near reef (?)
-            .and(new Trigger(swerve::isNearL1Reef).negate().debounce(0.15)));
+        armHasGamePieceTrigger.negate().debounce(0.1).and(awayFromReefTrigger.debounce(0.15)));
+
+    // ---Left L2---
+    bindTransition(
+        SuperState.LEFT_POST_HANDOFF,
+        SuperState.PRE_L2_LEFT,
+        atExtensionTrigger
+            .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L2)
+            .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
     bindTransition(
         SuperState.READY_CORAL_ARM,
         SuperState.PRE_L2_LEFT,
         preScoreReq
+            .and(atExtensionTrigger)
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L2)
             .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
     bindTransition(
-        SuperState.PRE_L2_LEFT, SuperState.SCORE_L2_LEFT, scoreReq.and(atExtensionTrigger));
+        SuperState.PRE_L2_LEFT,
+        SuperState.SCORE_L2_LEFT,
+        preScoreReq.negate().and(scoreReq).and(atExtensionTrigger));
 
     bindTransition(
         SuperState.SCORE_L2_LEFT,
         SuperState.IDLE,
-        new Trigger(arm::hasGamePiece)
-            .negate()
-            // TODO this is a different near reef (?)
-            .and(new Trigger(swerve::isNearL1Reef).negate().debounce(0.15)));
+        armHasGamePieceTrigger.negate().debounce(0.1).and(awayFromReefTrigger.debounce(0.15)));
 
-    // ---L3---
+    // ---Right L3---
     bindTransition(
-        SuperState.READY_CORAL_ARM,
+        SuperState.RIGHT_POST_HANDOFF,
         SuperState.PRE_L3_RIGHT,
-        preScoreReq
+        atExtensionTrigger
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L3)
             .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
     bindTransition(
-        SuperState.PRE_L3_RIGHT, SuperState.SCORE_L3_RIGHT, scoreReq.and(atExtensionTrigger));
+        SuperState.READY_CORAL_ARM,
+        SuperState.PRE_L3_RIGHT,
+        preScoreReq
+            .and(atExtensionTrigger)
+            .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L3)
+            .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
+
+    bindTransition(
+        SuperState.PRE_L3_RIGHT,
+        SuperState.SCORE_L3_RIGHT,
+        preScoreReq.negate().and(scoreReq).and(atExtensionTrigger));
 
     bindTransition(
         SuperState.SCORE_L3_RIGHT,
         SuperState.IDLE,
-        new Trigger(arm::hasGamePiece)
-            .negate()
-            // TODO this is a different near reef (?)
-            .and(new Trigger(swerve::isNearL1Reef).negate().debounce(0.15)));
+        armHasGamePieceTrigger.negate().debounce(0.1).and(awayFromReefTrigger.debounce(0.15)));
+
+    // ---Left L3---
+    bindTransition(
+        SuperState.LEFT_POST_HANDOFF,
+        SuperState.PRE_L3_LEFT,
+        atExtensionTrigger
+            .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L3)
+            .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
     bindTransition(
         SuperState.READY_CORAL_ARM,
         SuperState.PRE_L3_LEFT,
         preScoreReq
+            .and(atExtensionTrigger)
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L3)
             .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
     bindTransition(
-        SuperState.PRE_L3_LEFT, SuperState.SCORE_L3_LEFT, scoreReq.and(atExtensionTrigger));
+        SuperState.PRE_L3_LEFT,
+        SuperState.SCORE_L3_LEFT,
+        preScoreReq.negate().and(scoreReq).and(atExtensionTrigger));
 
     bindTransition(
         SuperState.SCORE_L3_LEFT,
         SuperState.IDLE,
-        new Trigger(arm::hasGamePiece)
-            .negate()
-            // TODO this is a different near reef (?)
-            .and(new Trigger(swerve::isNearL1Reef).negate().debounce(0.15)));
+        armHasGamePieceTrigger.negate().debounce(0.1).and(awayFromReefTrigger.debounce(0.15)));
 
-    // ---L4---
+    // ---Right L4---
     bindTransition(
-        SuperState.READY_CORAL_ARM,
+        SuperState.RIGHT_POST_HANDOFF,
         SuperState.PRE_L4_RIGHT,
-        preScoreReq
+        atExtensionTrigger
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L4)
             .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
     bindTransition(
-        SuperState.PRE_L4_RIGHT, SuperState.SCORE_L4_RIGHT, scoreReq.and(atExtensionTrigger));
+        SuperState.READY_CORAL_ARM,
+        SuperState.PRE_L4_RIGHT,
+        preScoreReq
+            .and(atExtensionTrigger)
+            .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L4)
+            .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
+
+    bindTransition(
+        SuperState.PRE_L4_RIGHT,
+        SuperState.SCORE_L4_RIGHT,
+        preScoreReq.negate().and(scoreReq).and(atExtensionTrigger));
 
     bindTransition(
         SuperState.SCORE_L4_RIGHT,
         SuperState.IDLE,
-        new Trigger(arm::hasGamePiece)
-            .negate()
-            // TODO this is a different near reef (?)
-            .and(new Trigger(swerve::isNearL1Reef).negate().debounce(0.15)));
+        armHasGamePieceTrigger.negate().debounce(0.1).and(awayFromReefTrigger.debounce(0.15)));
+
+    // ---Left L4---
+    bindTransition(
+        SuperState.LEFT_POST_HANDOFF,
+        SuperState.PRE_L4_LEFT,
+        atExtensionTrigger
+            .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L4)
+            .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
     bindTransition(
         SuperState.READY_CORAL_ARM,
         SuperState.PRE_L4_LEFT,
         preScoreReq
+            .and(atExtensionTrigger)
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L4)
             .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
     bindTransition(
-        SuperState.PRE_L4_LEFT, SuperState.SCORE_L4_LEFT, scoreReq.and(atExtensionTrigger));
+        SuperState.PRE_L4_LEFT,
+        SuperState.SCORE_L4_LEFT,
+        preScoreReq.negate().and(scoreReq).and(atExtensionTrigger));
 
     bindTransition(
         SuperState.SCORE_L4_LEFT,
         SuperState.IDLE,
-        new Trigger(arm::hasGamePiece)
-            .negate()
-            // TODO this is a different near reef (?)
-            .and(new Trigger(swerve::isNearL1Reef).negate().debounce(0.15)));
+        armHasGamePieceTrigger.negate().debounce(0.1).and(awayFromReefTrigger.debounce(0.15)));
 
     // ---Intake Algae Ground---
     bindTransition(
@@ -491,7 +645,13 @@ public class Superstructure {
     bindTransition(
         SuperState.INTAKE_ALGAE_GROUND,
         SuperState.READY_ALGAE,
-        new Trigger(arm::hasGamePiece).debounce(0.1));
+        armHasGamePieceTrigger.debounce(0.1));
+
+    // ---Cancel intake algae ground
+    bindTransition(
+        SuperState.INTAKE_ALGAE_GROUND,
+        SuperState.IDLE,
+        intakeAlgaeReq.negate().and(armHasGamePieceTrigger.negate()));
 
     // ---Intake Algae Stack---
     bindTransition(
@@ -502,9 +662,15 @@ public class Superstructure {
     bindTransition(
         SuperState.INTAKE_ALGAE_STACK,
         SuperState.READY_ALGAE,
-        new Trigger(arm::hasGamePiece).debounce(0.1));
+        armHasGamePieceTrigger.debounce(0.1));
 
-    // ---Intake Algae Low---
+    // ---Cancel intake algae stack
+    bindTransition(
+        SuperState.INTAKE_ALGAE_STACK,
+        SuperState.IDLE,
+        intakeAlgaeReq.negate().and(armHasGamePieceTrigger.negate()));
+
+    // ---Right Intake Algae Low---
     bindTransition(
         SuperState.IDLE,
         SuperState.INTAKE_ALGAE_LOW_RIGHT,
@@ -515,8 +681,16 @@ public class Superstructure {
     bindTransition(
         SuperState.INTAKE_ALGAE_LOW_RIGHT,
         SuperState.READY_ALGAE,
-        new Trigger(arm::hasGamePiece).debounce(0.1));
+        armHasGamePieceTrigger.debounce(0.1));
 
+    // ---Cancel right intake algae low---
+    bindTransition(
+        SuperState.INTAKE_ALGAE_LOW_RIGHT,
+        SuperState.IDLE,
+        intakeAlgaeReq.negate().and(armHasGamePieceTrigger.negate()));
+
+    // ---Left Intake Algae Low---
+    // might hit climber?
     bindTransition(
         SuperState.IDLE,
         SuperState.INTAKE_ALGAE_LOW_LEFT,
@@ -527,9 +701,15 @@ public class Superstructure {
     bindTransition(
         SuperState.INTAKE_ALGAE_LOW_LEFT,
         SuperState.READY_ALGAE,
-        new Trigger(arm::hasGamePiece).debounce(0.1));
+        armHasGamePieceTrigger.debounce(0.1));
 
-    // ---Intake Algae High---
+    // ---Cancel left intake algae low---
+    bindTransition(
+        SuperState.INTAKE_ALGAE_LOW_LEFT,
+        SuperState.IDLE,
+        intakeAlgaeReq.negate().and(armHasGamePieceTrigger.negate()));
+
+    // ---Right Intake Algae High---
     bindTransition(
         SuperState.IDLE,
         SuperState.INTAKE_ALGAE_HIGH_RIGHT,
@@ -540,8 +720,15 @@ public class Superstructure {
     bindTransition(
         SuperState.INTAKE_ALGAE_HIGH_RIGHT,
         SuperState.READY_ALGAE,
-        new Trigger(arm::hasGamePiece).debounce(0.1));
+        armHasGamePieceTrigger.debounce(0.1));
 
+    // ---Cancel right intake algae high---
+    bindTransition(
+        SuperState.INTAKE_ALGAE_HIGH_RIGHT,
+        SuperState.IDLE,
+        intakeAlgaeReq.negate().and(armHasGamePieceTrigger.negate()));
+
+    // ---Left Intake Algae High---
     bindTransition(
         SuperState.IDLE,
         SuperState.INTAKE_ALGAE_HIGH_LEFT,
@@ -552,9 +739,19 @@ public class Superstructure {
     bindTransition(
         SuperState.INTAKE_ALGAE_HIGH_LEFT,
         SuperState.READY_ALGAE,
-        new Trigger(arm::hasGamePiece).debounce(0.1));
+        armHasGamePieceTrigger.debounce(0.1));
 
-    // ---Score Barge---
+    // ---Cancel left intake algae high---
+    bindTransition(
+        SuperState.INTAKE_ALGAE_HIGH_LEFT,
+        SuperState.IDLE,
+        intakeAlgaeReq.negate().and(armHasGamePieceTrigger.negate()));
+
+    // ---In case algae drops from the arm for some reason
+    bindTransition(
+        SuperState.READY_ALGAE, SuperState.IDLE, armHasGamePieceTrigger.negate().debounce(0.5));
+
+    // ---Right Score Barge---
     bindTransition(
         SuperState.READY_ALGAE,
         SuperState.PRE_BARGE_RIGHT,
@@ -570,10 +767,10 @@ public class Superstructure {
         SuperState.IDLE,
         // TODO i don't trust the state timer but i'm not sure if i can use the current check
         new Trigger(() -> stateTimer.hasElapsed(0.5))
-            .and(arm::hasGamePiece)
-            .negate()
+            .and(armHasGamePieceTrigger.negate())
             .debounce(0.2));
 
+    // ---Left Score Barge---
     bindTransition(
         SuperState.READY_ALGAE,
         SuperState.PRE_BARGE_LEFT,
@@ -589,8 +786,7 @@ public class Superstructure {
         SuperState.IDLE,
         // TODO i don't trust the state timer but i'm not sure if i can use the current check
         new Trigger(() -> stateTimer.hasElapsed(0.5))
-            .and(arm::hasGamePiece)
-            .negate()
+            .and(armHasGamePieceTrigger.negate())
             .debounce(0.2));
 
     // ---Score Processor---
@@ -605,7 +801,10 @@ public class Superstructure {
     bindTransition(
         SuperState.SCORE_PROCESSOR,
         SuperState.IDLE,
-        new Trigger(arm::hasGamePiece).negate().debounce(0.2).and(swerve::nearProcessor).negate());
+        armHasGamePieceTrigger
+            .negate()
+            .debounce(0.2)
+            .and(new Trigger(swerve::nearProcessor).negate()));
 
     // ---Climb---
     bindTransition(SuperState.IDLE, SuperState.PRE_CLIMB, preClimbReq);
@@ -613,6 +812,7 @@ public class Superstructure {
     bindTransition(
         SuperState.PRE_CLIMB, SuperState.CLIMB, climbConfReq.and(climber::atClimbExtension));
 
+    // ---Cancel climb---
     bindTransition(SuperState.CLIMB, SuperState.PRE_CLIMB, climbCancelReq);
 
     bindTransition(SuperState.PRE_CLIMB, SuperState.IDLE, climbCancelReq);
@@ -623,27 +823,41 @@ public class Superstructure {
   }
 
   public boolean stateIsCoral() {
-    return state.isCoral();
+    return getState().isCoral();
+  }
+
+  public boolean stateIsAlgae() {
+    return getState().isAlgae();
   }
 
   public boolean stateIsIntakeAlgaeReef() {
+    return getState() == SuperState.INTAKE_ALGAE_HIGH_RIGHT
+        || getState() == SuperState.INTAKE_ALGAE_LOW_RIGHT;
+  }
+
+  public static boolean stateIsVoltageControl() {
     return state == SuperState.INTAKE_ALGAE_HIGH_RIGHT
-        || state == SuperState.INTAKE_ALGAE_LOW_RIGHT;
+        || state == SuperState.INTAKE_ALGAE_LOW_RIGHT
+        || state == SuperState.INTAKE_ALGAE_HIGH_LEFT
+        || state == SuperState.INTAKE_ALGAE_LOW_LEFT
+        || state == SuperState.INTAKE_ALGAE_GROUND
+        || state == SuperState.INTAKE_ALGAE_STACK
+        || state == SuperState.READY_ALGAE;
   }
 
   public boolean stateIsIdle() {
-    return state == SuperState.IDLE;
+    return getState() == SuperState.IDLE;
   }
 
   public boolean stateIsProcessor() {
-    return state == SuperState.READY_ALGAE
-        || state == SuperState.PRE_PROCESSOR
-        || state == SuperState.SCORE_PROCESSOR;
+    return getState() == SuperState.READY_ALGAE
+        || getState() == SuperState.PRE_PROCESSOR
+        || getState() == SuperState.SCORE_PROCESSOR;
   }
 
   public boolean stateIsBarge() {
-    return state == SuperState.READY_ALGAE
-        || state == SuperState.PRE_BARGE_RIGHT
-        || state == SuperState.SCORE_BARGE_RIGHT;
+    return getState() == SuperState.READY_ALGAE
+        || getState() == SuperState.PRE_BARGE_RIGHT
+        || getState() == SuperState.SCORE_BARGE_RIGHT;
   }
 }

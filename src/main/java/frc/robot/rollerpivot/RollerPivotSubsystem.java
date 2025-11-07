@@ -13,18 +13,17 @@ import frc.robot.roller.RollerIO;
 import frc.robot.roller.RollerIOInputsAutoLogged;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
-import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class RollerPivotSubsystem extends SubsystemBase {
   private final RollerIOInputsAutoLogged rollerInputs = new RollerIOInputsAutoLogged();
-  private final PivotIOInputsAutoLogged pivotInputs = new PivotIOInputsAutoLogged();
-  private final RollerIO rollerIO;
-  private final PivotIO pivotIO;
+  protected final PivotIOInputsAutoLogged pivotInputs = new PivotIOInputsAutoLogged();
+  protected final RollerIO rollerIO;
+  protected final PivotIO pivotIO;
   private final String name;
 
   private LinearFilter currentFilter = LinearFilter.movingAverage(10);
-  @AutoLogOutput public double currentFilterValue = 0.0;
+  protected double currentFilterValue = 0.0;
 
   public RollerPivotSubsystem(RollerIO rollerIO, PivotIO pivotIO, String name) {
     this.rollerIO = rollerIO;
@@ -32,16 +31,17 @@ public class RollerPivotSubsystem extends SubsystemBase {
     this.name = name;
   }
 
-  public Command runRollerVoltage(DoubleSupplier volts) {
-    return this.run(() -> rollerIO.setRollerVoltage(volts.getAsDouble()));
+  protected void runRollerVoltage(DoubleSupplier volts) {
+    rollerIO.setRollerVoltage(volts.getAsDouble());
   }
 
-  public Command setPivotAngle(Supplier<Rotation2d> target) {
-    return this.run(
-        () -> {
-          Logger.recordOutput(name + "/Pivot Setpoint", target.get());
-          pivotIO.setMotorPosition(target.get());
-        });
+  protected void runRollerVelocity(double velocityRPS) {
+    rollerIO.setRollerVelocity(velocityRPS);
+  }
+
+  protected void setPivotAngle(Supplier<Rotation2d> target) {
+    Logger.recordOutput(name + "/Pivot Setpoint", target.get());
+    pivotIO.setMotorPosition(target.get());
   }
 
   public Command setPivotVoltage(DoubleSupplier volts) {
@@ -60,12 +60,30 @@ public class RollerPivotSubsystem extends SubsystemBase {
     return MathUtil.isNear(target.getDegrees(), getPivotAngle().getDegrees(), tolerance);
   }
 
-  public Command zeroPivot(double position) {
-    return this.runOnce(() -> pivotIO.resetEncoder(position));
+  public Command zeroPivot(Supplier<Rotation2d> rotations) {
+    return this.runOnce(() -> pivotIO.resetEncoder(rotations.get()));
   }
 
   public double getFilteredStatorCurrentAmps() {
     return currentFilterValue;
+  }
+
+  // this CANNOT be correct LMAO
+  public Command setPivotAndRollers(
+      Supplier<Rotation2d> pivotAngle, DoubleSupplier rollerVelocity) {
+    // Command cmd =
+    //     Commands.parallel(
+    //         Commands.runOnce(() -> setPivotAngle(pivotAngle)),
+    //         Commands.run(() -> runRollerVoltage(rollerVoltage)));
+    // cmd.addRequirements(this);
+    // return cmd;
+    return this.run(
+        () -> {
+          Logger.recordOutput(name + "/Pivot Setpoint", pivotAngle.get());
+          Logger.recordOutput(name + "/Rollers Setpoint", rollerVelocity.getAsDouble());
+          setPivotAngle(pivotAngle);
+          runRollerVelocity(rollerVelocity.getAsDouble());
+        });
   }
 
   @Override

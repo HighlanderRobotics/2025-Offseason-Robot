@@ -10,18 +10,21 @@ import edu.wpi.first.units.measure.Angle;
 public class CANcoderIOReal implements CANcoderIO {
   private final CANcoder cancoder;
 
-  private final StatusSignal<Angle> cancoderAbsolutePosition;
+  private final StatusSignal<Angle> cancoderAbsolutePositionRotations;
 
   public CANcoderIOReal(int cancoderID, CANcoderConfiguration config) {
     cancoder = new CANcoder(cancoderID, "*");
-    cancoderAbsolutePosition = cancoder.getAbsolutePosition();
+    cancoderAbsolutePositionRotations = cancoder.getAbsolutePosition();
+    BaseStatusSignal.setUpdateFrequencyForAll(50.0, cancoderAbsolutePositionRotations);
     cancoder.getConfigurator().apply(config);
+    cancoder.optimizeBusUtilization();
   }
 
   @Override
   public void updateInputs(CANcoderIOInputs inputs) {
-    BaseStatusSignal.refreshAll(cancoderAbsolutePosition);
+    BaseStatusSignal.refreshAll(cancoderAbsolutePositionRotations);
 
-    inputs.cancoderPosition = Rotation2d.fromRotations(cancoderAbsolutePosition.getValueAsDouble());
+    inputs.cancoderPositionRotations =
+        Rotation2d.fromRotations(cancoderAbsolutePositionRotations.getValueAsDouble());
   }
 }

@@ -3,6 +3,7 @@ package frc.robot.swerve;
 import choreo.trajectory.SwerveSample;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -27,7 +28,7 @@ import frc.robot.Robot.RobotType;
 import frc.robot.camera.Camera;
 import frc.robot.camera.CameraIOReal;
 import frc.robot.camera.CameraIOSim;
-import frc.robot.swerve.constants.KelpieSwerveConstants;
+import frc.robot.swerve.constants.OffseasonBotSwerveConstants;
 import frc.robot.swerve.constants.SwerveConstants;
 import frc.robot.swerve.gyro.GyroIO;
 import frc.robot.swerve.gyro.GyroIOInputsAutoLogged;
@@ -58,7 +59,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class SwerveSubsystem extends SubsystemBase {
-  public static final SwerveConstants SWERVE_CONSTANTS = new KelpieSwerveConstants();
+  public static final SwerveConstants SWERVE_CONSTANTS = new OffseasonBotSwerveConstants();
 
   private final Module[] modules; // Front Left, Front Right, Back Left, Back Right
   private final GyroIO gyroIO;
@@ -127,10 +128,18 @@ public class SwerveSubsystem extends SubsystemBase {
                     SWERVE_CONSTANTS.getBackRightModuleConstants(),
                     swerveSimulation.getModules()[3]))
           };
+      // cameras =
+      //     Arrays.stream(SWERVE_CONSTANTS.getCameraConstants())
+      //         .map((constants) -> new Camera(new CameraIOSim(constants)))
+      //         .toArray(Camera[]::new);
+      // TODO something's cooked here
       cameras =
-          Arrays.stream(SWERVE_CONSTANTS.getCameraConstants())
-              .map((constants) -> new Camera(new CameraIOSim(constants)))
-              .toArray(Camera[]::new);
+          new Camera[] {
+            new Camera(new CameraIOSim(SWERVE_CONSTANTS.getCameraConstants()[0])),
+            // new Camera(new CameraIOSim(SWERVE_CONSTANTS.getCameraConstants()[1])),
+            new Camera(new CameraIOSim(SWERVE_CONSTANTS.getCameraConstants()[2])),
+            new Camera(new CameraIOSim(SWERVE_CONSTANTS.getCameraConstants()[3]))
+          };
     } else {
       // Add real modules
       modules =
@@ -140,17 +149,29 @@ public class SwerveSubsystem extends SubsystemBase {
             new Module(new ModuleIOReal(SWERVE_CONSTANTS.getBackLeftModuleConstants())),
             new Module(new ModuleIOReal(SWERVE_CONSTANTS.getBackRightModuleConstants()))
           };
+      // cameras =
+      //     Arrays.stream(SWERVE_CONSTANTS.getCameraConstants())
+      //         .map((constants) -> new Camera(new CameraIOReal(constants)))
+      //         .toArray(Camera[]::new);
+
       cameras =
-          Arrays.stream(SWERVE_CONSTANTS.getCameraConstants())
-              .map((constants) -> new Camera(new CameraIOReal(constants)))
-              .toArray(Camera[]::new);
+          new Camera[] {
+            new Camera(new CameraIOReal(SWERVE_CONSTANTS.getCameraConstants()[0])),
+            new Camera(new CameraIOReal(SWERVE_CONSTANTS.getCameraConstants()[1])),
+            new Camera(new CameraIOReal(SWERVE_CONSTANTS.getCameraConstants()[2])),
+            new Camera(new CameraIOReal(SWERVE_CONSTANTS.getCameraConstants()[3]))
+          };
     }
 
     this.cameraPoses = new Pose3d[cameras.length];
+    // needed to prevent NPE
+    for (int i = 0; i < cameras.length; i++) {
+      cameraPoses[i] = Pose3d.kZero;
+    }
 
     this.gyroIO =
         Robot.ROBOT_TYPE != RobotType.SIM
-            ? new GyroIOReal(SWERVE_CONSTANTS.getGyroID())
+            ? new GyroIOReal(SWERVE_CONSTANTS.getGyroID(), SWERVE_CONSTANTS.getGyroConfig())
             : new GyroIOSim(swerveSimulation.getGyroSimulation());
 
     this.swerveSimulation = swerveSimulation;
@@ -194,8 +215,7 @@ public class SwerveSubsystem extends SubsystemBase {
           }
 
           for (Camera camera : cameras) {
-            Tracer.trace(
-                "Camera " + camera.getName() + " Periodic", () -> camera.periodic(estimator));
+            Tracer.trace("Camera " + camera.getName() + " Periodic", camera::periodic);
           }
 
           Tracer.trace("Update odometry", this::updateOdometry);
@@ -286,8 +306,10 @@ public class SwerveSubsystem extends SubsystemBase {
       cameras[i].updateCamera(estimator);
       cameraPoses[i] = cameras[i].getPose();
     }
-    Logger.recordOutput("Vision/Front Cameras Have Tags", hasFrontTags);
-    if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("Vision/Camera Poses", cameraPoses);
+    // Logger.recordOutput("Vision/Front Cameras Have Tags", hasFrontTags);
+    // TODO
+    // if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("Vision/Camera Poses",
+    // cameraPoses);
     Pose3d[] arr = new Pose3d[cameras.length];
     for (int k = 0; k < cameras.length; k++) {
       arr[k] = getPose3d().transformBy(cameras[k].getCameraConstants().robotToCamera());
@@ -311,9 +333,9 @@ public class SwerveSubsystem extends SubsystemBase {
     final SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
     // Makes sure each wheel isn't asked to go above its max. Recalcs the states if needed
     SwerveDriveKinematics.desaturateWheelSpeeds(states, SWERVE_CONSTANTS.getMaxLinearSpeed());
-    if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("SwerveStates/Setpoints", states);
+    Logger.recordOutput("SwerveStates/Setpoints", states);
 
-    if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("Swerve/Target Speeds", speeds);
+    Logger.recordOutput("Swerve/Target Speeds", speeds);
 
     SwerveModuleState[] optimizedStates = new SwerveModuleState[modules.length];
 
@@ -332,8 +354,7 @@ public class SwerveSubsystem extends SubsystemBase {
       }
     }
 
-    if (Robot.ROBOT_TYPE != RobotType.REAL)
-      Logger.recordOutput("SwerveStates/SetpointsOptimized", optimizedStates);
+    Logger.recordOutput("SwerveStates/SetpointsOptimized", optimizedStates);
   }
 
   /**
@@ -355,6 +376,16 @@ public class SwerveSubsystem extends SubsystemBase {
   public Command driveClosedLoopFieldRelative(Supplier<ChassisSpeeds> speeds) {
     return this.run(
         () -> drive(ChassisSpeeds.fromFieldRelativeSpeeds(speeds.get(), getRotation()), false));
+  }
+
+  /**
+   * Drive closed-loop at field relative speeds (i.e. for autoaim)
+   *
+   * @param speeds
+   * @return a Command driving to the target speeds
+   */
+  public Command driveOpenLoopRobotRelative(Supplier<ChassisSpeeds> speeds) {
+    return this.run(() -> drive(speeds.get(), true));
   }
 
   /**
@@ -491,7 +522,7 @@ public class SwerveSubsystem extends SubsystemBase {
   public boolean isNearL1Reef() {
     // TODO
     // Not sure why this is different from near l1??
-    return L1Targets.getNearestLine(getPose()).getDistance(getPose().getTranslation()) > 0.3;
+    return L1Targets.getNearestLine(getPose()).getDistance(getPose().getTranslation()) < 0.3;
   }
 
   public boolean isNearReef(double toleranceMeters) {
@@ -686,8 +717,45 @@ public class SwerveSubsystem extends SubsystemBase {
     return states;
   }
 
+  /**
+   * This function bypasses the command-based framework because Choreolib handles setting
+   * requirements internally. Do NOT use outside of ChoreoLib
+   *
+   * @return a Consumer that runs the drivebase to follow a SwerveSample with PID feedback, sample
+   *     target vel feedforward, and module force feedforward.
+   */
+  @SuppressWarnings("resource")
   public Consumer<SwerveSample> choreoDriveController() {
-    // TODO
-    return null;
+    final PIDController xController = new PIDController(5.0, 0.0, 0.0);
+    final PIDController yController = new PIDController(5.0, 0.0, 0.0);
+    final PIDController thetaController =
+        new PIDController(SWERVE_CONSTANTS.getHeadingVelocityKP(), 0.0, 0.0);
+    thetaController.enableContinuousInput(-Math.PI, Math.PI);
+    return (sample) -> {
+      final var pose = getPose();
+      // if (Robot.ROBOT_TYPE != RobotType.REAL)
+      Logger.recordOutput(
+          "Choreo/Target Pose",
+          new Pose2d(sample.x, sample.y, Rotation2d.fromRadians(sample.heading)));
+      // if (Robot.ROBOT_TYPE != RobotType.REAL)
+      Logger.recordOutput(
+          "Choreo/Target Speeds Field Relative",
+          new ChassisSpeeds(sample.vx, sample.vy, sample.omega));
+      var feedback =
+          new ChassisSpeeds(
+              xController.calculate(pose.getX(), sample.x),
+              yController.calculate(pose.getY(), sample.y),
+              thetaController.calculate(pose.getRotation().getRadians(), sample.heading));
+      var speeds =
+          ChassisSpeeds.fromFieldRelativeSpeeds(
+              new ChassisSpeeds(sample.vx, sample.vy, sample.omega).plus(feedback), getRotation());
+      if (Robot.ROBOT_TYPE != RobotType.REAL)
+        Logger.recordOutput("Choreo/Feedback + FF Target Speeds Robot Relative", speeds);
+      this.drive(speeds, false);
+    };
+  }
+
+  public void setYaw(Rotation2d yaw) {
+    resetPose(new Pose2d(getPose().getTranslation(), yaw));
   }
 }

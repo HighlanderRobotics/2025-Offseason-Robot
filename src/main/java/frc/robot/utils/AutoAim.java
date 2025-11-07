@@ -19,7 +19,7 @@ public class AutoAim {
   public static final Constraints DEFAULT_ANGULAR_CONSTRAINTS =
       new Constraints(MAX_ANGULAR_SPEED, MAX_ANGULAR_ACCELERATION);
 
-  public static final double TRANSLATION_TOLERANCE_METERS = Units.inchesToMeters(2.0);
+  public static final double TRANSLATION_TOLERANCE_METERS = Units.inchesToMeters(1.0);
   public static final double ROTATION_TOLERANCE_RADIANS = Units.degreesToRadians(2.0);
   public static final double VELOCITY_TOLERANCE_METERSPERSECOND = 0.5;
   public static final double INITIAL_REEF_KEEPOFF_DISTANCE_METERS = -0.1;
@@ -80,7 +80,7 @@ public class AutoAim {
     return new ChassisSpeeds(
         VX_CONTROLLER.calculate(robotPose.getX(), target.getX())
             + VX_CONTROLLER.getSetpoint().velocity,
-        VY_CONTROLLER.calculate(robotPose.getX(), target.getY())
+        VY_CONTROLLER.calculate(robotPose.getY(), target.getY())
             + VY_CONTROLLER.getSetpoint().velocity,
         HEADING_CONTROLLER.calculate(
                 robotPose.getRotation().getRadians(), target.getRotation().getRadians())
@@ -97,8 +97,8 @@ public class AutoAim {
   public static Rotation2d getClosestBargeRotation(Pose2d pose) {
     return (Math.abs(pose.getX() - FieldUtils.BLUE_NET_X)
                 > Math.abs(pose.getX() - FieldUtils.RED_NET_X)
-            ? Rotation2d.kZero
-            : Rotation2d.k180deg)
+            ? Rotation2d.kCW_90deg
+            : Rotation2d.kCCW_90deg)
         // TODO: TUNE
         .plus(Rotation2d.fromDegrees(20.0));
   }

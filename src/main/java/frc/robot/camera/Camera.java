@@ -75,10 +75,9 @@ public class Camera {
   }
 
   // MUST CALL FROM SUBSYSTEM! NOT PART OF COMMAND SCHEDULER
-  public void periodic(SwerveDrivePoseEstimator swerveEstimator) {
+  public void periodic() {
     Tracer.trace("Update inputs", this::updateInputs);
     Tracer.trace("Process april tag inputs", this::processApriltagInputs);
-    Tracer.trace("Add vision estimate", () -> updateCamera(swerveEstimator));
   }
 
   public void updateInputs() {
@@ -96,7 +95,7 @@ public class Camera {
     }
     if (Robot.ROBOT_TYPE != RobotType.REAL)
       Logger.recordOutput(
-          "Vision/" + io.getName() + " Best Distance",
+          "Vision/" + io.getName() + "/Best Distance",
           result.getBestTarget().getBestCameraToTarget().getTranslation().getNorm());
     Optional<EstimatedRobotPose> estPose = estimator.update(result);
     return estPose;
@@ -151,9 +150,9 @@ public class Camera {
         setSimPose(estPose, !inputs.stale);
 
         // if (Robot.ROBOT_TYPE != RobotType.REAL)
-        Logger.recordOutput("Vision/Vision Pose From " + getName(), visionPose);
+        Logger.recordOutput("Vision/" + getName() + "/Pose3d", visionPose);
         // if (Robot.ROBOT_TYPE != RobotType.REAL)
-        Logger.recordOutput("Vision/Vision Pose2d From " + getName(), visionPose.toPose2d());
+        Logger.recordOutput("Vision/" + getName() + "/Pose2d", visionPose.toPose2d());
         final Matrix<N3, N1> deviations = findVisionMeasurementStdDevs(estPose.get());
         // if (Robot.ROBOT_TYPE != RobotType.REAL)
         Logger.recordOutput("Vision/" + getName() + "/Deviations", deviations.getData());
@@ -162,31 +161,30 @@ public class Camera {
             "Add Measurement From " + getName(),
             () -> {
               swerveEstimator.addVisionMeasurement(
-                  // if it's an issue
                   visionPose.toPose2d(),
                   inputs.result.metadata.captureTimestampMicros / 1.0e6,
                   deviations
                       // .times(DriverStation.isAutonomous() ? 2.0 : 1.0)
-                      .times(
-                          getName().equals("Front_Left_Camera")
-                                  || getName().equals("Front_Right_Camera")
-                              ? 0.75
-                              : 2.0)
+                      // .times(
+                      //     getName().equals("Front_Left_Camera")
+                      //             || getName().equals("Front_Right_Camera")
+                      //         ? 0.75
+                      //         : 2.0)
                       // reef positions
-                      .times(
-                          (getName().equals("Front_Left_Camera")
-                                      || getName().equals("Front_Right_Camera"))
-                                  && (Superstructure.getState().isScoreCoral()
-                                      || Superstructure.getState()
-                                          == SuperState.INTAKE_ALGAE_HIGH_LEFT
-                                      || Superstructure.getState()
-                                          == SuperState.INTAKE_ALGAE_HIGH_RIGHT
-                                      || Superstructure.getState()
-                                          == SuperState.INTAKE_ALGAE_LOW_LEFT
-                                      || Superstructure.getState()
-                                          == SuperState.INTAKE_ALGAE_LOW_RIGHT)
-                              ? 0.5
-                              : 1.5) // TODO tune these sorts of numbers
+                      // .times(
+                      //     (getName().equals("Front_Left_Camera")
+                      //                 || getName().equals("Front_Right_Camera"))
+                      //             && (Superstructure.getState().isScoreCoral()
+                      //                 || Superstructure.getState()
+                      //                     == SuperState.INTAKE_ALGAE_HIGH_LEFT
+                      //                 || Superstructure.getState()
+                      //                     == SuperState.INTAKE_ALGAE_HIGH_RIGHT
+                      //                 || Superstructure.getState()
+                      //                     == SuperState.INTAKE_ALGAE_LOW_LEFT
+                      //                 || Superstructure.getState()
+                      //                     == SuperState.INTAKE_ALGAE_LOW_RIGHT)
+                      //         ? 0.5
+                      //         : 1.5) // TODO tune these sorts of numbers
                       // hp tags
                       .times(
                           // !camera.getName().equals("Front_Camera")

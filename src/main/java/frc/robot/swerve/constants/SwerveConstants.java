@@ -1,6 +1,7 @@
 package frc.robot.swerve.constants;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -11,7 +12,7 @@ import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.Filesystem;
-import frc.robot.camera.Camera;
+import frc.robot.camera.Camera.CameraConstants;
 import frc.robot.swerve.module.Module.ModuleConstants;
 import java.io.File;
 
@@ -42,7 +43,7 @@ public abstract class SwerveConstants {
     return fieldTags;
   }
 
-  public abstract Camera.CameraConstants[] getCameraConstants();
+  public abstract CameraConstants[] getCameraConstants();
 
   public abstract String getName();
 
@@ -122,6 +123,8 @@ public abstract class SwerveConstants {
   /** The CAN id of the Pigeon2 */
   public abstract int getGyroID();
 
+  public abstract Pigeon2Configuration getGyroConfig();
+
   // Hardware configurations
   /** The motor configuration for all of the drive motors */
   public abstract TalonFXConfiguration getDriveConfiguration();
@@ -141,4 +144,6 @@ public abstract class SwerveConstants {
    * @return the configuration
    */
   public abstract CANcoderConfiguration getCancoderConfiguration(Rotation2d cancoderOffset);
+
+  public abstract double getHeadingVelocityKP();
 }

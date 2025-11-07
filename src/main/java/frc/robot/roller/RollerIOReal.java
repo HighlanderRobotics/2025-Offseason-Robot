@@ -16,7 +16,7 @@ public class RollerIOReal implements RollerIO {
   private final VelocityVoltage velocityVoltage =
       new VelocityVoltage(0.0).withEnableFOC(true).withSlot(0);
 
-  private final StatusSignal<AngularVelocity> velocityRotsPerSec;
+  private final StatusSignal<AngularVelocity> angularVelocityRotsPerSec;
   private final StatusSignal<Current> supplyCurrentAmps;
   private final StatusSignal<Voltage> appliedVoltage;
   private final StatusSignal<Current> statorCurrentAmps;
@@ -27,11 +27,19 @@ public class RollerIOReal implements RollerIO {
   public RollerIOReal(int motorID, TalonFXConfiguration config) {
     rollerMotor = new TalonFX(motorID, "*");
 
-    velocityRotsPerSec = rollerMotor.getVelocity();
+    angularVelocityRotsPerSec = rollerMotor.getVelocity();
     supplyCurrentAmps = rollerMotor.getSupplyCurrent();
     appliedVoltage = rollerMotor.getMotorVoltage();
     statorCurrentAmps = rollerMotor.getStatorCurrent();
     motorTemperatureCelsius = rollerMotor.getDeviceTemp();
+
+    BaseStatusSignal.setUpdateFrequencyForAll(
+        50.0,
+        angularVelocityRotsPerSec,
+        supplyCurrentAmps,
+        statorCurrentAmps,
+        appliedVoltage,
+        motorTemperatureCelsius);
 
     rollerMotor.getConfigurator().apply(config);
     rollerMotor.optimizeBusUtilization();
@@ -39,13 +47,13 @@ public class RollerIOReal implements RollerIO {
 
   public void updateInputs(RollerIOInputs inputs) {
     BaseStatusSignal.refreshAll(
-        velocityRotsPerSec,
+        angularVelocityRotsPerSec,
         supplyCurrentAmps,
         appliedVoltage,
         statorCurrentAmps,
         motorTemperatureCelsius);
 
-    inputs.velocityRotsPerSec = velocityRotsPerSec.getValueAsDouble();
+    inputs.velocityRotsPerSec = angularVelocityRotsPerSec.getValueAsDouble();
     inputs.supplyCurrentAmps = supplyCurrentAmps.getValueAsDouble();
     inputs.appliedVoltage = appliedVoltage.getValueAsDouble();
     inputs.statorCurrentAmps = statorCurrentAmps.getValueAsDouble();

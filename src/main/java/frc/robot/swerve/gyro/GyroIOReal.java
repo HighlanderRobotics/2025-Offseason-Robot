@@ -3,6 +3,7 @@ package frc.robot.swerve.gyro;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.google.common.collect.ImmutableSet;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -23,7 +24,7 @@ public class GyroIOReal implements GyroIO {
   private final StatusSignal<Angle> roll;
   private final StatusSignal<AngularVelocity> yawVelocity;
 
-  public GyroIOReal(int id) {
+  public GyroIOReal(int id, Pigeon2Configuration config) {
     pigeon = new Pigeon2(id, "*");
 
     yaw = pigeon.getYaw();
@@ -36,6 +37,8 @@ public class GyroIOReal implements GyroIO {
     PhoenixOdometryThread.getInstance()
         .registerSignals(
             new Registration(pigeon, Optional.empty(), SignalType.GYRO, ImmutableSet.of(yaw)));
+
+    pigeon.getConfigurator().apply(config);
 
     pigeon.optimizeBusUtilization();
   }

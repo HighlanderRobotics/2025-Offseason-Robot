@@ -12,7 +12,10 @@ import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 public class ElevatorIOSim implements ElevatorIO {
   private final ElevatorSim physicsSim =
       new ElevatorSim(
-          DCMotor.getKrakenX60Foc(2),
+          // DCMotor.getKrakenX60Foc(2),
+          // for 2 kraken x44s
+          new DCMotor(
+              12.0, 4.05, 275, 1.4, 7530.0 / 60.0, 2), // not sure if this is supposed to be at 12v?
           ElevatorSubsystem.GEAR_RATIO,
           // Add half of first stage mass bc its on a 2:1 ratio compared to carriage
           // First stage weighs 3.345 lbs
@@ -26,11 +29,11 @@ public class ElevatorIOSim implements ElevatorIO {
           0.0);
   private double volts = 0.0;
   private final ProfiledPIDController pid =
-      new ProfiledPIDController(40.0, 0.0, 0.1, new Constraints(5.0, 10.0));
+      new ProfiledPIDController(110.0, 0.0, 0.0, new Constraints(5.0, 10.0));
   private final ElevatorFeedforward ff =
       new ElevatorFeedforward(
-          0.0,
-          0.06,
+          0.24,
+          0.56,
           (DCMotor.getKrakenX60Foc(1).KvRadPerSecPerVolt
                   * (ElevatorSubsystem.SPROCKET_DIAMETER_METERS / 2))
               / ElevatorSubsystem.GEAR_RATIO);

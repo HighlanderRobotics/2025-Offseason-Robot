@@ -6,8 +6,11 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Meter;
 
+import com.ctre.phoenix6.CANBus;
+import com.ctre.phoenix6.CANBus.CANBusStatus;
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.ClosedLoopGeneralConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -17,15 +20,22 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -39,6 +49,8 @@ import frc.robot.elevator.ElevatorIOReal;
 import frc.robot.elevator.ElevatorIOSim;
 import frc.robot.elevator.ElevatorSubsystem;
 import frc.robot.intake.IntakeSubsystem;
+import frc.robot.led.LEDIOReal;
+import frc.robot.led.LEDSubsystem;
 import frc.robot.pivot.PivotIOReal;
 import frc.robot.pivot.PivotIOSim;
 import frc.robot.roller.RollerIOReal;
@@ -46,7 +58,6 @@ import frc.robot.roller.RollerIOSim;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.swerve.odometry.PhoenixOdometryThread;
 import frc.robot.utils.CommandXboxControllerSubsystem;
-import frc.robot.utils.FieldUtils.AlgaeIntakeTargets;
 import java.util.Optional;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.COTS;
@@ -56,6 +67,9 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
@@ -63,6 +77,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 public class Robot extends LoggedRobot {
   public static final RobotType ROBOT_TYPE = Robot.isReal() ? RobotType.REAL : RobotType.SIM;
+  public static final boolean TUNING_MODE = true;
 
   public enum RobotType {
     REAL,
@@ -70,13 +85,17 @@ public class Robot extends LoggedRobot {
     REPLAY
   }
 
-  // TODO add tuning mode switch
-
   public static enum CoralScoreTarget {
-    L1,
-    L2,
-    L3,
-    L4;
+    L1(Color.kGreen),
+    L2(Color.kTeal),
+    L3(Color.kBlue),
+    L4(LEDSubsystem.PURPLE);
+
+    private Color color;
+
+    private CoralScoreTarget(Color color) {
+      this.color = color;
+    }
   }
 
   public static enum CoralIntakeTarget {
@@ -85,15 +104,27 @@ public class Robot extends LoggedRobot {
   }
 
   public static enum AlgaeIntakeTarget {
-    LOW,
-    HIGH,
-    STACK,
-    GROUND
+    LOW(Color.kGreen),
+    HIGH(Color.kTeal),
+    STACK(Color.kBlue),
+    GROUND(LEDSubsystem.PURPLE);
+
+    private Color color;
+
+    private AlgaeIntakeTarget(Color color) {
+      this.color = color;
+    }
   }
 
   public static enum AlgaeScoreTarget {
-    BARGE,
-    PROCESSOR
+    BARGE(Color.kRed),
+    PROCESSOR(Color.kYellow);
+
+    private Color color;
+
+    private AlgaeScoreTarget(Color color) {
+      this.color = color;
+    }
   }
 
   public static enum ScoringSide {
@@ -107,37 +138,50 @@ public class Robot extends LoggedRobot {
   @AutoLogOutput private static AlgaeScoreTarget algaeScoreTarget = AlgaeScoreTarget.BARGE;
   @AutoLogOutput private static ScoringSide scoringSide = ScoringSide.RIGHT;
 
+  @AutoLogOutput private boolean haveAutosGenerated = false;
+
+  private static CANBus canivore = new CANBus("*");
+
+  private static CANBusStatus canivoreStatus = canivore.getStatus();
+
   // Instantiate subsystems
   private final ElevatorSubsystem elevator =
       new ElevatorSubsystem(
           ROBOT_TYPE != RobotType.SIM ? new ElevatorIOReal() : new ElevatorIOSim());
 
-  // TODO tune these config values
   TalonFXConfiguration armRollerConfig =
-      createRollerConfig(InvertedValue.CounterClockwise_Positive, 20.0);
+      createRollerConfig(InvertedValue.Clockwise_Positive, 20.0, 6.62, 0.48, 0.25, 0.0);
+
   TalonFXConfiguration armPivotConfig =
       createPivotConfig(
-          InvertedValue.CounterClockwise_Positive, 20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
+              InvertedValue.Clockwise_Positive,
+              ArmSubsystem.SUPPLY_CURRENT_LIMIT,
+              ArmSubsystem.STATOR_CURRENT_LIMIT,
+              ArmSubsystem.SENSOR_TO_MECH_RATIO,
+              ArmSubsystem.KV,
+              ArmSubsystem.KG,
+              ArmSubsystem.KS,
+              ArmSubsystem.KP,
+              ArmSubsystem.KI,
+              ArmSubsystem.KD)
+          // this is what lets us wrap it from -180 to 180 at the bottom
+          // basically think of it like the swerve turn motor
+          // it's not actually fused with the cancoder, which means it shows up weird in the log
+          // but that's true for the swerve as well and both seem to be fine so we'll just roll with
+          // it
+          .withClosedLoopGeneral(new ClosedLoopGeneralConfigs().withContinuousWrap(true));
+
   CANcoderConfiguration armCANcoderConfig =
-      createCANcoderConfig(SensorDirectionValue.Clockwise_Positive, 0.0, 0.0);
-
-  TalonFXConfiguration intakeRollerConfig =
-      createRollerConfig(InvertedValue.CounterClockwise_Positive, 20.0);
-  TalonFXConfiguration intakePivotConfig =
-      createPivotConfig(
-          InvertedValue.CounterClockwise_Positive, 20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
-
-  TalonFXConfiguration climberRollerConfig =
-      createRollerConfig(InvertedValue.CounterClockwise_Positive, 20.0);
-  TalonFXConfiguration climberPivotConfig =
-      createPivotConfig(
-          InvertedValue.CounterClockwise_Positive, 20.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
+      createCANcoderConfig(
+          SensorDirectionValue.CounterClockwise_Positive,
+          ArmSubsystem.CANCODER_OFFSET,
+          ArmSubsystem.CANCODER_DISCONTINUITY_POINT);
 
   // TODO tuning sim values espicall for pivot sims
   private final ArmSubsystem arm =
       new ArmSubsystem(
           ROBOT_TYPE != RobotType.SIM
-              ? new RollerIOReal(9, armRollerConfig)
+              ? new RollerIOReal(8, armRollerConfig)
               : new RollerIOSim(
                   ArmSubsystem.jKgMetersSquared,
                   ArmSubsystem.PIVOT_RATIO,
@@ -149,22 +193,29 @@ public class Robot extends LoggedRobot {
                       new TrapezoidProfile.Constraints(
                           ArmSubsystem.MAX_VELOCITY, ArmSubsystem.MAX_ACCELERATION))),
           ROBOT_TYPE != RobotType.SIM
-              ? new PivotIOReal(12, armPivotConfig)
+              ? new PivotIOReal(9, armPivotConfig)
               : new PivotIOSim(
-                  ArmSubsystem.PIVOT_RATIO,
                   ArmSubsystem.MIN_ANGLE.getRadians(),
                   ArmSubsystem.MAX_ANGLE.getRadians(),
                   ArmSubsystem.LENGTH_METERS,
-                  ArmSubsystem.KP,
-                  ArmSubsystem.KI,
-                  ArmSubsystem.KD,
-                  ArmSubsystem.KI,
-                  ArmSubsystem.KG,
-                  ArmSubsystem.KV,
                   ArmSubsystem.MAX_VELOCITY,
-                  ArmSubsystem.MAX_ACCELERATION),
-          new CANcoderIOReal(0, armCANcoderConfig),
+                  ArmSubsystem.MAX_ACCELERATION,
+                  armPivotConfig),
+          new CANcoderIOReal(4, armCANcoderConfig),
           "Arm");
+
+  TalonFXConfiguration intakeRollerConfig =
+      createRollerConfig(
+          InvertedValue.Clockwise_Positive,
+          80.0,
+          2.5,
+          0.48,
+          0.9,
+          1); // this is for the rollers ratio
+
+  TalonFXConfiguration intakePivotConfig =
+      createPivotConfig(
+          InvertedValue.CounterClockwise_Positive, 40.0, 80.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
 
   private final IntakeSubsystem intake =
       new IntakeSubsystem(
@@ -181,28 +232,38 @@ public class Robot extends LoggedRobot {
                       new TrapezoidProfile.Constraints(
                           IntakeSubsystem.MAX_VELOCITY, IntakeSubsystem.MAX_ACCELERATION))),
           ROBOT_TYPE != RobotType.SIM
-              ? new PivotIOReal(12, intakePivotConfig)
+              ? new PivotIOReal(12, IntakeSubsystem.getIntakePivotConfig())
               : new PivotIOSim(
-                  IntakeSubsystem.PIVOT_RATIO,
                   IntakeSubsystem.MIN_ANGLE.getRadians(),
                   IntakeSubsystem.MAX_ANGLE.getRadians(),
                   IntakeSubsystem.LENGTH_METERS,
-                  IntakeSubsystem.KP,
-                  IntakeSubsystem.KI,
-                  IntakeSubsystem.KD,
-                  IntakeSubsystem.KI,
-                  IntakeSubsystem.KG,
-                  IntakeSubsystem.KV,
                   IntakeSubsystem.MAX_VELOCITY,
-                  IntakeSubsystem.MAX_ACCELERATION),
+                  IntakeSubsystem.MAX_ACCELERATION,
+                  intakePivotConfig),
           new CANrangeIOReal(0),
           new CANrangeIOReal(1),
           "Intake");
 
+  TalonFXConfiguration climberRollerConfig =
+      createRollerConfig(InvertedValue.CounterClockwise_Positive, 20.0, 5.25 / 1, 0.0, 0.0, 0.0);
+
+  TalonFXConfiguration climberPivotConfig =
+      createPivotConfig(
+          InvertedValue.CounterClockwise_Positive,
+          20.0,
+          120.0,
+          ClimberSubsystem.PIVOT_RATIO,
+          ClimberSubsystem.KV,
+          ClimberSubsystem.KG,
+          ClimberSubsystem.KS,
+          ClimberSubsystem.KP,
+          ClimberSubsystem.KI,
+          ClimberSubsystem.KD);
+
   private final ClimberSubsystem climber =
       new ClimberSubsystem(
           ROBOT_TYPE != RobotType.SIM
-              ? new RollerIOReal(17, climberRollerConfig)
+              ? new RollerIOReal(15, climberRollerConfig)
               : new RollerIOSim(
                   ClimberSubsystem.jKgMetersSquared,
                   ClimberSubsystem.PIVOT_RATIO,
@@ -214,20 +275,14 @@ public class Robot extends LoggedRobot {
                       new TrapezoidProfile.Constraints(
                           ClimberSubsystem.MAX_VELOCITY, ClimberSubsystem.MAX_ACCELERATION))),
           ROBOT_TYPE != RobotType.SIM
-              ? new PivotIOReal(16, climberPivotConfig)
+              ? new PivotIOReal(14, climberPivotConfig)
               : new PivotIOSim(
-                  ClimberSubsystem.PIVOT_RATIO,
                   ClimberSubsystem.MIN_ANGLE.getRadians(),
                   ClimberSubsystem.MAX_ANGLE.getRadians(),
                   ClimberSubsystem.LENGTH_METERS,
-                  ClimberSubsystem.KP,
-                  ClimberSubsystem.KI,
-                  ClimberSubsystem.KD,
-                  ClimberSubsystem.KI,
-                  ClimberSubsystem.KG,
-                  ClimberSubsystem.KV,
                   ClimberSubsystem.MAX_VELOCITY,
-                  ClimberSubsystem.MAX_ACCELERATION),
+                  ClimberSubsystem.MAX_ACCELERATION,
+                  climberPivotConfig),
           "Climber");
 
   // Maple Sim Stuff
@@ -255,6 +310,7 @@ public class Robot extends LoggedRobot {
       new SwerveDriveSimulation(driveTrainSimConfig, new Pose2d(3, 3, Rotation2d.kZero));
   // Subsystem initialization
   private final SwerveSubsystem swerve = new SwerveSubsystem(swerveSimulation);
+  private final LEDSubsystem leds = new LEDSubsystem(new LEDIOReal());
 
   private final CommandXboxControllerSubsystem driver = new CommandXboxControllerSubsystem(0);
   private final CommandXboxControllerSubsystem operator = new CommandXboxControllerSubsystem(1);
@@ -262,14 +318,35 @@ public class Robot extends LoggedRobot {
   @AutoLogOutput(key = "Superstructure/Autoaim Request")
   private Trigger autoAimReq = driver.rightBumper().or(driver.leftBumper());
 
-  // TODO impl autoaiming left vs right
-
   private final Superstructure superstructure =
       new Superstructure(elevator, arm, intake, climber, swerve, driver, operator);
 
   private final Autos autos;
   private Optional<Alliance> lastAlliance = Optional.empty();
   private final LoggedDashboardChooser<Command> autoChooser = new LoggedDashboardChooser<>("Autos");
+
+  // Mechanisms
+  private final LoggedMechanism2d elevatorMech2d =
+      new LoggedMechanism2d(3.0, Units.feetToMeters(4.0));
+  private final LoggedMechanismRoot2d
+      elevatorRoot = // CAD distance from origin to center of carriage at full retraction
+      elevatorMech2d.getRoot(
+              "Elevator", Units.inchesToMeters(5), 0.0); // now what on earth is this number
+  // doesn't get updated or actually do anything it's just so i remember there's actually an
+  // elevator there when i'm looking at glass
+  private final LoggedMechanismLigament2d firstStage =
+      new LoggedMechanismLigament2d("First Stage", Units.inchesToMeters(37), 90.0);
+  private final LoggedMechanismLigament2d carriageLigament =
+      new LoggedMechanismLigament2d("Carriage", 0, 90.0);
+  private final LoggedMechanismLigament2d armLigament =
+      new LoggedMechanismLigament2d("Arm", ArmSubsystem.LENGTH_METERS, 20.0);
+
+  private final LoggedMechanismRoot2d intakeRoot =
+      elevatorMech2d.getRoot("Intake", Units.inchesToMeters(11), 0);
+  private final LoggedMechanismLigament2d intakeBase =
+      new LoggedMechanismLigament2d("Intake Base", Units.inchesToMeters(9.5), 90);
+  private final LoggedMechanismLigament2d intakeLigament =
+      new LoggedMechanismLigament2d("Intake", IntakeSubsystem.LENGTH_METERS, 0.0);
 
   @SuppressWarnings("resource")
   public Robot() {
@@ -318,16 +395,49 @@ public class Robot extends LoggedRobot {
     Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may
     // be added.
 
+    Logger.recordOutput("Canivore Status", canivoreStatus.Status);
+
     PhoenixOdometryThread.getInstance().start();
 
     // Set default commands
     elevator.setDefaultCommand(elevator.setStateExtension());
-    arm.setDefaultCommand(arm.setStateAngleVoltage());
-    intake.setDefaultCommand(intake.setStateAngleVoltage());
+    arm.setDefaultCommand(arm.setStateAngleVelocity());
+    intake.setDefaultCommand(intake.setStateAngleVelocity());
+    // Voltage control is intentional here
     climber.setDefaultCommand(climber.setStateAngleVoltage());
 
     driver.setDefaultCommand(driver.rumbleCmd(0.0, 0.0));
     operator.setDefaultCommand(operator.rumbleCmd(0.0, 0.0));
+    leds.setDefaultCommand(
+        Commands.either(
+                // enabled
+                Commands.either(
+                    // if we're in an algae state, override it with the split color
+                    leds.setBlinkingSplitCmd(
+                        () -> getAlgaeIntakeTarget().color, () -> getAlgaeScoreTarget().color, 5.0),
+                    // otherwise set it to the blinking pattern
+                    leds.setBlinkingCmd(
+                        () -> getCoralScoreTarget().color,
+                        () ->
+                            Superstructure.getState() == SuperState.IDLE
+                                ? Color.kBlack
+                                : Color.kWhite,
+                        5.0),
+                    superstructure::stateIsAlgae),
+                // not enabled
+                leds.setRunAlongCmd(
+                    () ->
+                        DriverStation.getAlliance()
+                            .map((a) -> a == Alliance.Blue ? Color.kBlue : Color.kRed)
+                            .orElse(Color.kWhite),
+                    // () -> wrist.hasZeroed ? LEDSubsystem.PURPLE : Color.kOrange, //TODO add check
+                    // for zero
+                    LEDSubsystem.PURPLE,
+                    4,
+                    1.0),
+                DriverStation::isEnabled)
+            .repeatedly()
+            .ignoringDisable(true));
 
     if (ROBOT_TYPE == RobotType.SIM) {
       SimulatedArena.getInstance().addDriveTrainSimulation(swerveSimulation);
@@ -345,18 +455,84 @@ public class Robot extends LoggedRobot {
                             * SwerveSubsystem.SWERVE_CONSTANTS.getMaxAngularSpeed())
                     .times(-1)));
 
-    if (ROBOT_TYPE == RobotType.SIM) {
-      SimulatedArena.getInstance().addDriveTrainSimulation(swerveSimulation);
-    }
+    // swerve.setDefaultCommand(swerve.driveClosedLoopRobotRelative(() -> new ChassisSpeeds(1, 0,
+    // 0)));
 
     addControllerBindings();
 
     autos = new Autos(swerve, arm);
     // autoChooser.addDefaultOption("None", autos.getNoneAuto());
     // TODO add autos trigger
+
+    // Add autos on alliance change
+    new Trigger(
+            () -> {
+              var allianceChanged = !DriverStation.getAlliance().equals(lastAlliance);
+              lastAlliance = DriverStation.getAlliance();
+              return allianceChanged && DriverStation.getAlliance().isPresent();
+            })
+        .onTrue(
+            Commands.runOnce(() -> addAutos())
+                .alongWith(
+                    leds.setBlinkingCmd(() -> Color.kWhite, () -> Color.kBlack, 20.0)
+                        .withTimeout(1.0))
+                .ignoringDisable(true));
+
+    // Add autos when first connecting to DS
+    new Trigger(
+            () ->
+                DriverStation.isDSAttached()
+                    && DriverStation.getAlliance().isPresent()
+                    && !haveAutosGenerated) // TODO check that the haveautosgenerated doesn't break
+        // anything?
+        .onTrue(Commands.print("connected"))
+        .onTrue(
+            Commands.runOnce(() -> addAutos())
+                .alongWith(
+                    leds.setBlinkingCmd(() -> Color.kWhite, () -> Color.kBlack, 20.0)
+                        .withTimeout(1.0))
+                .ignoringDisable(true));
+    SmartDashboard.putData(
+        "rezero elevator",
+        elevator
+            .rezero()
+            .alongWith(Commands.print("dashboard rezero elevator"))
+            .ignoringDisable(true));
+    SmartDashboard.putData(
+        "rezero arm against cancoder",
+        arm.rezeroFromEncoder()
+            .alongWith(Commands.print("dashboard rezero arm against cancoder"))
+            .ignoringDisable(true));
+    SmartDashboard.putData(
+        "rezero arm against bumper",
+        arm.rezeroAgainstRightBumper()
+            .alongWith(Commands.print("dashboard rezero arm against bumper"))
+            .ignoringDisable(true));
+    SmartDashboard.putData(
+        "Spool in climber (MANUAL STOP)",
+        Commands.parallel(
+            intake.setPivotVoltage(() -> -4.0),
+            Commands.waitUntil(
+                    () ->
+                        intake.getPivotCurrentFilterValueAmps() > IntakeSubsystem.CURRENT_THRESHOLD)
+                .andThen(climber.retract())));
+    SmartDashboard.putData("Extend climber (MANUAL STOP)", climber.extend());
+    SmartDashboard.putData("Rezero climber", climber.rezero());
+    SmartDashboard.putData(
+        "rezero intake",
+        intake.rezero().alongWith(Commands.print("dashboard rezero intake")).ignoringDisable(true));
+    SmartDashboard.putData(
+        "ninety intake",
+        intake.ninety().alongWith(Commands.print("dashboard ninety intake")).ignoringDisable(true));
   }
 
-  private TalonFXConfiguration createRollerConfig(InvertedValue inverted, double currentLimit) {
+  private TalonFXConfiguration createRollerConfig(
+      InvertedValue inverted,
+      double currentLimit,
+      double sensorToMechanismRatio,
+      double kS,
+      double kV,
+      double kP) {
     TalonFXConfiguration config = new TalonFXConfiguration();
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
@@ -364,12 +540,19 @@ public class Robot extends LoggedRobot {
     config.CurrentLimits.SupplyCurrentLimit = currentLimit;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
+    config.Slot0.kS = kS;
+    config.Slot0.kV = kV;
+    config.Slot0.kP = kP;
+
+    config.Feedback.SensorToMechanismRatio = sensorToMechanismRatio;
+
     return config;
   }
 
   private TalonFXConfiguration createPivotConfig(
       InvertedValue inverted,
-      double currentLimit,
+      double supplyCurrentLimit,
+      double statorCurrentLimit,
       double sensorToMechRatio,
       double kV,
       double kG,
@@ -390,8 +573,11 @@ public class Robot extends LoggedRobot {
     config.Slot0.kI = kI;
     config.Slot0.kD = kD;
 
-    config.CurrentLimits.SupplyCurrentLimit = currentLimit;
+    config.CurrentLimits.SupplyCurrentLimit = supplyCurrentLimit;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
+
+    config.CurrentLimits.StatorCurrentLimit = statorCurrentLimit;
+    config.CurrentLimits.StatorCurrentLimitEnable = true;
 
     config.Feedback.SensorToMechanismRatio = sensorToMechRatio;
 
@@ -455,42 +641,42 @@ public class Robot extends LoggedRobot {
                     .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy())));
 
     // Autoaim to intake algae (high, low)
-    autoAimReq
-        .and(superstructure::stateIsIntakeAlgaeReef)
-        .or(superstructure::stateIsIdle)
-        .whileTrue(
-            Commands.parallel(
-                Commands.sequence(
-                    Commands.runOnce(
-                        () ->
-                            Robot.setAlgaeIntakeTarget(
-                                AlgaeIntakeTargets.getClosestTarget(swerve.getPose()).height)),
-                    swerve
-                        .autoAimToOffsetAlgaePose()
-                        .until(
-                            new Trigger(swerve::nearIntakeAlgaeOffsetPose)
-                                // TODO figure out trigger order of operations? also this is just
-                                // bad
-                                .and(
-                                    () ->
-                                        superstructure.atExtension(
-                                            SuperState.INTAKE_ALGAE_HIGH_RIGHT))
-                                .or(
-                                    () ->
-                                        superstructure.atExtension(
-                                            SuperState.INTAKE_ALGAE_LOW_RIGHT))),
-                    swerve.approachAlgae()),
-                Commands.waitUntil(
-                        new Trigger(swerve::nearAlgaeIntakePose)
-                            .and(swerve::isNotMoving)
-                            .debounce(0.08))
-                    // .and(swerve::hasFrontTags)
-                    .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy())));
+    // autoAimReq
+    //     .and(() -> superstructure.stateIsIntakeAlgaeReef() || superstructure.stateIsIdle())
+    //     .whileTrue(
+    //         Commands.parallel(
+    //             Commands.sequence(
+    //                 Commands.runOnce(
+    //                     () ->
+    //                         Robot.setAlgaeIntakeTarget(
+    //                             AlgaeIntakeTargets.getClosestTarget(swerve.getPose()).height)),
+    //                 swerve
+    //                     .autoAimToOffsetAlgaePose()
+    //                     .until(
+    //                         new Trigger(swerve::nearIntakeAlgaeOffsetPose)
+    //                             // TODO figure out trigger order of operations? also this is just
+    //                             // bad
+    //                             .and(
+    //                                 () ->
+    //                                     superstructure.atExtension(
+    //                                         SuperState.INTAKE_ALGAE_HIGH_RIGHT))
+    //                             .or(
+    //                                 () ->
+    //                                     superstructure.atExtension(
+    //                                         SuperState.INTAKE_ALGAE_LOW_RIGHT))),
+    //                 swerve.approachAlgae()),
+    //             Commands.waitUntil(
+    //                     new Trigger(swerve::nearAlgaeIntakePose)
+    //                         .and(swerve::isNotMoving)
+    //                         .debounce(0.08))
+    //                 // .and(swerve::hasFrontTags)
+    //                 .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy())));
 
     // Autoaim to processor
     autoAimReq
         .and(superstructure::stateIsProcessor)
         .and(() -> algaeScoreTarget == AlgaeScoreTarget.PROCESSOR)
+        .and(driver.leftBumper().negate())
         .whileTrue(
             Commands.parallel(
                 swerve.autoAimToProcessor(),
@@ -501,6 +687,7 @@ public class Robot extends LoggedRobot {
     autoAimReq
         .and(superstructure::stateIsBarge)
         .and(() -> algaeScoreTarget == AlgaeScoreTarget.BARGE)
+        .and(driver.leftBumper().negate())
         .whileTrue(
             Commands.parallel(
                 swerve.autoAimToBarge(
@@ -519,6 +706,7 @@ public class Robot extends LoggedRobot {
                   coralScoreTarget = CoralScoreTarget.L1;
                   algaeIntakeTarget = AlgaeIntakeTarget.GROUND;
                   algaeScoreTarget = AlgaeScoreTarget.PROCESSOR;
+                  coralIntakeTarget = CoralIntakeTarget.GROUND;
                 }));
     operator
         .x()
@@ -556,16 +744,18 @@ public class Robot extends LoggedRobot {
     // operator.povRight().onTrue(Commands.runOnce(() -> leftHandedTarget = false));
 
     // heading reset
-    // driver
-    //     .leftStick()
-    //     .and(driver.rightStick())
-    //     .onTrue(
-    //         Commands.runOnce(
-    //             () ->
-    //                 swerve.setYaw(
-    //                     DriverStation.getAlliance().equals(Alliance.Blue)
-    //                         ? Rotation2d.kZero
-    //                         : Rotation2d.k180deg)));
+    driver
+        .leftStick()
+        .and(driver.rightStick())
+        .onTrue(
+            Commands.runOnce(
+                () ->
+                    swerve.setYaw(
+                        DriverStation.getAlliance().equals(Alliance.Blue)
+                            // ? Rotation2d.kCW_90deg
+                            // : Rotation2d.kCCW_90deg)));
+                            ? Rotation2d.kZero
+                            : Rotation2d.k180deg)));
   }
 
   private void addAutos() {
@@ -583,12 +773,70 @@ public class Robot extends LoggedRobot {
     // autoChooser.addOption("Push Auto", autos.PMtoPL());
     // autoChooser.addOption("Algae auto", autos.CMtoGH());
     // autoChooser.addOption("!!! DO NOT RUN!! 2910 auto", autos.LOtoA());
+    haveAutosGenerated = true;
   }
 
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
     superstructure.periodic();
+
+    Logger.recordOutput(
+        "Mechanism Poses",
+        // new Pose3d[] {
+        //   new Pose3d( // first stage
+        //       new Translation3d(0, 0, elevator.getExtensionMeters() / 2.0), new Rotation3d()),
+        //   // carriage
+        //   new Pose3d(new Translation3d(0, 0, elevator.getExtensionMeters()), new Rotation3d()),
+        //   new Pose3d( // arm
+        //           Translation3d.kZero, new Rotation3d(0, arm.getPivotAngle().getRadians(), 0.0))
+        //       .transformBy(
+        //           new Transform3d(
+        //               new Translation3d(
+        //                   ArmSubsystem.VERTICAL_OFFSET_METERS
+        //                       * Math.cos(Math.PI / 2 - arm.getPivotAngle().getRadians()),
+        //                   0,
+        //                   elevator.getExtensionMeters()
+        //                   // - ArmSubsystem.VERTICAL_OFFSET_METERS
+        //                   //     * Math.sin(Math.PI / 2 - arm.getPivotAngle().getRadians())),
+        //                   ),
+        //               Rotation3d.kZero)),
+        //   new Pose3d( // intake
+        //       new Translation3d(0, 0, 0), // Units.inchesToMeters(10.265)
+        //       // new Rotation3d(Math.PI, intake.getPivotAngle().getRadians(), Math.PI))
+        //       new Rotation3d(intake.getPivotAngle().getRadians(), 0, 0))
+        // });
+        new Pose3d[] {
+          new Pose3d(
+              // first stage
+              new Translation3d(0, 0, elevator.getExtensionMeters() / 2.0), new Rotation3d()),
+          // carriage
+          new Pose3d(new Translation3d(0, 0, elevator.getExtensionMeters()), new Rotation3d()),
+          Pose3d.kZero,
+          //   Pose3d.kZero
+          new Pose3d( // intake
+                  new Translation3d(0, 0, 0),
+                  // Units.inchesToMeters(10.265)
+                  // new Rotation3d(Math.PI, intake.getPivotAngle().getRadians(), Math.PI))
+                  new Rotation3d(intake.getPivotAngle().getRadians(), 0, 0))
+              .transformBy(
+                  new Transform3d(
+                      new Translation3d(
+                          0,
+                          0,
+                          1
+                              * IntakeSubsystem.VERTICAL_OFFSET_METERS
+                              * Math.cos(intake.getPivotAngle().getRadians() / 2.0)),
+                      Rotation3d.kZero))
+        });
+
+    carriageLigament.setLength(elevator.getExtensionMeters());
+    // Minus 90 to make it relative to horizontal
+    armLigament.setAngle(arm.getPivotAngle().getDegrees() - 90);
+    intakeLigament.setAngle(intake.getPivotAngle());
+
+    if (Robot.ROBOT_TYPE != RobotType.REAL)
+      Logger.recordOutput("Mechanism/Elevator", elevatorMech2d);
   }
 
   @Override

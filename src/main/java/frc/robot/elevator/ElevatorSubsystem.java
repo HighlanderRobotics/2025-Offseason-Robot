@@ -12,13 +12,14 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
+import frc.robot.utils.LoggedTunableNumber;
 import java.util.function.DoubleSupplier;
 import java.util.function.Function;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class ElevatorSubsystem extends SubsystemBase {
-  public static final double GEAR_RATIO = 6.0 / 1.0;
+  public static final double GEAR_RATIO = 3.0 / 1.0;
   public static final double SPROCKET_DIAMETER_METERS = Units.inchesToMeters(1.257);
   public static final double MAX_EXTENSION_METERS = Units.inchesToMeters(68.0);
 
@@ -34,18 +35,22 @@ public class ElevatorSubsystem extends SubsystemBase {
     // inches
     // So the constructor handles the conversion
     IDLE(0),
-    HANDOFF(37.841),
+    PRE_HANDOFF(Units.metersToInches(0.88 / 2.0) + 14),
+    HANDOFF(Units.metersToInches(0.849)), // 0.451)),
+    // i have no idea why these are different
+    RIGHT_POST_HANDOFF(Units.metersToInches(0.89)),
+    LEFT_POST_HANDOFF(Units.metersToInches(0.97)),
     INTAKE_CORAL_STACK(0),
     // coral
-    PRE_L2(0),
-    L2(15),
-    PRE_L3(25),
-    L3(29),
-    PRE_L4(58.75),
-    L4(52),
+    PRE_L2(Units.metersToInches(0.12)),
+    L2(Units.metersToInches(0.25)),
+    PRE_L3(21),
+    L3(24),
+    PRE_L4(Units.metersToInches(1.37795)), // 54.25), // 29.375), // 58.75),
+    L4(Units.metersToInches(1.23)), // 26), // 52),//49
     // algae
-    INTAKE_ALGAE_REEF_HIGH(43),
-    INTAKE_ALGAE_REEF_LOW(26),
+    INTAKE_ALGAE_REEF_HIGH(Units.metersToInches(1.0)),
+    INTAKE_ALGAE_REEF_LOW(Units.metersToInches(0.6)),
     INTAKE_ALGAE_STACK(10),
     INTAKE_ALGAE_GROUND(25),
     READY_ALGAE(0),
@@ -56,14 +61,15 @@ public class ElevatorSubsystem extends SubsystemBase {
     PRE_CLIMB(0),
     CLIMB(0);
 
-    private final double extensionMeters;
+    private final DoubleSupplier extensionMeters;
 
     private ElevatorState(double extensionInches) {
-      this.extensionMeters = Units.inchesToMeters(extensionInches);
+      this.extensionMeters =
+          new LoggedTunableNumber("Elevator/" + this.name(), Units.inchesToMeters(extensionInches));
     }
 
     public double getExtensionMeters() {
-      return extensionMeters;
+      return extensionMeters.getAsDouble();
     }
   }
 
@@ -123,6 +129,8 @@ public class ElevatorSubsystem extends SubsystemBase {
   public Command setExtensionMeters(DoubleSupplier meters) {
     return this.run(
         () -> {
+          // decrease accel if the difference is too big to prevent slamming into the bottom
+          // hardstop
           if ((getExtensionMeters() - meters.getAsDouble()) > Units.inchesToMeters(6)) {
             io.setPositionSetpoint(meters.getAsDouble(), SLOW_ACCELERATION);
           } else {
@@ -192,5 +200,9 @@ public class ElevatorSubsystem extends SubsystemBase {
                     .until(() -> inputs.leaderPositionMeters < Units.inchesToMeters(10.0)));
     return Commands.sequence(
         runCurrentZeroing(), runSysid.apply(voltageSysid), runSysid.apply(currentSysid));
+  }
+
+  public Command rezero() {
+    return Commands.runOnce(() -> io.resetEncoder(0.0));
   }
 }
