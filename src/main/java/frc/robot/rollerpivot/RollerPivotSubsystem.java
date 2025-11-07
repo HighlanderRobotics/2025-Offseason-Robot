@@ -23,7 +23,7 @@ public class RollerPivotSubsystem extends SubsystemBase {
   private final String name;
 
   private LinearFilter currentFilter = LinearFilter.movingAverage(10);
-  public double currentFilterValue = 0.0;
+  protected double currentFilterValue = 0.0;
 
   public RollerPivotSubsystem(RollerIO rollerIO, PivotIO pivotIO, String name) {
     this.rollerIO = rollerIO;
@@ -93,7 +93,7 @@ public class RollerPivotSubsystem extends SubsystemBase {
     rollerIO.updateInputs(rollerInputs);
     Logger.processInputs(name + "/Roller", rollerInputs);
 
-    currentFilterValue = currentFilter.calculate(rollerInputs.statorCurrentAmps);
+    currentFilterValue = currentFilter.calculate(pivotInputs.statorCurrentAmps);
     if (Robot.ROBOT_TYPE != RobotType.REAL)
       Logger.recordOutput(name + "/Filtered Current", currentFilterValue);
   }

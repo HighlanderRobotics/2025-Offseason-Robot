@@ -46,7 +46,7 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   private final CANrangeIOInputsAutoLogged leftCanrangeInputs = new CANrangeIOInputsAutoLogged();
   private final CANrangeIOInputsAutoLogged rightCanrangeInputs = new CANrangeIOInputsAutoLogged();
   private final Rotation2d ZEROING_POSITION = Rotation2d.fromDegrees(-10.0);
-  private final double CURRENT_THRESHOLD = 10.0;
+  public static final double CURRENT_THRESHOLD = 10.0;
 
   private boolean hasGamePieceSim = false;
 
@@ -163,6 +163,10 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
 
     // this is wrong?
     // return this.run(() -> setPivotAndRollers(getState().position, getState().velocityRPS));
+  }
+
+  public double getCurrentFilterValueAmps() {
+    return currentFilterValue;
   }
 
   public static TalonFXConfiguration getIntakePivotConfig() {

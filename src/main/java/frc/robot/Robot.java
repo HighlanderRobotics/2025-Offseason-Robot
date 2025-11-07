@@ -377,9 +377,10 @@ public class Robot extends LoggedRobot {
     PhoenixOdometryThread.getInstance().start();
 
     // Set default commands
-    // elevator.setDefaultCommand(elevator.setStateExtension());
-    // arm.setDefaultCommand(arm.setStateAngleVelocity());
-    // intake.setDefaultCommand(intake.setStateAngleVelocity());
+    elevator.setDefaultCommand(elevator.setStateExtension());
+    arm.setDefaultCommand(arm.setStateAngleVelocity());
+    intake.setDefaultCommand(intake.setStateAngleVelocity());
+    // Voltage control is intentional here
     climber.setDefaultCommand(climber.setStateAngleVoltage());
 
     driver.setDefaultCommand(driver.rumbleCmd(0.0, 0.0));
@@ -427,7 +428,10 @@ public class Robot extends LoggedRobot {
             .ignoringDisable(true));
     SmartDashboard.putData(
         "Spool in climber (MANUAL STOP)",
-        Commands.parallel(climber.retract(), intake.setPivotVoltage(() -> -4.0)));
+        Commands.parallel(
+            intake.setPivotVoltage(() -> -4.0),
+            Commands.waitUntil(() -> intake.getCurrentFilterValueAmps() > IntakeSubsystem.CURRENT_THRESHOLD).andThen(climber.retract())
+        ));
     SmartDashboard.putData("Extend climber (MANUAL STOP)", climber.extend());
     SmartDashboard.putData("Rezero climber", climber.rezero());
     SmartDashboard.putData(
