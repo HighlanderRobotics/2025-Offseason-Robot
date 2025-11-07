@@ -49,12 +49,12 @@ import frc.robot.elevator.ElevatorIOReal;
 import frc.robot.elevator.ElevatorIOSim;
 import frc.robot.elevator.ElevatorSubsystem;
 import frc.robot.intake.IntakeSubsystem;
+import frc.robot.led.LEDIOReal;
+import frc.robot.led.LEDSubsystem;
 import frc.robot.pivot.PivotIOReal;
 import frc.robot.pivot.PivotIOSim;
 import frc.robot.roller.RollerIOReal;
 import frc.robot.roller.RollerIOSim;
-import frc.robot.led.LEDIOReal;
-import frc.robot.led.LEDSubsystem;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.swerve.odometry.PhoenixOdometryThread;
 import frc.robot.utils.CommandXboxControllerSubsystem;
@@ -309,8 +309,6 @@ public class Robot extends LoggedRobot {
   @AutoLogOutput(key = "Superstructure/Autoaim Request")
   private Trigger autoAimReq = driver.rightBumper().or(driver.leftBumper());
 
-  // TODO impl autoaiming left vs right
-
   private final Superstructure superstructure =
       new Superstructure(elevator, arm, intake, climber, swerve, driver, operator);
 
@@ -410,7 +408,7 @@ public class Robot extends LoggedRobot {
                     // otherwise set it to the blinking pattern
                     leds.setBlinkingCmd(
                         getCoralScoreTarget().color,
-                        superstructure.getState() == SuperState.IDLE ? Color.kBlack : Color.kWhite,
+                        Superstructure.getState() == SuperState.IDLE ? Color.kBlack : Color.kWhite,
                         5.0),
                     superstructure::stateIsAlgae),
                 // not enabled
