@@ -4,7 +4,6 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
@@ -135,7 +134,8 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
 
   public Command zeroIntake() {
     return this.run(() -> setPivotAngle(() -> Rotation2d.fromDegrees(-80)))
-        .until(new Trigger(() -> Math.abs(pivotCurrentFilterValue) > CURRENT_THRESHOLD).debounce(0.25))
+        .until(
+            new Trigger(() -> Math.abs(pivotCurrentFilterValue) > CURRENT_THRESHOLD).debounce(0.25))
         .andThen(
             Commands.parallel(
                 Commands.runOnce(() -> intakeZeroed = true),

@@ -431,7 +431,8 @@ public class Robot extends LoggedRobot {
         Commands.parallel(
             intake.setPivotVoltage(() -> -4.0),
             Commands.waitUntil(
-                    () -> intake.getPivotCurrentFilterValueAmps() > IntakeSubsystem.CURRENT_THRESHOLD)
+                    () ->
+                        intake.getPivotCurrentFilterValueAmps() > IntakeSubsystem.CURRENT_THRESHOLD)
                 .andThen(climber.retract())));
     SmartDashboard.putData("Extend climber (MANUAL STOP)", climber.extend());
     SmartDashboard.putData("Rezero climber", climber.rezero());
