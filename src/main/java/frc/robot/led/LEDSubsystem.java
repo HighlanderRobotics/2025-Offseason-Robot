@@ -47,10 +47,10 @@ public class LEDSubsystem extends SubsystemBase {
     return this.run(() -> setSolid(color));
   }
 
-  public Command setBlinkingCmd(Color onColor, Color offColor, double frequency) {
+  public Command setBlinkingCmd(Supplier<Color> onColor, Supplier<Color> offColor, double frequency) {
     return Commands.repeatingSequence(
-        setSolidCmd(onColor).withTimeout(1.0 / frequency),
-        setSolidCmd(offColor).withTimeout(1.0 / frequency));
+        setSolidCmd(onColor.get()).withTimeout(1.0 / frequency),
+        setSolidCmd(offColor.get()).withTimeout(1.0 / frequency));
   }
 
   public Command setSplitCmd(Color upper, Color lower) {
@@ -62,9 +62,9 @@ public class LEDSubsystem extends SubsystemBase {
         });
   }
 
-  public Command setBlinkingSplitCmd(Color upOnColor, Color downOnColor, double frequency) {
+  public Command setBlinkingSplitCmd(Supplier<Color> upOnColor, Supplier<Color> downOnColor, double frequency) {
     return Commands.repeatingSequence(
-        setSplitCmd(upOnColor, downOnColor).withTimeout(1.0 / frequency),
+        setSplitCmd(upOnColor.get(), downOnColor.get()).withTimeout(1.0 / frequency),
         setSolidCmd(Color.kBlack).withTimeout(1.0 / frequency));
   }
 
