@@ -159,7 +159,7 @@ public class SwerveSubsystem extends SubsystemBase {
             new Camera(new CameraIOReal(SWERVE_CONSTANTS.getCameraConstants()[0])),
             new Camera(new CameraIOReal(SWERVE_CONSTANTS.getCameraConstants()[1])),
             new Camera(new CameraIOReal(SWERVE_CONSTANTS.getCameraConstants()[2])),
-            // new Camera(new CameraIOReal(SWERVE_CONSTANTS.getCameraConstants()[3]))
+            new Camera(new CameraIOReal(SWERVE_CONSTANTS.getCameraConstants()[3]))
           };
     }
 
