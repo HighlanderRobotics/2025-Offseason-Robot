@@ -136,7 +136,7 @@ public class SwerveSubsystem extends SubsystemBase {
       cameras =
           new Camera[] {
             new Camera(new CameraIOSim(SWERVE_CONSTANTS.getCameraConstants()[0])),
-            new Camera(new CameraIOSim(SWERVE_CONSTANTS.getCameraConstants()[1])),
+            // new Camera(new CameraIOSim(SWERVE_CONSTANTS.getCameraConstants()[1])),
             new Camera(new CameraIOSim(SWERVE_CONSTANTS.getCameraConstants()[2])),
             new Camera(new CameraIOSim(SWERVE_CONSTANTS.getCameraConstants()[3]))
           };
@@ -522,7 +522,7 @@ public class SwerveSubsystem extends SubsystemBase {
   public boolean isNearL1Reef() {
     // TODO
     // Not sure why this is different from near l1??
-    return L1Targets.getNearestLine(getPose()).getDistance(getPose().getTranslation()) > 0.3;
+    return L1Targets.getNearestLine(getPose()).getDistance(getPose().getTranslation()) < 0.3;
   }
 
   public boolean isNearReef(double toleranceMeters) {

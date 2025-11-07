@@ -34,25 +34,21 @@ public class OffseasonBotSwerveConstants extends SwerveConstants {
   // TODO explain +0.5
   @Override
   public ModuleConstants getFrontLeftModuleConstants() {
-    // TODO tune offsets
     return new ModuleConstants(0, "Front Left", 0, 1, 0, Rotation2d.fromRotations(-0.351 + 0.5));
   }
 
   @Override
   public ModuleConstants getFrontRightModuleConstants() {
-    // TODO tune offsets
     return new ModuleConstants(1, "Front Right", 2, 3, 1, Rotation2d.fromRotations(-0.380859375));
   }
 
   @Override
   public ModuleConstants getBackLeftModuleConstants() {
-    // TODO tune offsets
     return new ModuleConstants(2, "Back Left", 4, 5, 2, Rotation2d.fromRotations(0.469 + 0.5));
   }
 
   @Override
   public ModuleConstants getBackRightModuleConstants() {
-    // TODO tune offsets
     return new ModuleConstants(3, "Back Right", 6, 7, 3, Rotation2d.fromRotations(-0.069));
   }
 
@@ -88,7 +84,6 @@ public class OffseasonBotSwerveConstants extends SwerveConstants {
     turnConfig.Feedback.SensorToMechanismRatio = 1.0;
     turnConfig.Feedback.FeedbackRotorOffset = 0.0;
     // Controls Gains
-    // TODO: TUNE
     // Copied from Kelpie
     turnConfig.Slot0.kV = 0.42962962963; // ((5800 / 60) / getTurnGearRatio()) / 12
     turnConfig.Slot0.kA = 0.031543;
@@ -202,7 +197,6 @@ public class OffseasonBotSwerveConstants extends SwerveConstants {
     return Units.inchesToMeters(23.729);
   }
 
-  // TODO: NEW CONSTANTS
   @Override
   public CameraConstants[] getCameraConstants() {
     final Matrix<N3, N3> RIGHT_ELEVATOR_CAMERA_INTRINSICS =

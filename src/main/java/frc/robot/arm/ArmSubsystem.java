@@ -5,6 +5,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Superstructure;
 import frc.robot.cancoder.CANcoderIO;
 import frc.robot.cancoder.CANcoderIOInputsAutoLogged;
 import frc.robot.pivot.PivotIO;
@@ -64,7 +65,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
    * 0 for position is vertical with the EE up. We consider the front of the robot to be the intake,
    * so left and right are based on that. Positive is counterclockwise from the robot's POV (which
    * is to the left). We're in real life!! use degrees. degrees -> Rotation2d gets handled in the
-   * constructor Positive voltage is intaking, negative is outtaking. (TODO)
+   * constructor Positive voltage is intaking, negative is outtaking.
    */
   public enum ArmState {
     IDLE(0, 0.0),
@@ -77,14 +78,14 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     LEFT_HANDOFF(-180, 7.0),
     LEFT_POST_HANDOFF(-89, 7.0),
 
-    INTAKE_CORAL_STACK(100, 5.0),
-    READY_CORAL_ARM(0, 1.0),
+    INTAKE_CORAL_STACK(-100, 7.0),
+    READY_CORAL_ARM(0, 7.0),
 
-    PRE_L2_RIGHT(-45, 1.0),
+    PRE_L2_RIGHT(-35, 1.0),
     SCORE_L2_RIGHT(-90, -10.0),
     PRE_L3_RIGHT(-45, 1.0),
     SCORE_L3_RIGHT(-90, -10.0),
-    PRE_L4_RIGHT(-70, 1.0),
+    PRE_L4_RIGHT(-60, 1.0),
     SCORE_L4_RIGHT(-90, -14.0),
 
     PRE_L2_LEFT(45, 1.0),
@@ -94,11 +95,13 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     PRE_L4_LEFT(70, 1.0),
     SCORE_L4_LEFT(90, -10.0),
     // algae
+    // These all have voltage control
     INTAKE_ALGAE_REEF_RIGHT(-90, 10.0),
     INTAKE_ALGAE_REEF_LEFT(90, 10.0),
     INTAKE_ALGAE_GROUND(125, 15.0),
-    INTAKE_ALGAE_STACK(90, 10.0),
-    READY_ALGAE(0, 2.0),
+    // TODO: SET POS BACK TO 90 deg
+    INTAKE_ALGAE_STACK(90, 8.0),
+    READY_ALGAE(0, 8.0),
 
     PRE_BARGE_RIGHT(-20, 4.0),
     SCORE_BARGE_RIGHT(-20, -10.0),
@@ -109,8 +112,8 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     PRE_PROCESSOR(180, 0.0),
     SCORE_PROCESSOR(180, -10.0),
     // climbing
-    PRE_CLIMB(180, 0.0),
-    CLIMB(180, 0.0);
+    PRE_CLIMB(0.0, 0.0),
+    CLIMB(0.0, 0.0);
 
     public final Supplier<Rotation2d> position;
     public final DoubleSupplier velocityRPS;
@@ -166,7 +169,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   }
 
   public Command intakeAlgae() {
-    return this.run(() -> runRollerVoltage(ALGAE_INTAKE_VOLTAGE))
+    return this.run(() -> runRollerVoltage(() -> ALGAE_INTAKE_VOLTAGE))
         .until(
             new Trigger(() -> Math.abs(currentFilterValue) > ALGAE_CURRENT_THRESHOLD)
                 .debounce(0.25))
@@ -174,7 +177,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   }
 
   public Command intakeCoral() {
-    return this.run(() -> runRollerVoltage(CORAL_INTAKE_VOLTAGE))
+    return this.run(() -> runRollerVoltage(() -> CORAL_INTAKE_VOLTAGE))
         .until(
             new Trigger(() -> Math.abs(currentFilterValue) > CORAL_CURRENT_THRESHOLD)
                 .debounce(0.25))
@@ -194,13 +197,24 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   }
 
   public Command setStateAngleVelocity() {
-    return setPivotAndRollers(state.position.get(), state.velocityRPS.getAsDouble());
+    // return setPivotAndRollers(
+    //     () -> getState().position.get(), () -> getState().velocityRPS.getAsDouble());
     // return this.run(() -> runRollerVelocity(getState().velocityRPS.getAsDouble()));
+    return this.run(
+        () -> {
+          pivotIO.setMotorPosition(state.getAngle());
+          // TODO: THIS SUCKS
+          if (Superstructure.stateIsVoltageControl()) {
+            rollerIO.setRollerVoltage(state.getVelocityRPS());
+          } else {
+            rollerIO.setRollerVelocity(state.getVelocityRPS());
+          }
+        });
   }
 
   public Command hold() {
     return Commands.sequence(
-        Commands.runOnce(() -> setPivotAngle(cancoderInputs.cancoderPositionRotations))
+        Commands.runOnce(() -> setPivotAngle(() -> cancoderInputs.cancoderPositionRotations))
             // holds
             .until(() -> true),
         // keeps command active until interrupted
@@ -219,7 +233,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   }
 
   public Command runCurrentZeroing() {
-    return this.run(() -> setPivotVoltage(3.0))
+    return this.run(() -> setPivotVoltage(() -> 3.0))
         .until(
             new Trigger(() -> Math.abs(currentFilterValue) > ZEROING_CURRENT_THRESHOLD_AMPS)
                 .debounce(0.25))
