@@ -1,7 +1,3 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.elevator;
 
 import static edu.wpi.first.units.Units.Second;
@@ -9,7 +5,6 @@ import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.LinearFilter;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -17,52 +12,45 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
-import frc.robot.Robot;
-import frc.robot.Robot.RobotType;
+import frc.robot.utils.LoggedTunableNumber;
 import java.util.function.DoubleSupplier;
 import java.util.function.Function;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class ElevatorSubsystem extends SubsystemBase {
-  // put constants here
-  // TODO CHANGE THESE VALUES TO THE REAL ONES
-  public static final double GEAR_RATIO = 12.5 / 1.0;
-  public static final double DRUM_RADIUS_METERS = Units.inchesToMeters(1.751 / 2.0);
-  public static final Rotation2d ELEVATOR_ANGLE = Rotation2d.fromDegrees(90.0);
+  public static final double GEAR_RATIO = 3.0 / 1.0;
+  public static final double SPROCKET_DIAMETER_METERS = Units.inchesToMeters(1.257);
+  public static final double MAX_EXTENSION_METERS = Units.inchesToMeters(68.0);
 
-  public static final double MAX_EXTENSION_METERS = Units.inchesToMeters(58.75);
+  public static final double MAX_ACCELERATION = 10.0;
+  public static final double SLOW_ACCELERATION = 5.0;
 
-  private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
-  private final ElevatorIO io;
+  public static final double EXTENSION_TOLERANCE_METERS = 0.05;
 
-  private final LinearFilter currentFilter = LinearFilter.movingAverage(5);
-  public double currentFilterValue = 0.0;
-
-  public boolean hasZeroed = false;
-
-  private double setpoint = 0.0;
-
-  private final SysIdRoutine voltageSysid;
-  private final SysIdRoutine currentSysid;
+  public static final double ZEROING_CURRENT_THRESHOLD_AMPS = 50;
 
   public enum ElevatorState {
     // Although the motor takes it in terms of meters, we usually measure extension in terms of
     // inches
     // So the constructor handles the conversion
     IDLE(0),
-    HANDOFF(37.841),
+    PRE_HANDOFF(Units.metersToInches(0.88 / 2.0) + 14),
+    HANDOFF(Units.metersToInches(0.849)), // 0.451)),
+    // i have no idea why these are different
+    RIGHT_POST_HANDOFF(Units.metersToInches(0.89)),
+    LEFT_POST_HANDOFF(Units.metersToInches(0.97)),
     INTAKE_CORAL_STACK(0),
     // coral
-    PRE_L2(0),
-    L2(15),
-    PRE_L3(25),
-    L3(29),
-    PRE_L4(58.75),
-    L4(52),
+    PRE_L2(Units.metersToInches(0.12)),
+    L2(Units.metersToInches(0.25)),
+    PRE_L3(21),
+    L3(24),
+    PRE_L4(Units.metersToInches(1.37795)), // 54.25), // 29.375), // 58.75),
+    L4(Units.metersToInches(1.23)), // 26), // 52),//49
     // algae
-    INTAKE_ALGAE_REEF_HIGH(43),
-    INTAKE_ALGAE_REEF_LOW(26),
+    INTAKE_ALGAE_REEF_HIGH(Units.metersToInches(1.0)),
+    INTAKE_ALGAE_REEF_LOW(Units.metersToInches(0.6)),
     INTAKE_ALGAE_STACK(10),
     INTAKE_ALGAE_GROUND(25),
     READY_ALGAE(0),
@@ -73,18 +61,38 @@ public class ElevatorSubsystem extends SubsystemBase {
     PRE_CLIMB(0),
     CLIMB(0);
 
-    private final double extensionMeters;
+    private final DoubleSupplier extensionMeters;
 
     private ElevatorState(double extensionInches) {
-      this.extensionMeters = Units.inchesToMeters(extensionInches);
+      this.extensionMeters =
+          new LoggedTunableNumber("Elevator/" + this.name(), Units.inchesToMeters(extensionInches));
     }
 
     public double getExtensionMeters() {
-      return extensionMeters;
+      return extensionMeters.getAsDouble();
     }
   }
 
-  /** Creates a new ElevatorSubsystem. */
+  private ElevatorIO io;
+  private ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
+
+  private LinearFilter currentFilter = LinearFilter.movingAverage(5);
+
+  @AutoLogOutput(key = "Elevator/Current Filter Value")
+  private double currentFilterValue = 0.0;
+
+  @AutoLogOutput(key = "Elevator/Has Zeroed")
+  private boolean hasZeroed = false;
+
+  @AutoLogOutput(key = "Elevator/State")
+  private ElevatorState state = ElevatorState.IDLE;
+
+  @AutoLogOutput(key = "Elevator/Setpoint")
+  private double setpoint = 0.0;
+
+  private final SysIdRoutine voltageSysid;
+  private final SysIdRoutine currentSysid;
+
   public ElevatorSubsystem(ElevatorIO io) {
     this.io = io;
     voltageSysid =
@@ -106,80 +114,69 @@ public class ElevatorSubsystem extends SubsystemBase {
             new Mechanism((volts) -> io.setCurrent(volts.in(Volts)), null, this));
   }
 
-  @AutoLogOutput(key = "Elevator/State")
-  private ElevatorState state = ElevatorState.IDLE;
-
   @Override
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Elevator", inputs);
-    // currentFilterValue = currentFilter.calculate(inputs.statorCurrentAmps);
 
-    // carriage.setLength(inputs.positionMeters);
-    // if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("Elevator/Mechanism2d", mech2d);
-
-    // if (Robot.ROBOT_TYPE != RobotType.REAL)
-    //   Logger.recordOutput("Elevator/Carriage Pose", getCarriagePose());
-
-    // if (Robot.ROBOT_TYPE != RobotType.REAL) Logger.recordOutput("Elevator/Has Zeroed",
-    // hasZeroed);
-    // if (Robot.ROBOT_TYPE != RobotType.REAL)
-    // Logger.recordOutput("Elevator/Filtered Current", currentFilterValue);
+    currentFilterValue = currentFilter.calculate(inputs.leaderStatorCurrentAmps);
   }
 
-  public void setState(ElevatorState state) {
-    this.state = state;
+  public void setState(ElevatorState newState) {
+    this.state = newState;
   }
 
-  public Command setExtension(DoubleSupplier meters) {
+  public Command setExtensionMeters(DoubleSupplier meters) {
     return this.run(
         () -> {
-          io.setPositionTarget(meters.getAsDouble());
+          // decrease accel if the difference is too big to prevent slamming into the bottom
+          // hardstop
+          if ((getExtensionMeters() - meters.getAsDouble()) > Units.inchesToMeters(6)) {
+            io.setPositionSetpoint(meters.getAsDouble(), SLOW_ACCELERATION);
+          } else {
+            io.setPositionSetpoint(meters.getAsDouble(), MAX_ACCELERATION);
+          }
           setpoint = meters.getAsDouble();
-          if (Robot.ROBOT_TYPE != RobotType.REAL)
-            Logger.recordOutput("Elevator/Setpoint", setpoint);
+          Logger.recordOutput("Elevator/Setpoint", meters.getAsDouble());
         });
   }
 
-  public Command setExtension(double meters) {
-    return this.setExtension(() -> meters);
-  }
-
-  public Command setVoltage(double voltage) {
+  public Command setVoltage(DoubleSupplier volts) {
     return this.run(
         () -> {
-          io.setVoltage(voltage);
+          io.setVoltage(volts.getAsDouble());
         });
-  }
-
-  public Command setVoltage(DoubleSupplier voltage) {
-    return this.setVoltage(voltage.getAsDouble());
   }
 
   public Command runCurrentZeroing() {
     return this.run(
             () -> {
               io.setVoltage(-2.0);
-              setpoint = 0.0;
-              if (Robot.ROBOT_TYPE != RobotType.REAL)
-                Logger.recordOutput("Elevator/Setpoint", Double.NaN);
             })
-        .until(() -> Math.abs(currentFilterValue) > 50.0)
+        .until(() -> Math.abs(currentFilterValue) > ZEROING_CURRENT_THRESHOLD_AMPS)
         .finallyDo(
             (interrupted) -> {
               if (!interrupted) {
-                io.resetEncoder(0.0);
+                io.resetEncoder();
                 hasZeroed = true;
               }
             });
   }
 
-  public boolean isNearExtension(double expected) {
-    return MathUtil.isNear(expected, inputs.positionMeters, 0.05);
+  public boolean atExtension(double expected) {
+    return MathUtil.isNear(expected, inputs.leaderPositionMeters, EXTENSION_TOLERANCE_METERS);
   }
 
-  public boolean isNearExtension(double expected, double toleranceMeters) {
-    return MathUtil.isNear(expected, inputs.positionMeters, toleranceMeters);
+  public double getExtensionMeters() {
+    return inputs.leaderPositionMeters;
+  }
+
+  public boolean atExtension() {
+    return atExtension(setpoint);
+  }
+
+  public Command setStateExtension() {
+    return setExtensionMeters(() -> state.getExtensionMeters());
   }
 
   public Command runSysid() {
@@ -188,36 +185,24 @@ public class ElevatorSubsystem extends SubsystemBase {
             Commands.sequence(
                 routine
                     .quasistatic(SysIdRoutine.Direction.kForward)
-                    .until(() -> inputs.positionMeters > Units.inchesToMeters(50.0)),
-                Commands.waitUntil(() -> inputs.velocityMetersPerSec < 0.1),
+                    .until(() -> inputs.leaderPositionMeters > Units.inchesToMeters(50.0)),
+                Commands.waitUntil(() -> inputs.leaderVelocityMetersPerSec < 0.1),
                 routine
                     .quasistatic(SysIdRoutine.Direction.kReverse)
-                    .until(() -> inputs.positionMeters < Units.inchesToMeters(10.0)),
-                Commands.waitUntil(() -> Math.abs(inputs.velocityMetersPerSec) < 0.1),
+                    .until(() -> inputs.leaderPositionMeters < Units.inchesToMeters(10.0)),
+                Commands.waitUntil(() -> Math.abs(inputs.leaderVelocityMetersPerSec) < 0.1),
                 routine
                     .dynamic(SysIdRoutine.Direction.kForward)
-                    .until(() -> inputs.positionMeters > Units.inchesToMeters(50.0)),
-                Commands.waitUntil(() -> inputs.velocityMetersPerSec < 0.1),
+                    .until(() -> inputs.leaderPositionMeters > Units.inchesToMeters(50.0)),
+                Commands.waitUntil(() -> inputs.leaderVelocityMetersPerSec < 0.1),
                 routine
                     .dynamic(SysIdRoutine.Direction.kReverse)
-                    .until(() -> inputs.positionMeters < Units.inchesToMeters(10.0)));
+                    .until(() -> inputs.leaderPositionMeters < Units.inchesToMeters(10.0)));
     return Commands.sequence(
         runCurrentZeroing(), runSysid.apply(voltageSysid), runSysid.apply(currentSysid));
   }
 
-  public double getExtensionMeters() {
-    return inputs.positionMeters;
-  }
-
-  public boolean atExtension(double expected) {
-    return MathUtil.isNear(expected, inputs.positionMeters, 0.05);
-  }
-
-  public boolean atExtension() {
-    return atExtension(setpoint);
-  }
-
-  public Command setStateExtension() {
-    return setExtension(() -> state.getExtensionMeters());
+  public Command rezero() {
+    return Commands.runOnce(() -> io.resetEncoder(0.0));
   }
 }
