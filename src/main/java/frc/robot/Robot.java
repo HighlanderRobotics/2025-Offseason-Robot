@@ -430,7 +430,7 @@ public class Robot extends LoggedRobot {
         "Spool in climber (MANUAL STOP)",
         Commands.parallel(
             intake.setPivotVoltage(() -> -4.0),
-            Commands.waitUntil(() -> intake.getCurrentFilterValueAmps() > IntakeSubsystem.CURRENT_THRESHOLD).andThen(climber.retract())
+            Commands.waitUntil(() -> intake.getPivotCurrentFilterValueAmps() > IntakeSubsystem.CURRENT_THRESHOLD).andThen(climber.retract())
         ));
     SmartDashboard.putData("Extend climber (MANUAL STOP)", climber.extend());
     SmartDashboard.putData("Rezero climber", climber.rezero());

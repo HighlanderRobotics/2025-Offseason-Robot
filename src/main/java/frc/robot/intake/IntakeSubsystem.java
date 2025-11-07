@@ -4,6 +4,8 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -51,6 +53,9 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   private boolean hasGamePieceSim = false;
 
   public boolean intakeZeroed = false;
+
+  private LinearFilter pivotCurrentFilter = LinearFilter.movingAverage(10);
+  private double pivotCurrentFilterValue = 0.0;
 
   public enum IntakeState {
     IDLE(Units.radiansToDegrees(1.96), 0.0),
@@ -110,6 +115,8 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
     Logger.processInputs("Intake/Left CANrange", leftCanrangeInputs);
     rightCanrangeIO.updateInputs(rightCanrangeInputs);
     Logger.processInputs("Intake/Right CANrange", rightCanrangeInputs);
+
+    pivotCurrentFilterValue = pivotCurrentFilter.calculate(pivotInputs.statorCurrentAmps);
   }
 
   public double getleftCanrangeDistanceMeters() {
@@ -128,7 +135,7 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
 
   public Command zeroIntake() {
     return this.run(() -> setPivotAngle(() -> Rotation2d.fromDegrees(-80)))
-        .until(new Trigger(() -> Math.abs(currentFilterValue) > CURRENT_THRESHOLD).debounce(0.25))
+        .until(new Trigger(() -> Math.abs(pivotCurrentFilterValue) > CURRENT_THRESHOLD).debounce(0.25))
         .andThen(
             Commands.parallel(
                 Commands.runOnce(() -> intakeZeroed = true),
@@ -165,8 +172,8 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
     // return this.run(() -> setPivotAndRollers(getState().position, getState().velocityRPS));
   }
 
-  public double getCurrentFilterValueAmps() {
-    return currentFilterValue;
+  public double getPivotCurrentFilterValueAmps() {
+    return pivotCurrentFilterValue;
   }
 
   public static TalonFXConfiguration getIntakePivotConfig() {
