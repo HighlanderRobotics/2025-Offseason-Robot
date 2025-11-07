@@ -76,6 +76,8 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 public class Robot extends LoggedRobot {
   public static final RobotType ROBOT_TYPE = Robot.isReal() ? RobotType.REAL : RobotType.SIM;
   public static final boolean TUNING_MODE = true;
+  public boolean preZeroingReq = false;
+  public boolean zeroingReq = false;
 
   public enum RobotType {
     REAL,
@@ -643,27 +645,6 @@ public class Robot extends LoggedRobot {
     // operator.povLeft().onTrue(Commands.runOnce(() -> leftHandedTarget = true));
     // operator.povRight().onTrue(Commands.runOnce(() -> leftHandedTarget = false));
 
-    // TODO add escape for hold??
-    operator
-        .povLeft()
-        .whileTrue(
-            Commands.parallel(
-                    Commands.runOnce(() -> intake.isZeroing = true),
-                    Commands.runOnce(() -> elevator.isZeroing = true),
-                    arm.setPivotVoltage(-3.0))
-                .withTimeout(0.05)
-                .andThen(arm.hold().until(() -> !elevator.isZeroing && !intake.isZeroing)));
-
-    operator
-        .povRight()
-        .whileTrue(
-            Commands.parallel(
-                    Commands.runOnce(() -> intake.isZeroing = true),
-                    Commands.runOnce(() -> elevator.isZeroing = true),
-                    arm.setPivotVoltage(3.0))
-                .withTimeout(0.05)
-                .andThen(arm.hold().until(() -> !elevator.isZeroing && !intake.isZeroing)));
-
     driver
         .leftStick()
         .and(driver.rightStick())
@@ -676,29 +657,65 @@ public class Robot extends LoggedRobot {
                             // : Rotation2d.kCCW_90deg)));
                             ? Rotation2d.kZero
                             : Rotation2d.k180deg)));
+operator
+.povLeft()
+.and(() -> preZeroingReq)
+.whileTrue(
+    Commands.parallel(
+         //   Commands.runOnce(() -> intake.isZeroing = true),
+          //  Commands.runOnce(() -> elevator.isZeroing = true),
+            arm.setPivotVoltage(-3.0))
+        .withTimeout(0.05)
+        .andThen(arm.hold().until(() -> !preZeroingReq && !zeroingReq)));
 
+operator
+.povRight()
+.and(() -> preZeroingReq)
+.whileTrue(
+    Commands.parallel(
+          //  Commands.runOnce(() -> intake.isZeroing = true),
+         //   Commands.runOnce(() -> elevator.isZeroing = true),
+            arm.setPivotVoltage(3.0))
+        .withTimeout(0.05)
+        .andThen(arm.hold().until(() -> !preZeroingReq && !zeroingReq)));
+
+//preZeroingReq
     driver
         .start()
+        .onTrue(
+            Commands.runOnce(() -> preZeroingReq = true));
+//zeroingReq
+    driver
+    //TODO idk what button
+        .povUp()
+        .and(() -> preZeroingReq)
         .whileTrue(
             Commands.sequence(
-                intake.runCurrentZeroing(), elevator.runCurrentZeroing(), arm.rezeroFromEncoder()
-                // TODO add transition to specific states after zeroing
+                Commands.runOnce(() -> preZeroingReq = false),
+                Commands.runOnce(() -> zeroingReq = true),
+                intake.runCurrentZeroing(), elevator.runCurrentZeroing()).andThen(
+            Commands.parallel(
+                Commands.runOnce(() -> zeroingReq = false),
+              //  Commands.runOnce(() -> elevator.isZeroing = false),
+            //    Commands.runOnce(() -> intake.isZeroing = false),
+            arm.rezeroFromEncoder()
+                )).andThen(
+                 superstructure.transitionAfterZeroing()
+                    // TODO add transition to specific states after zeroing
                 // only use if cancoder is cooked use:
                 // arm.runCurrentZeroing()
-                ))
-        // when releasing button/stopping zeroing deal with state transition
-        .onFalse(
-            Commands.parallel(
-                Commands.runOnce(() -> elevator.isZeroing = false),
-                Commands.runOnce(() -> intake.isZeroing = false),
-                superstructure.transitionAfterZeroing()));
+                ));
 
+//zeroingReq
+
+
+    //zeroing upon startup 
     new Trigger(() -> superstructure.stateIsIdle())
         .and(() -> !elevator.hasZeroedSinceStartup || !intake.hasZeroedSinceStartup)
         .and(DriverStation::isEnabled)
         .onTrue(
-            Commands.sequence(
-                intake.runCurrentZeroing(), elevator.runCurrentZeroing(), arm.rezeroFromEncoder()));
+            Commands.sequence(intake.runCurrentZeroing(), elevator.runCurrentZeroing())
+                .andThen(arm.rezeroFromEncoder()));
   }
 
   private void addAutos() {

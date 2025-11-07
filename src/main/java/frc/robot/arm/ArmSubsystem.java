@@ -200,7 +200,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
 
   public Command hold() {
     return Commands.sequence(
-        Commands.runOnce(() -> setPivotAngle(cancoderInputs.cancoderPositionRotations))
+        Commands.runOnce(() -> setPivotAngle(pivotInputs.position))
             // holds
             .until(() -> true),
         // keeps command active until interrupted
