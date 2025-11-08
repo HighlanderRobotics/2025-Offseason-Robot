@@ -761,26 +761,25 @@ public class Robot extends LoggedRobot {
     operator
         .povDown()
         .and(() -> preZeroingReq)
-        .whileTrue(
-            Commands.parallel(arm.setPivotVoltage(-3.0))
-                .withTimeout(0.05));
+        .whileTrue(Commands.parallel(arm.setPivotVoltage(-3.0)).withTimeout(0.05));
 
     operator
         .povUp()
         .and(() -> preZeroingReq)
-        .whileTrue(
-            Commands.parallel(arm.setPivotVoltage(3.0))
-                .withTimeout(0.05));
+        .whileTrue(Commands.parallel(arm.setPivotVoltage(3.0)).withTimeout(0.05));
 
     // preZeroingReq
     driver.start().onTrue(Commands.runOnce(() -> preZeroingReq = true));
 
-    new Trigger(() -> preZeroingReq
-    && !operator.povUp().getAsBoolean() 
-    && !operator.povDown().getAsBoolean())
-    .whileTrue(arm.hold().until(() -> !preZeroingReq && !zeroingReq));
-    
+    new Trigger(
+            () ->
+                preZeroingReq
+                    && !operator.povUp().getAsBoolean()
+                    && !operator.povDown().getAsBoolean())
+        .whileTrue(arm.hold().until(() -> !preZeroingReq && !zeroingReq));
+
     // zeroingReq
+    
     driver
         // TODO idk what button
         .povUp()
