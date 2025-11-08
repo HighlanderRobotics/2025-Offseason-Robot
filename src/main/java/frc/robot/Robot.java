@@ -787,23 +787,22 @@ public class Robot extends LoggedRobot {
                     Commands.runOnce(() -> zeroingReq = true),
                     intake.runCurrentZeroing(),
                     elevator.runCurrentZeroing()
-                     // if cancoder is cooked it would use:
+                    // if cancoder is cooked it would use:
                     // arm.runCurrentZeroing()
                     )
                 .andThen(
                     Commands.parallel(
                         Commands.runOnce(() -> zeroingReq = false), arm.rezeroFromEncoder()))
-                .andThen(
-                    superstructure.transitionAfterZeroing()
-                    ));
+                .andThen(superstructure.transitionAfterZeroing()));
 
     // zeroing upon startup
     new Trigger(() -> superstructure.stateIsIdle())
         .and(() -> !hasZeroedSinceStartup)
         .and(DriverStation::isEnabled)
         .onTrue(
-            Commands.sequence(intake.runCurrentZeroing(), elevator.runCurrentZeroing())
-                .andThen(arm.rezeroFromEncoder()).andThen(Commands.runOnce(() -> hasZeroedSinceStartup = true)));
+            Commands.parallel(intake.runCurrentZeroing(), elevator.runCurrentZeroing())
+                .andThen(arm.rezeroFromEncoder())
+                .andThen(Commands.runOnce(() -> hasZeroedSinceStartup = true)));
   }
 
   private void addAutos() {
