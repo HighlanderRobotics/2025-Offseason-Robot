@@ -36,18 +36,21 @@ public class ElevatorSubsystem extends SubsystemBase {
     // So the constructor handles the conversion
     IDLE(0),
     PRE_HANDOFF(Units.metersToInches(0.88 / 2.0) + 14),
-    HANDOFF(Units.metersToInches(0.8488)), // 0.451)),
+    HANDOFF(Units.metersToInches(0.849)), // 0.451)),
+    // i have no idea why these are different
+    RIGHT_POST_HANDOFF(Units.metersToInches(0.89)),
+    LEFT_POST_HANDOFF(Units.metersToInches(0.97)),
     INTAKE_CORAL_STACK(0),
     // coral
-    PRE_L2(0),
-    L2(15),
+    PRE_L2(Units.metersToInches(0.12)),
+    L2(Units.metersToInches(0.25)),
     PRE_L3(21),
     L3(24),
-    PRE_L4(54.25), // 29.375), // 58.75),
-    L4(49), // 26), // 52),
+    PRE_L4(Units.metersToInches(1.37795)), // 54.25), // 29.375), // 58.75),
+    L4(Units.metersToInches(1.23)), // 26), // 52),//49
     // algae
-    INTAKE_ALGAE_REEF_HIGH(43),
-    INTAKE_ALGAE_REEF_LOW(26),
+    INTAKE_ALGAE_REEF_HIGH(Units.metersToInches(1.0)),
+    INTAKE_ALGAE_REEF_LOW(Units.metersToInches(0.6)),
     INTAKE_ALGAE_STACK(10),
     INTAKE_ALGAE_GROUND(25),
     READY_ALGAE(0),

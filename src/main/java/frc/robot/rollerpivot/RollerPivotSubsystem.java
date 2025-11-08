@@ -11,6 +11,7 @@ import frc.robot.pivot.PivotIO;
 import frc.robot.pivot.PivotIOInputsAutoLogged;
 import frc.robot.roller.RollerIO;
 import frc.robot.roller.RollerIOInputsAutoLogged;
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
@@ -22,7 +23,7 @@ public class RollerPivotSubsystem extends SubsystemBase {
   private final String name;
 
   private LinearFilter currentFilter = LinearFilter.movingAverage(10);
-  public double currentFilterValue = 0.0;
+  protected double currentFilterValue = 0.0;
 
   public RollerPivotSubsystem(RollerIO rollerIO, PivotIO pivotIO, String name) {
     this.rollerIO = rollerIO;
@@ -30,21 +31,21 @@ public class RollerPivotSubsystem extends SubsystemBase {
     this.name = name;
   }
 
-  protected void runRollerVoltage(double volts) {
-    rollerIO.setRollerVoltage(volts);
+  protected void runRollerVoltage(DoubleSupplier volts) {
+    rollerIO.setRollerVoltage(volts.getAsDouble());
   }
 
   protected void runRollerVelocity(double velocityRPS) {
     rollerIO.setRollerVelocity(velocityRPS);
   }
 
-  protected void setPivotAngle(Rotation2d target) {
-    Logger.recordOutput(name + "/Pivot Setpoint", target);
-    pivotIO.setMotorPosition(target);
+  protected void setPivotAngle(Supplier<Rotation2d> target) {
+    Logger.recordOutput(name + "/Pivot Setpoint", target.get());
+    pivotIO.setMotorPosition(target.get());
   }
 
-  public Command setPivotVoltage(double volts) {
-    return this.run(() -> pivotIO.setMotorVoltage(volts));
+  public Command setPivotVoltage(DoubleSupplier volts) {
+    return this.run(() -> pivotIO.setMotorVoltage(volts.getAsDouble()));
   }
 
   public Rotation2d getPivotAngle() {
@@ -68,7 +69,8 @@ public class RollerPivotSubsystem extends SubsystemBase {
   }
 
   // this CANNOT be correct LMAO
-  public Command setPivotAndRollers(Rotation2d pivotAngle, double rollerVelocity) {
+  public Command setPivotAndRollers(
+      Supplier<Rotation2d> pivotAngle, DoubleSupplier rollerVelocity) {
     // Command cmd =
     //     Commands.parallel(
     //         Commands.runOnce(() -> setPivotAngle(pivotAngle)),
@@ -77,10 +79,10 @@ public class RollerPivotSubsystem extends SubsystemBase {
     // return cmd;
     return this.run(
         () -> {
-          Logger.recordOutput(name + "/Pivot Setpoint", pivotAngle);
-          Logger.recordOutput(name + "/Rollers Setpoint", rollerVelocity);
+          Logger.recordOutput(name + "/Pivot Setpoint", pivotAngle.get());
+          Logger.recordOutput(name + "/Rollers Setpoint", rollerVelocity.getAsDouble());
           setPivotAngle(pivotAngle);
-          runRollerVelocity(rollerVelocity);
+          runRollerVelocity(rollerVelocity.getAsDouble());
         });
   }
 

@@ -39,7 +39,6 @@ public class ElevatorIOReal implements ElevatorIO {
   private TorqueCurrentFOC torqueCurrent = new TorqueCurrentFOC(0.0);
 
   public ElevatorIOReal() {
-    // TODO: CONFIGS ETC.
     TalonFXConfiguration config = new TalonFXConfiguration();
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
@@ -50,7 +49,6 @@ public class ElevatorIOReal implements ElevatorIO {
     config.Feedback.SensorToMechanismRatio =
         ElevatorSubsystem.GEAR_RATIO / (Math.PI * ElevatorSubsystem.SPROCKET_DIAMETER_METERS);
 
-    // TODO: TUNE
     config.Slot0.GravityType = GravityTypeValue.Elevator_Static;
     config.Slot0.kS = 0.24;
     config.Slot0.kG = 0.56;
@@ -58,7 +56,6 @@ public class ElevatorIOReal implements ElevatorIO {
     config.Slot0.kP = 110.0;
     config.Slot0.kD = 0.0;
 
-    // TODO: TUNE
     config.CurrentLimits.StatorCurrentLimit = 80.0;
     config.CurrentLimits.StatorCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimit = 60.0;

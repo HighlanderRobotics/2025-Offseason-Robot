@@ -35,6 +35,7 @@ import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -48,6 +49,8 @@ import frc.robot.elevator.ElevatorIOReal;
 import frc.robot.elevator.ElevatorIOSim;
 import frc.robot.elevator.ElevatorSubsystem;
 import frc.robot.intake.IntakeSubsystem;
+import frc.robot.led.LEDIOReal;
+import frc.robot.led.LEDSubsystem;
 import frc.robot.pivot.PivotIOReal;
 import frc.robot.pivot.PivotIOSim;
 import frc.robot.roller.RollerIOReal;
@@ -55,7 +58,6 @@ import frc.robot.roller.RollerIOSim;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.swerve.odometry.PhoenixOdometryThread;
 import frc.robot.utils.CommandXboxControllerSubsystem;
-import frc.robot.utils.FieldUtils.AlgaeIntakeTargets;
 import java.util.Optional;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.COTS;
@@ -85,13 +87,17 @@ public class Robot extends LoggedRobot {
     REPLAY
   }
 
-  // TODO add tuning mode switch
-
   public static enum CoralScoreTarget {
-    L1,
-    L2,
-    L3,
-    L4;
+    L1(Color.kGreen),
+    L2(Color.kTeal),
+    L3(Color.kBlue),
+    L4(LEDSubsystem.PURPLE);
+
+    private Color color;
+
+    private CoralScoreTarget(Color color) {
+      this.color = color;
+    }
   }
 
   public static enum CoralIntakeTarget {
@@ -100,15 +106,27 @@ public class Robot extends LoggedRobot {
   }
 
   public static enum AlgaeIntakeTarget {
-    LOW,
-    HIGH,
-    STACK,
-    GROUND
+    LOW(Color.kGreen),
+    HIGH(Color.kTeal),
+    STACK(Color.kBlue),
+    GROUND(LEDSubsystem.PURPLE);
+
+    private Color color;
+
+    private AlgaeIntakeTarget(Color color) {
+      this.color = color;
+    }
   }
 
   public static enum AlgaeScoreTarget {
-    BARGE,
-    PROCESSOR
+    BARGE(Color.kRed),
+    PROCESSOR(Color.kYellow);
+
+    private Color color;
+
+    private AlgaeScoreTarget(Color color) {
+      this.color = color;
+    }
   }
 
   public static enum ScoringSide {
@@ -116,11 +134,13 @@ public class Robot extends LoggedRobot {
     RIGHT
   }
 
-  @AutoLogOutput private static CoralScoreTarget coralScoreTarget = CoralScoreTarget.L3;
+  @AutoLogOutput private static CoralScoreTarget coralScoreTarget = CoralScoreTarget.L4;
   @AutoLogOutput private static CoralIntakeTarget coralIntakeTarget = CoralIntakeTarget.GROUND;
   @AutoLogOutput private static AlgaeIntakeTarget algaeIntakeTarget = AlgaeIntakeTarget.STACK;
   @AutoLogOutput private static AlgaeScoreTarget algaeScoreTarget = AlgaeScoreTarget.BARGE;
   @AutoLogOutput private static ScoringSide scoringSide = ScoringSide.RIGHT;
+
+  @AutoLogOutput private boolean haveAutosGenerated = false;
 
   private static CANBus canivore = new CANBus("*");
 
@@ -131,7 +151,6 @@ public class Robot extends LoggedRobot {
       new ElevatorSubsystem(
           ROBOT_TYPE != RobotType.SIM ? new ElevatorIOReal() : new ElevatorIOSim());
 
-  // TODO tune these config values
   TalonFXConfiguration armRollerConfig =
       createRollerConfig(InvertedValue.Clockwise_Positive, 20.0, 6.62, 0.48, 0.25, 0.0);
 
@@ -232,7 +251,16 @@ public class Robot extends LoggedRobot {
 
   TalonFXConfiguration climberPivotConfig =
       createPivotConfig(
-          InvertedValue.CounterClockwise_Positive, 20.0, 40.0, 10, 1.0, 0.4, 0.2, 0.5, 0.0, 0.0);
+          InvertedValue.CounterClockwise_Positive,
+          20.0,
+          120.0,
+          ClimberSubsystem.PIVOT_RATIO,
+          ClimberSubsystem.KV,
+          ClimberSubsystem.KG,
+          ClimberSubsystem.KS,
+          ClimberSubsystem.KP,
+          ClimberSubsystem.KI,
+          ClimberSubsystem.KD);
 
   private final ClimberSubsystem climber =
       new ClimberSubsystem(
@@ -284,14 +312,13 @@ public class Robot extends LoggedRobot {
       new SwerveDriveSimulation(driveTrainSimConfig, new Pose2d(3, 3, Rotation2d.kZero));
   // Subsystem initialization
   private final SwerveSubsystem swerve = new SwerveSubsystem(swerveSimulation);
+  private final LEDSubsystem leds = new LEDSubsystem(new LEDIOReal());
 
   private final CommandXboxControllerSubsystem driver = new CommandXboxControllerSubsystem(0);
   private final CommandXboxControllerSubsystem operator = new CommandXboxControllerSubsystem(1);
 
   @AutoLogOutput(key = "Superstructure/Autoaim Request")
   private Trigger autoAimReq = driver.rightBumper().or(driver.leftBumper());
-
-  // TODO impl autoaiming left vs right
 
   private final Superstructure superstructure =
       new Superstructure(elevator, arm, intake, climber, swerve, driver, operator);
@@ -378,10 +405,41 @@ public class Robot extends LoggedRobot {
     elevator.setDefaultCommand(elevator.setStateExtension());
     arm.setDefaultCommand(arm.setStateAngleVelocity());
     intake.setDefaultCommand(intake.setStateAngleVelocity());
-    // climber.setDefaultCommand(climber.setStateAngleVoltage());
+    // Voltage control is intentional here
+    climber.setDefaultCommand(climber.setStateAngleVoltage());
 
     driver.setDefaultCommand(driver.rumbleCmd(0.0, 0.0));
     operator.setDefaultCommand(operator.rumbleCmd(0.0, 0.0));
+    leds.setDefaultCommand(
+        Commands.either(
+                // enabled
+                Commands.either(
+                    // if we're in an algae state, override it with the split color
+                    leds.setBlinkingSplitCmd(
+                        () -> getAlgaeIntakeTarget().color, () -> getAlgaeScoreTarget().color, 5.0),
+                    // otherwise set it to the blinking pattern
+                    leds.setBlinkingCmd(
+                        () -> getCoralScoreTarget().color,
+                        () ->
+                            Superstructure.getState() == SuperState.IDLE
+                                ? Color.kBlack
+                                : Color.kWhite,
+                        5.0),
+                    superstructure::stateIsAlgae),
+                // not enabled
+                leds.setRunAlongCmd(
+                    () ->
+                        DriverStation.getAlliance()
+                            .map((a) -> a == Alliance.Blue ? Color.kBlue : Color.kRed)
+                            .orElse(Color.kWhite),
+                    // () -> wrist.hasZeroed ? LEDSubsystem.PURPLE : Color.kOrange, //TODO add check
+                    // for zero
+                    LEDSubsystem.PURPLE,
+                    4,
+                    1.0),
+                DriverStation::isEnabled)
+            .repeatedly()
+            .ignoringDisable(true));
 
     if (ROBOT_TYPE == RobotType.SIM) {
       SimulatedArena.getInstance().addDriveTrainSimulation(swerveSimulation);
@@ -407,6 +465,35 @@ public class Robot extends LoggedRobot {
     autos = new Autos(swerve, arm);
     // autoChooser.addDefaultOption("None", autos.getNoneAuto());
     // TODO add autos trigger
+
+    // Add autos on alliance change
+    new Trigger(
+            () -> {
+              var allianceChanged = !DriverStation.getAlliance().equals(lastAlliance);
+              lastAlliance = DriverStation.getAlliance();
+              return allianceChanged && DriverStation.getAlliance().isPresent();
+            })
+        .onTrue(
+            Commands.runOnce(() -> addAutos())
+                .alongWith(
+                    leds.setBlinkingCmd(() -> Color.kWhite, () -> Color.kBlack, 20.0)
+                        .withTimeout(1.0))
+                .ignoringDisable(true));
+
+    // Add autos when first connecting to DS
+    new Trigger(
+            () ->
+                DriverStation.isDSAttached()
+                    && DriverStation.getAlliance().isPresent()
+                    && !haveAutosGenerated) // TODO check that the haveautosgenerated doesn't break
+        // anything?
+        .onTrue(Commands.print("connected"))
+        .onTrue(
+            Commands.runOnce(() -> addAutos())
+                .alongWith(
+                    leds.setBlinkingCmd(() -> Color.kWhite, () -> Color.kBlack, 20.0)
+                        .withTimeout(1.0))
+                .ignoringDisable(true));
     SmartDashboard.putData(
         "rezero elevator",
         elevator
@@ -423,6 +510,16 @@ public class Robot extends LoggedRobot {
         arm.rezeroAgainstRightBumper()
             .alongWith(Commands.print("dashboard rezero arm against bumper"))
             .ignoringDisable(true));
+    SmartDashboard.putData(
+        "Spool in climber (MANUAL STOP)",
+        Commands.parallel(
+            intake.setPivotVoltage(() -> -4.0),
+            Commands.waitUntil(
+                    () ->
+                        intake.getPivotCurrentFilterValueAmps() > IntakeSubsystem.CURRENT_THRESHOLD)
+                .andThen(climber.retract())));
+    SmartDashboard.putData("Extend climber (MANUAL STOP)", climber.extend());
+    SmartDashboard.putData("Rezero climber", climber.rezero());
     SmartDashboard.putData(
         "rezero intake",
         intake.rezero().alongWith(Commands.print("dashboard rezero intake")).ignoringDisable(true));
@@ -546,41 +643,42 @@ public class Robot extends LoggedRobot {
                     .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy())));
 
     // Autoaim to intake algae (high, low)
-    autoAimReq
-        .and(() -> superstructure.stateIsIntakeAlgaeReef() || superstructure.stateIsIdle())
-        .whileTrue(
-            Commands.parallel(
-                Commands.sequence(
-                    Commands.runOnce(
-                        () ->
-                            Robot.setAlgaeIntakeTarget(
-                                AlgaeIntakeTargets.getClosestTarget(swerve.getPose()).height)),
-                    swerve
-                        .autoAimToOffsetAlgaePose()
-                        .until(
-                            new Trigger(swerve::nearIntakeAlgaeOffsetPose)
-                                // TODO figure out trigger order of operations? also this is just
-                                // bad
-                                .and(
-                                    () ->
-                                        superstructure.atExtension(
-                                            SuperState.INTAKE_ALGAE_HIGH_RIGHT))
-                                .or(
-                                    () ->
-                                        superstructure.atExtension(
-                                            SuperState.INTAKE_ALGAE_LOW_RIGHT))),
-                    swerve.approachAlgae()),
-                Commands.waitUntil(
-                        new Trigger(swerve::nearAlgaeIntakePose)
-                            .and(swerve::isNotMoving)
-                            .debounce(0.08))
-                    // .and(swerve::hasFrontTags)
-                    .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy())));
+    // autoAimReq
+    //     .and(() -> superstructure.stateIsIntakeAlgaeReef() || superstructure.stateIsIdle())
+    //     .whileTrue(
+    //         Commands.parallel(
+    //             Commands.sequence(
+    //                 Commands.runOnce(
+    //                     () ->
+    //                         Robot.setAlgaeIntakeTarget(
+    //                             AlgaeIntakeTargets.getClosestTarget(swerve.getPose()).height)),
+    //                 swerve
+    //                     .autoAimToOffsetAlgaePose()
+    //                     .until(
+    //                         new Trigger(swerve::nearIntakeAlgaeOffsetPose)
+    //                             // TODO figure out trigger order of operations? also this is just
+    //                             // bad
+    //                             .and(
+    //                                 () ->
+    //                                     superstructure.atExtension(
+    //                                         SuperState.INTAKE_ALGAE_HIGH_RIGHT))
+    //                             .or(
+    //                                 () ->
+    //                                     superstructure.atExtension(
+    //                                         SuperState.INTAKE_ALGAE_LOW_RIGHT))),
+    //                 swerve.approachAlgae()),
+    //             Commands.waitUntil(
+    //                     new Trigger(swerve::nearAlgaeIntakePose)
+    //                         .and(swerve::isNotMoving)
+    //                         .debounce(0.08))
+    //                 // .and(swerve::hasFrontTags)
+    //                 .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy())));
 
     // Autoaim to processor
     autoAimReq
         .and(superstructure::stateIsProcessor)
         .and(() -> algaeScoreTarget == AlgaeScoreTarget.PROCESSOR)
+        .and(driver.leftBumper().negate())
         .whileTrue(
             Commands.parallel(
                 swerve.autoAimToProcessor(),
@@ -591,6 +689,7 @@ public class Robot extends LoggedRobot {
     autoAimReq
         .and(superstructure::stateIsBarge)
         .and(() -> algaeScoreTarget == AlgaeScoreTarget.BARGE)
+        .and(driver.leftBumper().negate())
         .whileTrue(
             Commands.parallel(
                 swerve.autoAimToBarge(
@@ -609,6 +708,7 @@ public class Robot extends LoggedRobot {
                   coralScoreTarget = CoralScoreTarget.L1;
                   algaeIntakeTarget = AlgaeIntakeTarget.GROUND;
                   algaeScoreTarget = AlgaeScoreTarget.PROCESSOR;
+                  coralIntakeTarget = CoralIntakeTarget.GROUND;
                 }));
     operator
         .x()
@@ -733,6 +833,7 @@ operator
     // autoChooser.addOption("Push Auto", autos.PMtoPL());
     // autoChooser.addOption("Algae auto", autos.CMtoGH());
     // autoChooser.addOption("!!! DO NOT RUN!! 2910 auto", autos.LOtoA());
+    haveAutosGenerated = true;
   }
 
   @Override
