@@ -782,7 +782,7 @@ public class Robot extends LoggedRobot {
         .povUp()
         .and(() -> preZeroingReq)
         .whileTrue(
-            Commands.sequence(
+            Commands.parallel(
                     Commands.runOnce(() -> preZeroingReq = false),
                     Commands.runOnce(() -> zeroingReq = true),
                     intake.runCurrentZeroing(),
