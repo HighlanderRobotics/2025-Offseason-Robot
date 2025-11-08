@@ -194,6 +194,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   }
 
   public Command rezero() {
-    return Commands.runOnce(() -> io.resetEncoder(0.0));
+    // return Commands.runOnce(() -> io.resetEncoder(0.0));
+    return Commands.runOnce(() -> io.resetEncoder(-0.0125));
   }
 }
