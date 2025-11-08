@@ -761,10 +761,7 @@ public class Robot extends LoggedRobot {
         .povLeft()
         .and(() -> preZeroingReq)
         .whileTrue(
-            Commands.parallel(
-                    //   Commands.runOnce(() -> intake.isZeroing = true),
-                    //  Commands.runOnce(() -> elevator.isZeroing = true),
-                    arm.setPivotVoltage(-3.0))
+            Commands.parallel(arm.setPivotVoltage(-3.0))
                 .withTimeout(0.05)
                 .andThen(arm.hold().until(() -> !preZeroingReq && !zeroingReq)));
 
@@ -772,10 +769,7 @@ public class Robot extends LoggedRobot {
         .povRight()
         .and(() -> preZeroingReq)
         .whileTrue(
-            Commands.parallel(
-                    //  Commands.runOnce(() -> intake.isZeroing = true),
-                    //   Commands.runOnce(() -> elevator.isZeroing = true),
-                    arm.setPivotVoltage(3.0))
+            Commands.parallel(arm.setPivotVoltage(3.0))
                 .withTimeout(0.05)
                 .andThen(arm.hold().until(() -> !preZeroingReq && !zeroingReq)));
 
@@ -794,18 +788,12 @@ public class Robot extends LoggedRobot {
                     elevator.runCurrentZeroing())
                 .andThen(
                     Commands.parallel(
-                        Commands.runOnce(() -> zeroingReq = false),
-                        //  Commands.runOnce(() -> elevator.isZeroing = false),
-                        //    Commands.runOnce(() -> intake.isZeroing = false),
-                        arm.rezeroFromEncoder()))
+                        Commands.runOnce(() -> zeroingReq = false), arm.rezeroFromEncoder()))
                 .andThen(
                     superstructure.transitionAfterZeroing()
-                    // TODO add transition to specific states after zeroing
                     // only use if cancoder is cooked use:
                     // arm.runCurrentZeroing()
                     ));
-
-    // zeroingReq
 
     // zeroing upon startup
     new Trigger(() -> superstructure.stateIsIdle())

@@ -101,9 +101,6 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   @AutoLogOutput(key = "Intake/has Zeroed Since Startup")
   public boolean hasZeroedSinceStartup = false;
 
-  @AutoLogOutput(key = "Intake/is Zeroing")
-  public boolean isZeroing = false;
-
   @AutoLogOutput(key = "Intake/State")
   private IntakeState state = IntakeState.IDLE;
 
@@ -137,13 +134,11 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   }
 
   public Command runCurrentZeroing() {
-    isZeroing = true;
     return this.run(() -> setPivotVoltage(-2.0))
         .until(new Trigger(() -> Math.abs(currentFilterValue) > CURRENT_THRESHOLD).debounce(0.25))
         .andThen(
             Commands.parallel(
                 Commands.runOnce(() -> hasZeroedSinceStartup = true),
-                Commands.runOnce(() -> isZeroing = false),
                 Commands.print("Intake Zeroed"),
                 zeroPivot(() -> ZEROING_POSITION)));
   }
