@@ -5,6 +5,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Robot;
 import frc.robot.Superstructure;
 import frc.robot.cancoder.CANcoderIO;
 import frc.robot.cancoder.CANcoderIOInputsAutoLogged;
@@ -208,8 +209,17 @@ public class ArmSubsystem extends RollerPivotSubsystem {
         });
   }
 
-  // TODO setSimCoral
-  public void setSimCoral(boolean b) {}
+  public void setSimCoral(boolean hasCoral) {
+    if (Robot.isSimulation()) {
+      this.hasCoral = hasCoral;
+    }
+  }
+
+  public void setSimAlgae(boolean hasAlgae) {
+    if (Robot.isSimulation()) {
+      this.hasAlgae = hasAlgae;
+    }
+  }
 
   public Command rezeroFromEncoder() {
     return zeroPivot(() -> getCANcoderPosition());
@@ -217,5 +227,9 @@ public class ArmSubsystem extends RollerPivotSubsystem {
 
   public Command rezeroAgainstRightBumper() {
     return zeroPivot(() -> Rotation2d.fromDegrees(ZEROING_ANGLE));
+  }
+
+  public void setHasCoralForAuto(boolean hasCoral) {
+    this.hasCoral = hasCoral;
   }
 }

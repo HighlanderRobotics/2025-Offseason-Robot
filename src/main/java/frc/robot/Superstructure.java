@@ -234,7 +234,7 @@ public class Superstructure {
   public Trigger climbCancelReq;
 
   @AutoLogOutput(key = "Superstructure/At Extension?")
-  public Trigger atExtensionTrigger = new Trigger(this::atExtension);
+  public Trigger atExtensionTrigger = new Trigger(this::atExtension).or(Robot::isSimulation);
 
   @AutoLogOutput(key = "Superstructure/Intake Has Game Piece?")
   public Trigger intakeHasGamePieceTrigger;
@@ -271,16 +271,13 @@ public class Superstructure {
   }
 
   private void addTriggers() {
-    preScoreReq = driver.rightTrigger().or(Autos.autoPreScoreReq.and(DriverStation::isAutonomous));
+    preScoreReq = driver.rightTrigger().or(Autos.autoPreScoreReq);
 
-    scoreReq =
-        driver.rightTrigger().negate().or(Autos.autoScoreReq.and(DriverStation::isAutonomous));
+    scoreReq = driver.rightTrigger().negate().and(DriverStation::isTeleop).or(Autos.autoScoreReq);
 
-    intakeCoralReq =
-        driver.leftTrigger().or(Autos.autoIntakeCoralReq.and(DriverStation::isAutonomous));
+    intakeCoralReq = driver.leftTrigger().or(Autos.autoIntakeCoralReq);
 
-    intakeAlgaeReq =
-        driver.leftBumper().or(Autos.autoIntakeAlgaeReq.and(DriverStation::isAutonomous));
+    intakeAlgaeReq = driver.leftBumper().or(Autos.autoIntakeAlgaeReq);
 
     // TODO seems sus
     preClimbReq =
@@ -354,7 +351,8 @@ public class Superstructure {
               state = nextState;
               setSubstates();
             })
-        .ignoringDisable(true);
+        .ignoringDisable(true)
+        .withName("State Change Command");
   }
 
   private void setSubstates() {
@@ -816,6 +814,19 @@ public class Superstructure {
     bindTransition(SuperState.CLIMB, SuperState.PRE_CLIMB, climbCancelReq);
 
     bindTransition(SuperState.PRE_CLIMB, SuperState.IDLE, climbCancelReq);
+  }
+
+  /**
+   * <b>Only for setting initial state at the beginning of auto</b>
+   *
+   * @param state the state to set to
+   */
+  public void resetStateForAuto(SuperState nextState) {
+    System.out.println("Resetting state from " + state + " to " + nextState + " for auto.");
+    stateTimer.reset();
+    this.prevState = state;
+    state = nextState;
+    setSubstates();
   }
 
   public static SuperState getState() {

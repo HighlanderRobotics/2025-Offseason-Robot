@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.Robot.RobotType;
+import frc.robot.Robot.ScoringSide;
 import frc.robot.camera.Camera;
 import frc.robot.camera.CameraIOReal;
 import frc.robot.camera.CameraIOSim;
@@ -219,7 +220,7 @@ public class SwerveSubsystem extends SubsystemBase {
           }
 
           Tracer.trace("Update odometry", this::updateOdometry);
-          Tracer.trace("Update vision", this::updateVision);
+          // Tracer.trace("Update vision", this::updateVision);
         });
   }
 
@@ -431,15 +432,21 @@ public class SwerveSubsystem extends SubsystemBase {
             () -> AutoAim.resetPIDControllers(getPose(), getVelocityFieldRelative()))
         .andThen(
             driveClosedLoopFieldRelative(
-                () -> {
-                  return AutoAim.calculateSpeeds(
-                          getPose(),
-                          target.get(),
-                          translationConstraints,
-                          translationConstraints,
-                          headingConstraints)
-                      .plus(speedsModifier.get());
-                }));
+                    () -> {
+                      return AutoAim.calculateSpeeds(
+                              getPose(),
+                              target.get(),
+                              translationConstraints,
+                              translationConstraints,
+                              headingConstraints)
+                          .plus(speedsModifier.get());
+                    })
+                .alongWith(
+                    Commands.run(
+                        () -> {
+                          Logger.recordOutput("AutoAim/Target Pose", target.get());
+                          Logger.recordOutput("AutoAim/Speeds Modifier", speedsModifier.get());
+                        })));
   }
 
   /**
@@ -457,11 +464,16 @@ public class SwerveSubsystem extends SubsystemBase {
             () -> AutoAim.resetPIDControllers(getPose(), getVelocityFieldRelative()))
         .andThen(
             driveClosedLoopFieldRelative(
-                () -> {
-                  Logger.recordOutput("AutoAim/TargetPose", target.get());
-                  return AutoAim.calculateSpeeds(getPose(), target.get())
-                      .plus(speedsModifier.get());
-                }));
+                    () -> {
+                      return AutoAim.calculateSpeeds(getPose(), target.get())
+                          .plus(speedsModifier.get());
+                    })
+                .alongWith(
+                    Commands.run(
+                        () -> {
+                          Logger.recordOutput("AutoAim/Target Pose", target.get());
+                          Logger.recordOutput("AutoAim/Speeds Modifier", speedsModifier.get());
+                        })));
   }
 
   /**
@@ -474,6 +486,31 @@ public class SwerveSubsystem extends SubsystemBase {
    */
   private Command translateToPose(Supplier<Pose2d> target) {
     return translateToPose(target, () -> new ChassisSpeeds());
+  }
+
+  /**
+   * Autoaligns to the given pose, stopping when it's within the passed-in tolerance
+   *
+   * @param target the target pose
+   * @param xToleranceMeters the allowed x-direction translational tolerance
+   * @param yToleranceMeters the allowed y-direction translational tolerance
+   * @param headingToleranceRadians the allowed heading tolerance
+   * @return a Command driving to the target pose
+   */
+  public Command translateToPoseWithTolerance(
+      Supplier<Pose2d> target,
+      double xToleranceMeters,
+      double yToleranceMeters,
+      double headingToleranceRadians) {
+    return translateToPose(target)
+        .until(
+            () ->
+                MathUtil.isNear(target.get().getX(), getPose().getX(), xToleranceMeters)
+                    && MathUtil.isNear(target.get().getY(), getPose().getY(), yToleranceMeters)
+                    && MathUtil.isNear(
+                        target.get().getRotation().getRadians(),
+                        getPose().getRotation().getRadians(),
+                        headingToleranceRadians));
   }
 
   private Command translateWithIntermediatePose(
@@ -588,12 +625,18 @@ public class SwerveSubsystem extends SubsystemBase {
                   AutoAim.calculateSpeeds(
                       getPose(), FieldUtils.AlgaeIntakeTargets.getClosestTargetPose(getPose())),
                   getRotation());
-          calculatedSpeedsRobotRelative.vxMetersPerSecond =
-              isInAutoAimTolerance(FieldUtils.AlgaeIntakeTargets.getClosestTargetPose(getPose()))
-                  ? 0.0
-                  : AutoAim.ALGAE_APPROACH_SPEED_METERS_PER_SECOND;
+          if (isInAutoAimTolerance(FieldUtils.AlgaeIntakeTargets.getClosestTargetPose(getPose()))) {
+            calculatedSpeedsRobotRelative.vyMetersPerSecond = 0.0;
+          } else if (Robot.getScoringSide().equals(ScoringSide.LEFT)) {
+            calculatedSpeedsRobotRelative.vyMetersPerSecond =
+                -AutoAim.ALGAE_APPROACH_SPEED_METERS_PER_SECOND;
+          } else if (Robot.getScoringSide().equals(ScoringSide.RIGHT)) {
+            calculatedSpeedsRobotRelative.vyMetersPerSecond =
+                AutoAim.ALGAE_APPROACH_SPEED_METERS_PER_SECOND;
+          }
+
           // IDK why we have to do this but it was in reefscape so...
-          calculatedSpeedsRobotRelative.vyMetersPerSecond *= -1;
+          calculatedSpeedsRobotRelative.vxMetersPerSecond *= -1;
           return calculatedSpeedsRobotRelative;
         });
   }
@@ -689,6 +732,10 @@ public class SwerveSubsystem extends SubsystemBase {
     }
   }
 
+  public void setYaw(Rotation2d newYaw) {
+    resetPose(new Pose2d(getPose().getTranslation(), newYaw));
+  }
+
   @AutoLogOutput(key = "Odometry/Velocity Robot Relative")
   public ChassisSpeeds getVelocityRobotRelative() {
     ChassisSpeeds speeds = kinematics.toChassisSpeeds(getModuleStates());
@@ -726,36 +773,29 @@ public class SwerveSubsystem extends SubsystemBase {
    */
   @SuppressWarnings("resource")
   public Consumer<SwerveSample> choreoDriveController() {
+    // TODO: TUNE
     final PIDController xController = new PIDController(5.0, 0.0, 0.0);
     final PIDController yController = new PIDController(5.0, 0.0, 0.0);
-    final PIDController thetaController =
-        new PIDController(SWERVE_CONSTANTS.getHeadingVelocityKP(), 0.0, 0.0);
-    thetaController.enableContinuousInput(-Math.PI, Math.PI);
+    final PIDController headingController = new PIDController(6.0, 0.0, 0.0);
+    headingController.enableContinuousInput(-Math.PI, Math.PI);
     return (sample) -> {
-      final var pose = getPose();
-      // if (Robot.ROBOT_TYPE != RobotType.REAL)
-      Logger.recordOutput(
-          "Choreo/Target Pose",
-          new Pose2d(sample.x, sample.y, Rotation2d.fromRadians(sample.heading)));
-      // if (Robot.ROBOT_TYPE != RobotType.REAL)
-      Logger.recordOutput(
-          "Choreo/Target Speeds Field Relative",
-          new ChassisSpeeds(sample.vx, sample.vy, sample.omega));
-      var feedback =
+      Pose2d pose = getPose();
+
+      Logger.recordOutput("Choreo/Target Pose", sample.getPose());
+      Logger.recordOutput("Choreo/Raw Target Speeds Field Relative", sample.getChassisSpeeds());
+
+      ChassisSpeeds feedback =
           new ChassisSpeeds(
               xController.calculate(pose.getX(), sample.x),
               yController.calculate(pose.getY(), sample.y),
-              thetaController.calculate(pose.getRotation().getRadians(), sample.heading));
-      var speeds =
+              headingController.calculate(pose.getRotation().getRadians(), sample.heading));
+
+      ChassisSpeeds speeds =
           ChassisSpeeds.fromFieldRelativeSpeeds(
-              new ChassisSpeeds(sample.vx, sample.vy, sample.omega).plus(feedback), getRotation());
-      if (Robot.ROBOT_TYPE != RobotType.REAL)
-        Logger.recordOutput("Choreo/Feedback + FF Target Speeds Robot Relative", speeds);
+              sample.getChassisSpeeds().plus(feedback), getPose().getRotation());
+      Logger.recordOutput("Choreo/Target Speeds Robot Relative", speeds);
+
       this.drive(speeds, false);
     };
-  }
-
-  public void setYaw(Rotation2d yaw) {
-    resetPose(new Pose2d(getPose().getTranslation(), yaw));
   }
 }
