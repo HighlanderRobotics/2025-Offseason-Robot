@@ -31,17 +31,17 @@ public class RollerPivotSubsystem extends SubsystemBase {
     this.name = name;
   }
 
-  protected void runRollerVoltage(DoubleSupplier volts) {
-    rollerIO.setRollerVoltage(volts.getAsDouble());
+  protected void runRollerVoltage(double volts) {
+    rollerIO.setRollerVoltage(volts);
   }
 
   protected void runRollerVelocity(double velocityRPS) {
     rollerIO.setRollerVelocity(velocityRPS);
   }
 
-  protected void setPivotAngle(Supplier<Rotation2d> target) {
-    Logger.recordOutput(name + "/Pivot Setpoint", target.get());
-    pivotIO.setMotorPosition(target.get());
+  protected void setPivotAngle(Rotation2d target) {
+    Logger.recordOutput(name + "/Pivot Setpoint", target);
+    pivotIO.setMotorPosition(target);
   }
 
   public Command setPivotVoltage(DoubleSupplier volts) {
@@ -80,22 +80,21 @@ public class RollerPivotSubsystem extends SubsystemBase {
   }
 
   // this CANNOT be correct LMAO
-  public Command setPivotAndRollers(
-      Supplier<Rotation2d> pivotAngle, DoubleSupplier rollerVelocity) {
-    // Command cmd =
-    //     Commands.parallel(
-    //         Commands.runOnce(() -> setPivotAngle(pivotAngle)),
-    //         Commands.run(() -> runRollerVoltage(rollerVoltage)));
-    // cmd.addRequirements(this);
-    // return cmd;
-    return this.run(
-        () -> {
-          Logger.recordOutput(name + "/Pivot Setpoint", pivotAngle.get());
-          Logger.recordOutput(name + "/Rollers Setpoint", rollerVelocity.getAsDouble());
-          setPivotAngle(pivotAngle);
-          runRollerVelocity(rollerVelocity.getAsDouble());
-        });
-  }
+  // public Command setPivotAndRollers(Rotation2d pivotAngle, double rollerVelocity) {
+  //   // Command cmd =
+  //   //     Commands.parallel(
+  //   //         Commands.runOnce(() -> setPivotAngle(pivotAngle)),
+  //   //         Commands.run(() -> runRollerVoltage(rollerVoltage)));
+  //   // cmd.addRequirements(this);
+  //   // return cmd;
+  //   return this.run(
+  //       () -> {
+  //         Logger.recordOutput(name + "/Pivot Setpoint", pivotAngle);
+  //         Logger.recordOutput(name + "/Rollers Setpoint", rollerVelocity);
+  //         setPivotAngle(pivotAngle);
+  //         runRollerVelocity(rollerVelocity);
+  //       });
+  // }
 
   @Override
   public void periodic() {

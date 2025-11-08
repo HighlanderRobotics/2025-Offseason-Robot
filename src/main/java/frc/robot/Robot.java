@@ -29,6 +29,8 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -80,6 +82,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 public class Robot extends LoggedRobot {
   public static final RobotType ROBOT_TYPE = Robot.isReal() ? RobotType.REAL : RobotType.SIM;
   public static final boolean TUNING_MODE = true;
+  public boolean hasZeroedSinceStartup = false;
 
   public enum RobotType {
     REAL,
@@ -139,6 +142,8 @@ public class Robot extends LoggedRobot {
   //   @AutoLogOutput private static AlgaeIntakeTarget algaeIntakeTarget = AlgaeIntakeTarget.STACK;
   //   @AutoLogOutput private static AlgaeScoreTarget algaeScoreTarget = AlgaeScoreTarget.BARGE;
   @AutoLogOutput private static ScoringSide scoringSide = ScoringSide.RIGHT;
+
+  private Alert possibleCancoderFailure;
 
   private static CANBus canivore = new CANBus("*");
 
@@ -317,6 +322,12 @@ public class Robot extends LoggedRobot {
 
   @AutoLogOutput(key = "Superstructure/Autoaim Request")
   private Trigger autoAimReq = driver.rightBumper().or(driver.leftBumper());
+
+  @AutoLogOutput(key = "Robot/Pre Zeroing Request")
+  private Trigger preZeroingReq = driver.a();
+
+  @AutoLogOutput(key = "Robot/Zeroing Request")
+  private Trigger zeroingReq = driver.b();
 
   private final Superstructure superstructure =
       new Superstructure(elevator, arm, intake, climber, swerve, driver, operator);
@@ -558,6 +569,8 @@ public class Robot extends LoggedRobot {
         "ninety intake",
         intake.ninety().alongWith(Commands.print("dashboard ninety intake")).ignoringDisable(true));
     SmartDashboard.putData("Add autos", Commands.runOnce(this::addAutos).ignoringDisable(true));
+
+    possibleCancoderFailure = new Alert("Arm cancoder may not be working!", AlertType.kError);
   }
 
   private TalonFXConfiguration createRollerConfig(
@@ -798,6 +811,92 @@ public class Robot extends LoggedRobot {
                             // : Rotation2d.kCCW_90deg)));
                             ? Rotation2d.kZero
                             : Rotation2d.k180deg)));
+
+    // ---zeroing stuff---
+    // jog arm up
+    operator
+        .povDown()
+        .and(preZeroingReq)
+        .and(zeroingReq.negate())
+        .whileTrue(Commands.parallel(arm.setPivotVoltage(() -> -3.0)).withTimeout(0.05));
+
+    // jog arm down
+    operator
+        .povUp()
+        .and(preZeroingReq)
+        .and(zeroingReq.negate())
+        .whileTrue(Commands.parallel(arm.setPivotVoltage(() -> 3.0)).withTimeout(0.05));
+
+    // hold arm still when it's not being requested to jog up or down or zeroing req
+    operator
+        .povUp()
+        .negate()
+        .and(operator.povDown().negate())
+        .and(preZeroingReq)
+        .and(zeroingReq.negate())
+        .whileTrue(arm.hold());
+
+    // once arm is in place, run zeroing sequence
+    preZeroingReq
+        .and(zeroingReq)
+        .whileTrue(
+            Commands.sequence(
+                // hold arm still while intake and elevator run zeroing concurrently
+                Commands.deadline(
+                    Commands.parallel(intake.runCurrentZeroing(), elevator.runCurrentZeroing()),
+                    arm.hold()),
+                // hold elevator and intake still while arm zeroes
+                Commands.deadline(
+                    arm.runCurrentZeroing(),
+                    Commands.parallel(
+                        elevator.setVoltage(() -> -1.0), intake.setPivotVoltage(() -> -3.0))),
+                // sets exit state
+                superstructure.transitionAfterZeroing(),
+                // logging
+                Commands.runOnce(
+                    () -> {
+                      Logger.recordOutput("Arm manually rezeroed", true);
+                      possibleCancoderFailure.set(true);
+                    })));
+
+    // zeroing upon startup
+    // assumes cancoder hasn't failed!
+    new Trigger(() -> superstructure.stateIsIdle())
+        .and(() -> !hasZeroedSinceStartup)
+        .and(DriverStation::isEnabled)
+        .onTrue(
+            Commands.parallel(intake.runCurrentZeroing(), elevator.runCurrentZeroing())
+                .andThen(arm.rezeroFromEncoder())
+                .andThen(Commands.runOnce(() -> hasZeroedSinceStartup = true)));
+
+    // Rezero arm against cancoder
+    driver.x().onTrue(Commands.runOnce(() -> arm.rezeroFromEncoder()).ignoringDisable(true));
+
+    // antijam algae
+    // i am pulling these numbers out of my ass
+    // put down intake and put arm horizontal
+    operator
+        .leftBumper()
+        .whileTrue(
+            Commands.parallel(
+                intake.setPivotVoltage(() -> -3.0),
+                arm.setPivotAngle(() -> Rotation2d.fromDegrees(-90.0)),
+                Commands.waitUntil(
+                        () ->
+                            intake.isNearAngle(IntakeSubsystem.ZEROING_ANGLE)
+                                && arm.isNearAngle(Rotation2d.fromDegrees(-90.0)))
+                    .andThen(elevator.setExtensionMeters(() -> Units.inchesToMeters(30)))));
+
+    // eject coral
+    operator
+        .rightBumper()
+        .whileTrue(
+            Commands.parallel(
+                arm.setRollerVelocity(() -> -14.0), intake.setRollerVelocity(() -> -20.0)));
+
+    // Force the robot to think it doesn't have a coral
+    // probably should not do this
+    operator.leftStick().onTrue(Commands.runOnce(() -> arm.hasCoral = false));
   }
 
   private void addAutos() {
