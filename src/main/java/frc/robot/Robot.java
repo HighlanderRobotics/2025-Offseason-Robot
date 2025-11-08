@@ -773,13 +773,13 @@ public class Robot extends LoggedRobot {
 
     new Trigger(
             () ->
-                preZeroingReq
+                (preZeroingReq)
                     && !operator.povUp().getAsBoolean()
                     && !operator.povDown().getAsBoolean())
-        .whileTrue(arm.hold().until(() -> !preZeroingReq && !zeroingReq));
+        .whileTrue(arm.hold());
 
     // zeroingReq
-    
+
     driver
         // TODO idk what button
         .povUp()
@@ -789,7 +789,8 @@ public class Robot extends LoggedRobot {
                     Commands.runOnce(() -> preZeroingReq = false),
                     Commands.runOnce(() -> zeroingReq = true),
                     intake.runCurrentZeroing(),
-                    elevator.runCurrentZeroing()
+                    elevator.runCurrentZeroing(),
+                    arm.hold()
                     // if cancoder is cooked it would use:
                     // arm.runCurrentZeroing()
                     )
