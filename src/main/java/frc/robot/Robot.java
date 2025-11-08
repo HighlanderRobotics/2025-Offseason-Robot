@@ -779,7 +779,7 @@ public class Robot extends LoggedRobot {
         .whileTrue(arm.hold().until(() -> !preZeroingReq && !zeroingReq));
 
     // zeroingReq
-    
+
     driver
         // TODO idk what button
         .povUp()
