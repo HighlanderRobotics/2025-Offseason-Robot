@@ -61,7 +61,6 @@ import frc.robot.roller.RollerIOSim;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.swerve.odometry.PhoenixOdometryThread;
 import frc.robot.utils.CommandXboxControllerSubsystem;
-import frc.robot.utils.FieldUtils.AlgaeIntakeTargets;
 import java.util.Optional;
 import java.util.Set;
 import org.ironmaple.simulation.SimulatedArena;
@@ -109,29 +108,29 @@ public class Robot extends LoggedRobot {
     STACK
   }
 
-  public static enum AlgaeIntakeTarget {
-    LOW(Color.kGreen),
-    HIGH(Color.kTeal),
-    STACK(Color.kBlue),
-    GROUND(LEDSubsystem.PURPLE);
+  //   public static enum AlgaeIntakeTarget {
+  //     LOW(Color.kGreen),
+  //     HIGH(Color.kTeal),
+  //     STACK(Color.kBlue),
+  //     GROUND(LEDSubsystem.PURPLE);
 
-    private Color color;
+  //     private Color color;
 
-    private AlgaeIntakeTarget(Color color) {
-      this.color = color;
-    }
-  }
+  //     private AlgaeIntakeTarget(Color color) {
+  //       this.color = color;
+  //     }
+  //   }
 
-  public static enum AlgaeScoreTarget {
-    BARGE(Color.kRed),
-    PROCESSOR(Color.kYellow);
+  //   public static enum AlgaeScoreTarget {
+  //     BARGE(Color.kRed),
+  //     PROCESSOR(Color.kYellow);
 
-    private Color color;
+  //     private Color color;
 
-    private AlgaeScoreTarget(Color color) {
-      this.color = color;
-    }
-  }
+  //     private AlgaeScoreTarget(Color color) {
+  //       this.color = color;
+  //     }
+  //   }
 
   public static enum ScoringSide {
     LEFT,
@@ -140,8 +139,8 @@ public class Robot extends LoggedRobot {
 
   @AutoLogOutput private static CoralScoreTarget coralScoreTarget = CoralScoreTarget.L4;
   @AutoLogOutput private static CoralIntakeTarget coralIntakeTarget = CoralIntakeTarget.GROUND;
-  @AutoLogOutput private static AlgaeIntakeTarget algaeIntakeTarget = AlgaeIntakeTarget.STACK;
-  @AutoLogOutput private static AlgaeScoreTarget algaeScoreTarget = AlgaeScoreTarget.BARGE;
+  //   @AutoLogOutput private static AlgaeIntakeTarget algaeIntakeTarget = AlgaeIntakeTarget.STACK;
+  //   @AutoLogOutput private static AlgaeScoreTarget algaeScoreTarget = AlgaeScoreTarget.BARGE;
   @AutoLogOutput private static ScoringSide scoringSide = ScoringSide.RIGHT;
 
   private Alert possibleCancoderFailure;
@@ -424,19 +423,25 @@ public class Robot extends LoggedRobot {
     leds.setDefaultCommand(
         Commands.either(
                 // enabled
-                Commands.either(
-                    // if we're in an algae state, override it with the split color
-                    leds.setBlinkingSplitCmd(
-                        () -> getAlgaeIntakeTarget().color, () -> getAlgaeScoreTarget().color, 5.0),
-                    // otherwise set it to the blinking pattern
-                    leds.setBlinkingCmd(
-                        () -> getCoralScoreTarget().color,
-                        () ->
-                            Superstructure.getState() == SuperState.IDLE
-                                ? Color.kBlack
-                                : Color.kWhite,
-                        5.0),
-                    superstructure::stateIsAlgae),
+                leds.setBlinkingCmd(
+                    () -> getCoralScoreTarget().color,
+                    () ->
+                        Superstructure.getState() == SuperState.IDLE ? Color.kBlack : Color.kWhite,
+                    5.0),
+                // Commands.either(
+                //     // if we're in an algae state, override it with the split color
+                //     leds.setBlinkingSplitCmd(
+                //         () -> getAlgaeIntakeTarget().color, () -> getAlgaeScoreTarget().color,
+                // 5.0),
+                //     // otherwise set it to the blinking pattern
+                //     leds.setBlinkingCmd(
+                //         () -> getCoralScoreTarget().color,
+                //         () ->
+                //             Superstructure.getState() == SuperState.IDLE
+                //                 ? Color.kBlack
+                //                 : Color.kWhite,
+                //         5.0),
+                //     superstructure::stateIsAlgae),
                 // not enabled
                 leds.setRunAlongCmd(
                     () ->
@@ -686,65 +691,66 @@ public class Robot extends LoggedRobot {
                 .withName("Autoaim l4 command"));
 
     // Autoaim to intake algae (high, low)
-    autoAimReq
-        .and(() -> superstructure.stateIsIntakeAlgaeReef() || superstructure.stateIsIdle())
-        .whileTrue(
-            Commands.parallel(
-                    Commands.sequence(
-                        Commands.runOnce(
-                            () ->
-                                Robot.setAlgaeIntakeTarget(
-                                    AlgaeIntakeTargets.getClosestTarget(swerve.getPose()).height)),
-                        swerve
-                            .autoAimToOffsetAlgaePose()
-                            .until(
-                                new Trigger(swerve::nearIntakeAlgaeOffsetPose)
-                                    // TODO figure out trigger order of operations? also this is
-                                    // just
-                                    // bad
-                                    .and(
-                                        () ->
-                                            superstructure.atExtension(
-                                                SuperState.INTAKE_ALGAE_HIGH_RIGHT))
-                                    .or(
-                                        () ->
-                                            superstructure.atExtension(
-                                                SuperState.INTAKE_ALGAE_LOW_RIGHT))),
-                        swerve.approachAlgae()),
-                    Commands.waitUntil(
-                            new Trigger(swerve::nearAlgaeIntakePose)
-                                .and(swerve::isNotMoving)
-                                .debounce(0.08))
-                        // .and(swerve::hasFrontTags)
-                        .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy()))
-                .withName("Autoaim algae"));
+    // autoAimReq
+    //     .and(() -> superstructure.stateIsIntakeAlgaeReef() || superstructure.stateIsIdle())
+    //     .whileTrue(
+    //         Commands.parallel(
+    //                 Commands.sequence(
+    //                     Commands.runOnce(
+    //                         () ->
+    //                             Robot.setAlgaeIntakeTarget(
+    //
+    // AlgaeIntakeTargets.getClosestTarget(swerve.getPose()).height)),
+    //                     swerve
+    //                         .autoAimToOffsetAlgaePose()
+    //                         .until(
+    //                             new Trigger(swerve::nearIntakeAlgaeOffsetPose)
+    //                                 // TODO figure out trigger order of operations? also this is
+    //                                 // just
+    //                                 // bad
+    //                                 .and(
+    //                                     () ->
+    //                                         superstructure.atExtension(
+    //                                             SuperState.INTAKE_ALGAE_HIGH_RIGHT))
+    //                                 .or(
+    //                                     () ->
+    //                                         superstructure.atExtension(
+    //                                             SuperState.INTAKE_ALGAE_LOW_RIGHT))),
+    //                     swerve.approachAlgae()),
+    //                 Commands.waitUntil(
+    //                         new Trigger(swerve::nearAlgaeIntakePose)
+    //                             .and(swerve::isNotMoving)
+    //                             .debounce(0.08))
+    //                     // .and(swerve::hasFrontTags)
+    //                     .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy()))
+    //             .withName("Autoaim algae"));
 
     // Autoaim to processor
-    autoAimReq
-        .and(superstructure::stateIsProcessor)
-        .and(() -> algaeScoreTarget == AlgaeScoreTarget.PROCESSOR)
-        .and(driver.leftBumper().negate())
-        .whileTrue(
-            Commands.parallel(
-                    swerve.autoAimToProcessor(),
-                    Commands.waitUntil(swerve::nearProcessor)
-                        .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy()))
-                .withName("Autoaim algae"));
+    // autoAimReq
+    //     .and(superstructure::stateIsProcessor)
+    //     .and(() -> algaeScoreTarget == AlgaeScoreTarget.PROCESSOR)
+    //     .and(driver.leftBumper().negate())
+    //     .whileTrue(
+    //         Commands.parallel(
+    //                 swerve.autoAimToProcessor(),
+    //                 Commands.waitUntil(swerve::nearProcessor)
+    //                     .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy()))
+    //             .withName("Autoaim algae"));
 
     // Autoaim to barge
-    autoAimReq
-        .and(superstructure::stateIsBarge)
-        .and(() -> algaeScoreTarget == AlgaeScoreTarget.BARGE)
-        .and(driver.leftBumper().negate())
-        .whileTrue(
-            Commands.parallel(
-                    swerve.autoAimToBarge(
-                        () ->
-                            modifyJoystick(driver.getLeftX())
-                                * SwerveSubsystem.SWERVE_CONSTANTS.getMaxLinearSpeed()),
-                    Commands.waitUntil(swerve::nearBarge)
-                        .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy()))
-                .withName("Autoaim barge"));
+    // autoAimReq
+    //     .and(superstructure::stateIsBarge)
+    //     .and(() -> algaeScoreTarget == AlgaeScoreTarget.BARGE)
+    //     .and(driver.leftBumper().negate())
+    //     .whileTrue(
+    //         Commands.parallel(
+    //                 swerve.autoAimToBarge(
+    //                     () ->
+    //                         modifyJoystick(driver.getLeftX())
+    //                             * SwerveSubsystem.SWERVE_CONSTANTS.getMaxLinearSpeed()),
+    //                 Commands.waitUntil(swerve::nearBarge)
+    //                     .andThen(driver.rumbleCmd(1.0, 1.0).withTimeout(0.75).asProxy()))
+    //             .withName("Autoaim barge"));
 
     // Operator - Set scoring/intaking levels
     operator
@@ -753,8 +759,8 @@ public class Robot extends LoggedRobot {
             Commands.runOnce(
                 () -> {
                   coralScoreTarget = CoralScoreTarget.L1;
-                  algaeIntakeTarget = AlgaeIntakeTarget.GROUND;
-                  algaeScoreTarget = AlgaeScoreTarget.PROCESSOR;
+                  //   algaeIntakeTarget = AlgaeIntakeTarget.GROUND;
+                  //   algaeScoreTarget = AlgaeScoreTarget.PROCESSOR;
                   coralIntakeTarget = CoralIntakeTarget.GROUND;
                 }));
     operator
@@ -763,7 +769,7 @@ public class Robot extends LoggedRobot {
             Commands.runOnce(
                 () -> {
                   coralScoreTarget = CoralScoreTarget.L2;
-                  algaeIntakeTarget = AlgaeIntakeTarget.STACK;
+                  //   algaeIntakeTarget = AlgaeIntakeTarget.STACK;
                 }));
     operator
         .b()
@@ -771,7 +777,7 @@ public class Robot extends LoggedRobot {
             Commands.runOnce(
                 () -> {
                   coralScoreTarget = CoralScoreTarget.L3;
-                  algaeIntakeTarget = AlgaeIntakeTarget.LOW;
+                  //   algaeIntakeTarget = AlgaeIntakeTarget.LOW;
                 }));
     operator
         .y()
@@ -779,8 +785,8 @@ public class Robot extends LoggedRobot {
             Commands.runOnce(
                 () -> {
                   coralScoreTarget = CoralScoreTarget.L4;
-                  algaeIntakeTarget = AlgaeIntakeTarget.HIGH;
-                  algaeScoreTarget = AlgaeScoreTarget.BARGE;
+                  //   algaeIntakeTarget = AlgaeIntakeTarget.HIGH;
+                  //   algaeScoreTarget = AlgaeScoreTarget.BARGE;
                 }));
 
     operator.leftTrigger().onTrue(Commands.runOnce(() -> scoringSide = ScoringSide.LEFT));
@@ -900,7 +906,7 @@ public class Robot extends LoggedRobot {
 
     autoChooser.addOption("Left stack auto", autos.getLeftStackAuto());
     autoChooser.addOption("Right stack auto", autos.getRightStackAuto());
-    autoChooser.addOption("Algae auto", autos.getAlgaeAuto());
+    // autoChooser.addOption("Algae auto", autos.getAlgaeAuto());
     haveAutosGenerated = true;
   }
 
@@ -1035,21 +1041,21 @@ public class Robot extends LoggedRobot {
     return coralIntakeTarget;
   }
 
-  public static void setAlgaeIntakeTarget(AlgaeIntakeTarget target) {
-    algaeIntakeTarget = target;
-  }
+  //   public static void setAlgaeIntakeTarget(AlgaeIntakeTarget target) {
+  //     algaeIntakeTarget = target;
+  //   }
 
-  public static AlgaeIntakeTarget getAlgaeIntakeTarget() {
-    return algaeIntakeTarget;
-  }
+  //   public static AlgaeIntakeTarget getAlgaeIntakeTarget() {
+  //     return algaeIntakeTarget;
+  //   }
 
-  public static void setAlgaeScoreTarget(AlgaeScoreTarget target) {
-    algaeScoreTarget = target;
-  }
+  //   public static void setAlgaeScoreTarget(AlgaeScoreTarget target) {
+  //     algaeScoreTarget = target;
+  //   }
 
-  public static AlgaeScoreTarget getAlgaeScoreTarget() {
-    return algaeScoreTarget;
-  }
+  //   public static AlgaeScoreTarget getAlgaeScoreTarget() {
+  //     return algaeScoreTarget;
+  //   }
 
   public static ScoringSide getScoringSide() {
     return scoringSide;
