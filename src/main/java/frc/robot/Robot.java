@@ -915,6 +915,7 @@ public class Robot extends LoggedRobot {
     autoChooser.addOption("Left stack auto", autos.getLeftStackAuto());
     autoChooser.addOption("Right stack auto", autos.getRightStackAuto());
     autoChooser.addOption("Center auto", autos.getAlgaeAuto());
+    autoChooser.addOption("left taxi", swerve.driveClosedLoopRobotRelative(() -> new ChassisSpeeds(2.0, 0.0, 0.0)).withTimeout(2));
     haveAutosGenerated = true;
   }
 

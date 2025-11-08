@@ -309,7 +309,7 @@ public class Autos {
                     .and(swerve::isNotMoving)
                     .debounce(0.06 * 2)),
             setAutoScoreReqTrue(),
-            Commands.runOnce(() -> autoPreScore = true),
+            Commands.runOnce(() -> autoPreScore = false),
             // arm.setSimCoral(() -> false),
             Commands.runOnce(() -> arm.setSimCoral(false)),
             waitUntilNoCoral(),
