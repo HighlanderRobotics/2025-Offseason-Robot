@@ -24,13 +24,11 @@ public class ClimberSubsystem extends RollerPivotSubsystem {
   public static final double KV = 0.0;
   public static final double jKgMetersSquared = 0.01;
   public static final double TOLERANCE_DEGREES = 5.0;
-  public static final Rotation2d CLIMB_EXTENSION_DEGREES = Rotation2d.fromDegrees(70);
+  // public static final Rotation2d CLIMB_EXTENSION_DEGREES = Rotation2d.fromDegrees(70);
 
   public enum ClimberState {
     IDLE(Rotation2d.fromDegrees(0), 0.0),
-    // climbing
-    // TODO climber stuff is very tbd rn
-    PRE_CLIMB(Rotation2d.fromRadians(17.93), -5.0),
+    PRE_CLIMB(Rotation2d.fromRadians(24.867), -5.0), //not actually how many radians it is because there's the spool but
     CLIMB(Rotation2d.fromDegrees(0.0), 0.0);
 
     public final Rotation2d position;
