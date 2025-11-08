@@ -243,4 +243,12 @@ public class ArmSubsystem extends RollerPivotSubsystem {
                 Commands.print("Arm Zeroed"),
                 rezeroAgainstRightBumper()));
   }
+
+  public Command setPivotAngle(Supplier<Rotation2d> rot) {
+    return this.run(() -> setPivotAngle(rot.get()));
+  }
+
+  public Command setRollerVelocity(DoubleSupplier vel) {
+    return this.run(() -> runRollerVelocity(vel.getAsDouble()));
+  }
 }

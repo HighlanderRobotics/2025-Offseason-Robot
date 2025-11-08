@@ -204,4 +204,8 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
 
     return config;
   }
+
+  public Command setRollerVelocity(DoubleSupplier vel) {
+    return this.run(() -> runRollerVelocity(vel.getAsDouble()));
+  }
 }

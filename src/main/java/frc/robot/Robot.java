@@ -827,8 +827,27 @@ public class Robot extends LoggedRobot {
                 .andThen(arm.rezeroFromEncoder())
                 .andThen(Commands.runOnce(() -> hasZeroedSinceStartup = true)));
 
-    // Rezero arm
+    // Rezero arm against cancoder
     driver.x().onTrue(Commands.runOnce(() -> arm.rezeroFromEncoder()).ignoringDisable(true));
+
+    //antijam algae
+    //i am pulling these numbers out of my ass
+    //put down intake and put arm horizontal
+   operator.leftBumper().whileTrue(
+    Commands.parallel(
+        intake.setPivotVoltage(() -> -3.0), 
+        arm.setPivotAngle(() -> Rotation2d.fromDegrees(-90.0)),
+        Commands.waitUntil(
+            () -> intake.isNearAngle(IntakeSubsystem.ZEROING_ANGLE) 
+            && arm.isNearAngle(Rotation2d.fromDegrees(-90.0)))
+        .andThen(elevator.setExtensionMeters(() -> Units.inchesToMeters(30)))));
+
+    //eject coral
+   operator.rightBumper().whileTrue(Commands.parallel(arm.setRollerVelocity(() -> -14.0),intake.setRollerVelocity(() -> -20.0)));
+
+   //Force the robot to think it doesn't have a coral
+   //probably should not do this
+   operator.leftStick().onTrue(Commands.runOnce(() -> arm.hasCoral = false));
   }
 
   private void addAutos() {
