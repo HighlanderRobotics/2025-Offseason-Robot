@@ -136,7 +136,7 @@ public class SwerveSubsystem extends SubsystemBase {
       cameras =
           new Camera[] {
             new Camera(new CameraIOSim(SWERVE_CONSTANTS.getCameraConstants()[0])),
-            // new Camera(new CameraIOSim(SWERVE_CONSTANTS.getCameraConstants()[1])),
+            new Camera(new CameraIOSim(SWERVE_CONSTANTS.getCameraConstants()[1])),
             new Camera(new CameraIOSim(SWERVE_CONSTANTS.getCameraConstants()[2])),
             new Camera(new CameraIOSim(SWERVE_CONSTANTS.getCameraConstants()[3]))
           };
@@ -219,7 +219,7 @@ public class SwerveSubsystem extends SubsystemBase {
           }
 
           Tracer.trace("Update odometry", this::updateOdometry);
-          // Tracer.trace("Update vision", this::updateVision);
+          Tracer.trace("Update vision", this::updateVision);
         });
   }
 

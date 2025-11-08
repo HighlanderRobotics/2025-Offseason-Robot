@@ -1062,4 +1062,8 @@ public class Robot extends LoggedRobot {
   public static ScoringSide getScoringSide() {
     return scoringSide;
   }
+
+  public static void setScoringSide(ScoringSide newSide) {
+    scoringSide = newSide;
+  }
 }

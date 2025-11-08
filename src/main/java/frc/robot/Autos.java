@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 // import frc.robot.Robot.AlgaeIntakeTarget;
 import frc.robot.Robot.CoralIntakeTarget;
 import frc.robot.Robot.CoralScoreTarget;
+import frc.robot.Robot.ScoringSide;
 import frc.robot.Superstructure.SuperState;
 import frc.robot.arm.ArmSubsystem;
 import frc.robot.swerve.SwerveSubsystem;
@@ -201,6 +202,7 @@ public class Autos {
             Commands.parallel(
                 Commands.runOnce(() -> stateSetter.accept(SuperState.READY_CORAL_ARM)),
                 Commands.runOnce(() -> arm.hasCoral = true)),
+            Commands.runOnce(() -> Robot.setScoringSide(ScoringSide.LEFT)),
             paths[0].getTrajectory(routine).resetOdometry(),
             runPath(paths[0], routine));
     // intakeAlgaeInAuto(() -> paths[0].getTrajectory(routine).getFinalPose().get()),
