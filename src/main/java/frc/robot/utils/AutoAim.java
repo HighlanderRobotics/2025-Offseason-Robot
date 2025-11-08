@@ -25,7 +25,7 @@ public class AutoAim {
   public static final double VELOCITY_TOLERANCE_METERSPERSECOND = 0.5;
   public static final double INITIAL_REEF_KEEPOFF_DISTANCE_METERS = -0.1;
 
-  public static final double ALGAE_APPROACH_SPEED_METERS_PER_SECOND = 1.0;
+//   public static final double ALGAE_APPROACH_SPEED_METERS_PER_SECOND = 1.0;
 
   // Velocity controllers
   static final ProfiledPIDController VX_CONTROLLER =

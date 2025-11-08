@@ -17,8 +17,6 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.Robot;
 import frc.robot.Robot.RobotType;
-import frc.robot.Superstructure;
-import frc.robot.Superstructure.SuperState;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.utils.Tracer;
 import java.util.NoSuchElementException;
@@ -210,12 +208,12 @@ public class Camera {
                                               || t.getFiducialId() == 15
                                               || t.getFiducialId() == 14)
                               ? 1.2
-                              : 1.0)
-                      .times(
-                          Superstructure.getState() == SuperState.PRE_BARGE_LEFT
-                                  || Superstructure.getState() == SuperState.PRE_BARGE_RIGHT
-                              ? 0.5
                               : 1.0));
+              // .times(
+              //     Superstructure.getState() == SuperState.PRE_BARGE_LEFT
+              //             || Superstructure.getState() == SuperState.PRE_BARGE_RIGHT
+              //         ? 0.5
+              //         : 1.0));
             });
 
         hasFutureData |= inputs.result.metadata.captureTimestampMicros > RobotController.getTime();

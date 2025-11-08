@@ -49,14 +49,14 @@ public class ElevatorSubsystem extends SubsystemBase {
     PRE_L4(Units.metersToInches(1.37795)), // 54.25), // 29.375), // 58.75),
     L4(Units.metersToInches(1.23)), // 26), // 52),//49
     // algae
-    INTAKE_ALGAE_REEF_HIGH(Units.metersToInches(1.0)),
-    INTAKE_ALGAE_REEF_LOW(Units.metersToInches(0.6)),
-    INTAKE_ALGAE_STACK(10),
-    INTAKE_ALGAE_GROUND(25),
-    READY_ALGAE(0),
+    // INTAKE_ALGAE_REEF_HIGH(Units.metersToInches(1.0)),
+    // INTAKE_ALGAE_REEF_LOW(Units.metersToInches(0.6)),
+    // INTAKE_ALGAE_STACK(10),
+    // INTAKE_ALGAE_GROUND(25),
+    // READY_ALGAE(0),
 
-    BARGE(58.75),
-    PROCESSOR(4),
+    // BARGE(58.75),
+    // PROCESSOR(4),
     // climbing
     PRE_CLIMB(0),
     CLIMB(0);

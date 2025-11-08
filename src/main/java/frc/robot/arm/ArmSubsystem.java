@@ -6,7 +6,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Robot;
-import frc.robot.Superstructure;
 import frc.robot.cancoder.CANcoderIO;
 import frc.robot.cancoder.CANcoderIOInputsAutoLogged;
 import frc.robot.pivot.PivotIO;
@@ -40,9 +39,9 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public static final double KV = 0.14;
   public static final double jKgMetersSquared = 0.01;
   // public static final double GAME_PIECE_CURRENT_THRESHOLD = 20.0;
-  public static final double ALGAE_INTAKE_VOLTAGE = 8.0;
+  // public static final double ALGAE_INTAKE_VOLTAGE = 8.0;
   public static final double CORAL_INTAKE_VOLTAGE = 5.0;
-  public static final double ALGAE_CURRENT_THRESHOLD = 20.0;
+  // public static final double ALGAE_CURRENT_THRESHOLD = 20.0;
   public static final double CORAL_CURRENT_THRESHOLD = 30.0;
   public static final double TOLERANCE_DEGREES = 10.0;
   public static final double VERTICAL_OFFSET_METERS = Units.inchesToMeters(12.0);
@@ -55,7 +54,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   private final CANcoderIO cancoderIO;
   private final CANcoderIOInputsAutoLogged cancoderInputs = new CANcoderIOInputsAutoLogged();
 
-  public boolean hasAlgae = false;
+  // public boolean hasAlgae = false;
   public boolean hasCoral = false;
 
   /**
@@ -93,21 +92,21 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     SCORE_L4_LEFT(90, -10.0),
     // algae
     // These all have voltage control
-    INTAKE_ALGAE_REEF_RIGHT(-90, 10.0),
-    INTAKE_ALGAE_REEF_LEFT(90, 10.0),
-    INTAKE_ALGAE_GROUND(125, 15.0),
-    // TODO: SET POS BACK TO 90 deg
-    INTAKE_ALGAE_STACK(90, 8.0),
-    READY_ALGAE(0, 8.0),
+    // INTAKE_ALGAE_REEF_RIGHT(-90, 10.0),
+    // INTAKE_ALGAE_REEF_LEFT(90, 10.0),
+    // INTAKE_ALGAE_GROUND(125, 15.0),
+    // // TODO: SET POS BACK TO 90 deg
+    // INTAKE_ALGAE_STACK(90, 8.0),
+    // READY_ALGAE(0, 8.0),
 
-    PRE_BARGE_RIGHT(-20, 4.0),
-    SCORE_BARGE_RIGHT(-20, -10.0),
+    // PRE_BARGE_RIGHT(-20, 4.0),
+    // SCORE_BARGE_RIGHT(-20, -10.0),
 
-    PRE_BARGE_LEFT(20, 4.0),
-    SCORE_BARGE_LEFT(20, -10.0),
+    // PRE_BARGE_LEFT(20, 4.0),
+    // SCORE_BARGE_LEFT(20, -10.0),
 
-    PRE_PROCESSOR(180, 0.0),
-    SCORE_PROCESSOR(180, -10.0),
+    // PRE_PROCESSOR(180, 0.0),
+    // SCORE_PROCESSOR(180, -10.0),
     // climbing
     PRE_CLIMB(0.0, 0.0),
     CLIMB(0.0, 0.0);
@@ -165,13 +164,13 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     return cancoderInputs.cancoderPositionRotations;
   }
 
-  public Command intakeAlgae() {
-    return this.run(() -> runRollerVoltage(() -> ALGAE_INTAKE_VOLTAGE))
-        .until(
-            new Trigger(() -> Math.abs(currentFilterValue) > ALGAE_CURRENT_THRESHOLD)
-                .debounce(0.25))
-        .andThen(Commands.runOnce(() -> hasAlgae = true));
-  }
+  // public Command intakeAlgae() {
+  //   return this.run(() -> runRollerVoltage(() -> ALGAE_INTAKE_VOLTAGE))
+  //       .until(
+  //           new Trigger(() -> Math.abs(currentFilterValue) > ALGAE_CURRENT_THRESHOLD)
+  //               .debounce(0.25))
+  //       .andThen(Commands.runOnce(() -> hasAlgae = true));
+  // }
 
   public Command intakeCoral() {
     return this.run(() -> runRollerVoltage(() -> CORAL_INTAKE_VOLTAGE))
@@ -186,7 +185,8 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public boolean hasGamePiece() {
     // return (Math.abs(currentFilterValue) > CORAL_CURRENT_THRESHOLD ||
     // Math.abs(currentFilterValue) > ALGAE_CURRENT_THRESHOLD);
-    return hasAlgae || hasCoral;
+    //return hasAlgae || hasCoral;
+    return hasCoral;
   }
 
   public boolean isNearAngle(Rotation2d target) {
@@ -200,12 +200,13 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     return this.run(
         () -> {
           pivotIO.setMotorPosition(state.getAngle());
-          // TODO: THIS SUCKS
-          if (Superstructure.stateIsVoltageControl()) {
-            rollerIO.setRollerVoltage(state.getVelocityRPS());
-          } else {
-            rollerIO.setRollerVelocity(state.getVelocityRPS());
-          }
+          // // TODO: THIS SUCKS
+          // if (Superstructure.stateIsVoltageControl()) {
+          //   rollerIO.setRollerVoltage(state.getVelocityRPS());
+          // } else {
+          //   rollerIO.setRollerVelocity(state.getVelocityRPS());
+          // }
+          rollerIO.setRollerVelocity(state.getVelocityRPS());
         });
   }
 
@@ -215,11 +216,11 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     }
   }
 
-  public void setSimAlgae(boolean hasAlgae) {
-    if (Robot.isSimulation()) {
-      this.hasAlgae = hasAlgae;
-    }
-  }
+  // public void setSimAlgae(boolean hasAlgae) {
+  //   if (Robot.isSimulation()) {
+  //     this.hasAlgae = hasAlgae;
+  //   }
+  // }
 
   public Command rezeroFromEncoder() {
     return zeroPivot(() -> getCANcoderPosition());
