@@ -91,14 +91,14 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     SCORE_L2_RIGHT(-90, -10.0),
     PRE_L3_RIGHT(-45, 7.0),
     SCORE_L3_RIGHT(-90, -10.0),
-    PRE_L4_RIGHT(-60, 7.0),
+    PRE_L4_RIGHT(-60, 10.0),
     SCORE_L4_RIGHT(-90, -14.0),
 
     PRE_L2_LEFT(45, 7.0),
     SCORE_L2_LEFT(90, -10.0),
     PRE_L3_LEFT(45, 7.0),
     SCORE_L3_LEFT(90, -10.0),
-    PRE_L4_LEFT(70, 7.0),
+    PRE_L4_LEFT(70, 10.0),
     SCORE_L4_LEFT(90, -10.0),
     // algae
     // These all have voltage control
