@@ -131,7 +131,7 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   }
 
   public Command runCurrentZeroing() {
-    return this.run(() -> setPivotVoltage(-2.0))
+    return this.run(() -> setPivotVoltage(() -> -2.0))
         .until(new Trigger(() -> Math.abs(currentFilterValue) > CURRENT_THRESHOLD).debounce(0.25))
         .andThen(
             Commands.parallel(Commands.print("Intake Zeroed"), zeroPivot(() -> ZEROING_POSITION)));

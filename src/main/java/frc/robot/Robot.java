@@ -78,8 +78,6 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 public class Robot extends LoggedRobot {
   public static final RobotType ROBOT_TYPE = Robot.isReal() ? RobotType.REAL : RobotType.SIM;
   public static final boolean TUNING_MODE = true;
-  public boolean preZeroingReq = false;
-  public boolean zeroingReq = false;
   public boolean hasZeroedSinceStartup = false;
 
   public enum RobotType {
@@ -321,6 +319,12 @@ public class Robot extends LoggedRobot {
   @AutoLogOutput(key = "Superstructure/Autoaim Request")
   private Trigger autoAimReq = driver.rightBumper().or(driver.leftBumper());
 
+  @AutoLogOutput(key = "Robot/PreZeroing Request")
+  private Trigger preZeroingReq = driver.start();
+
+  @AutoLogOutput(key = "Robot/Zeroing Request")
+  private Trigger zeroingReq = driver.povUp().and(preZeroingReq);
+
   private final Superstructure superstructure =
       new Superstructure(elevator, arm, intake, climber, swerve, driver, operator);
 
@@ -514,7 +518,7 @@ public class Robot extends LoggedRobot {
     SmartDashboard.putData(
         "Spool in climber (MANUAL STOP)",
         Commands.parallel(
-            intake.setPivotVoltage(-4.0),
+            intake.setPivotVoltage(() -> -4.0),
             Commands.waitUntil(
                     () ->
                         intake.getPivotCurrentFilterValueAmps() > IntakeSubsystem.CURRENT_THRESHOLD)
@@ -746,6 +750,7 @@ public class Robot extends LoggedRobot {
     // operator.povLeft().onTrue(Commands.runOnce(() -> leftHandedTarget = true));
     // operator.povRight().onTrue(Commands.runOnce(() -> leftHandedTarget = false));
 
+    // heading reset
     driver
         .leftStick()
         .and(driver.rightStick())
@@ -760,44 +765,27 @@ public class Robot extends LoggedRobot {
                             : Rotation2d.k180deg)));
     operator
         .povDown()
-        .and(() -> preZeroingReq)
-        .whileTrue(Commands.parallel(arm.setPivotVoltage(-3.0)).withTimeout(0.05));
+        .and(preZeroingReq)
+        .whileTrue(Commands.parallel(arm.setPivotVoltage(() -> -3.0)).withTimeout(0.05));
 
     operator
         .povUp()
-        .and(() -> preZeroingReq)
-        .whileTrue(Commands.parallel(arm.setPivotVoltage(3.0)).withTimeout(0.05));
-
-    // preZeroingReq
-    driver.start().onTrue(Commands.runOnce(() -> preZeroingReq = true));
+        .and(preZeroingReq)
+        .whileTrue(Commands.parallel(arm.setPivotVoltage(() -> 3.0)).withTimeout(0.05));
 
     new Trigger(
             () ->
-                (preZeroingReq)
+                (preZeroingReq.or(zeroingReq)).getAsBoolean()
                     && !operator.povUp().getAsBoolean()
                     && !operator.povDown().getAsBoolean())
         .whileTrue(arm.hold());
 
     // zeroingReq
 
-    driver
-        // TODO idk what button
-        .povUp()
-        .and(() -> preZeroingReq)
-        .whileTrue(
-            Commands.parallel(
-                    Commands.runOnce(() -> preZeroingReq = false),
-                    Commands.runOnce(() -> zeroingReq = true),
-                    intake.runCurrentZeroing(),
-                    elevator.runCurrentZeroing(),
-                    arm.hold()
-                    // if cancoder is cooked it would use:
-                    // arm.runCurrentZeroing()
-                    )
-                .andThen(
-                    Commands.parallel(
-                        Commands.runOnce(() -> zeroingReq = false), arm.rezeroFromEncoder()))
-                .andThen(superstructure.transitionAfterZeroing()));
+    zeroingReq.whileTrue(
+        Commands.parallel(intake.runCurrentZeroing(), elevator.runCurrentZeroing(), arm.hold())
+            .andThen(arm.rezeroFromEncoder())
+            .andThen(superstructure.transitionAfterZeroing()));
 
     // zeroing upon startup
     new Trigger(() -> superstructure.stateIsIdle())

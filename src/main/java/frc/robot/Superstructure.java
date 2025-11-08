@@ -364,13 +364,11 @@ public class Superstructure {
     climber.setState(state.climberState);
   }
 
-  // idk if this works right states confuse me
   public Command transitionAfterZeroing() {
     return Commands.runOnce(
             () -> {
               SuperState target;
-              // cant distinguish between coral and algae for intake so should that be fixed with
-              // the intake or what should i do here?
+              // cant distinguish between coral and algae rn
               if (intake.hasGamePiece()) {
                 target = SuperState.READY_CORAL_INTAKE;
               } else if (arm.hasAlgae) {
