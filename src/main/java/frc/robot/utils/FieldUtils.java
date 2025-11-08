@@ -29,12 +29,12 @@ public class FieldUtils {
       new Translation2d(Units.inchesToMeters(176.746), Units.inchesToMeters(158.501));
   public static final Translation2d RED_REEF_CENTER = ChoreoAllianceFlipUtil.flip(BLUE_REEF_CENTER);
 
-  public static double BLUE_NET_X = 8.08 + Units.inchesToMeters(4);
-  public static double RED_NET_X = ChoreoAllianceFlipUtil.flipX(BLUE_NET_X);
+//   public static double BLUE_NET_X = 8.08 + Units.inchesToMeters(4);
+//   public static double RED_NET_X = ChoreoAllianceFlipUtil.flipX(BLUE_NET_X);
 
-  public static Pose2d BLUE_PROCESSOR_POS = new Pose2d(5.973, 0, Rotation2d.fromDegrees(270));
-  public static Pose2d RED_PROCESSOR_POS = ChoreoAllianceFlipUtil.flip(BLUE_PROCESSOR_POS);
-  public static List<Pose2d> PROCESSOR_POSES = List.of(BLUE_PROCESSOR_POS, RED_PROCESSOR_POS);
+//   public static Pose2d BLUE_PROCESSOR_POS = new Pose2d(5.973, 0, Rotation2d.fromDegrees(270));
+//   public static Pose2d RED_PROCESSOR_POS = ChoreoAllianceFlipUtil.flip(BLUE_PROCESSOR_POS);
+//   public static List<Pose2d> PROCESSOR_POSES = List.of(BLUE_PROCESSOR_POS, RED_PROCESSOR_POS);
 
   public static final double L1_TROUGH_WIDTH_METERS = 0.935;
 
