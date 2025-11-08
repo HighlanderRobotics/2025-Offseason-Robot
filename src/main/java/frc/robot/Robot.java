@@ -6,22 +6,6 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Meter;
 
-import java.util.Optional;
-import org.ironmaple.simulation.SimulatedArena;
-import org.ironmaple.simulation.drivesims.COTS;
-import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
-import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
-import org.littletonrobotics.junction.AutoLogOutput;
-import org.littletonrobotics.junction.LogFileUtil;
-import org.littletonrobotics.junction.LoggedRobot;
-import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
-import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
-import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
-import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
-import org.littletonrobotics.junction.networktables.NT4Publisher;
-import org.littletonrobotics.junction.wpilog.WPILOGReader;
-import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.CANBus.CANBusStatus;
 import com.ctre.phoenix6.SignalLogger;
@@ -32,7 +16,6 @@ import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -583,7 +566,6 @@ public class Robot extends LoggedRobot {
     SmartDashboard.putData("Add autos", Commands.runOnce(this::addAutos).ignoringDisable(true));
 
     possibleCancoderFailure = new Alert("Arm cancoder may not be working!", AlertType.kError);
-
   }
 
   private TalonFXConfiguration createRollerConfig(
@@ -824,7 +806,7 @@ public class Robot extends LoggedRobot {
                             ? Rotation2d.kZero
                             : Rotation2d.k180deg)));
 
-    //---zeroing stuff---
+    // ---zeroing stuff---
     // jog arm up
     operator
         .povDown()
@@ -839,38 +821,40 @@ public class Robot extends LoggedRobot {
         .and(zeroingReq.negate())
         .whileTrue(Commands.parallel(arm.setPivotVoltage(() -> 3.0)).withTimeout(0.05));
 
-    //hold arm still when it's not being requested to jog up or down or zeroing req
-    operator.povUp().negate()
+    // hold arm still when it's not being requested to jog up or down or zeroing req
+    operator
+        .povUp()
+        .negate()
         .and(operator.povDown().negate())
         .and(preZeroingReq)
         .and(zeroingReq.negate())
         .whileTrue(arm.hold());
 
-    //once arm is in place, run zeroing sequence
+    // once arm is in place, run zeroing sequence
     preZeroingReq
         .and(zeroingReq)
         .whileTrue(
             Commands.sequence(
-                //hold arm still while intake and elevator run zeroing concurrently
+                // hold arm still while intake and elevator run zeroing concurrently
                 Commands.deadline(
                     Commands.parallel(intake.runCurrentZeroing(), elevator.runCurrentZeroing()),
                     arm.hold()),
-                //hold elevator and intake still while arm zeroes 
+                // hold elevator and intake still while arm zeroes
                 Commands.deadline(
                     arm.runCurrentZeroing(),
                     Commands.parallel(
-                        elevator.setVoltage(() -> -1.0), 
-                        intake.setPivotVoltage(() -> -3.0))
-                    ),
-                //sets exit state
+                        elevator.setVoltage(() -> -1.0), intake.setPivotVoltage(() -> -3.0))),
+                // sets exit state
                 superstructure.transitionAfterZeroing(),
-                //logging
-                Commands.runOnce(() -> {
-                    Logger.recordOutput("Arm manually rezeroed", true);
-                possibleCancoderFailure.set(true);})));
+                // logging
+                Commands.runOnce(
+                    () -> {
+                      Logger.recordOutput("Arm manually rezeroed", true);
+                      possibleCancoderFailure.set(true);
+                    })));
 
     // zeroing upon startup
-    //assumes cancoder hasn't failed!
+    // assumes cancoder hasn't failed!
     new Trigger(() -> superstructure.stateIsIdle())
         .and(() -> !hasZeroedSinceStartup)
         .and(DriverStation::isEnabled)
@@ -882,24 +866,31 @@ public class Robot extends LoggedRobot {
     // Rezero arm against cancoder
     driver.x().onTrue(Commands.runOnce(() -> arm.rezeroFromEncoder()).ignoringDisable(true));
 
-    //antijam algae
-    //i am pulling these numbers out of my ass
-    //put down intake and put arm horizontal
-   operator.leftBumper().whileTrue(
-    Commands.parallel(
-        intake.setPivotVoltage(() -> -3.0), 
-        arm.setPivotAngle(() -> Rotation2d.fromDegrees(-90.0)),
-        Commands.waitUntil(
-            () -> intake.isNearAngle(IntakeSubsystem.ZEROING_ANGLE) 
-            && arm.isNearAngle(Rotation2d.fromDegrees(-90.0)))
-        .andThen(elevator.setExtensionMeters(() -> Units.inchesToMeters(30)))));
+    // antijam algae
+    // i am pulling these numbers out of my ass
+    // put down intake and put arm horizontal
+    operator
+        .leftBumper()
+        .whileTrue(
+            Commands.parallel(
+                intake.setPivotVoltage(() -> -3.0),
+                arm.setPivotAngle(() -> Rotation2d.fromDegrees(-90.0)),
+                Commands.waitUntil(
+                        () ->
+                            intake.isNearAngle(IntakeSubsystem.ZEROING_ANGLE)
+                                && arm.isNearAngle(Rotation2d.fromDegrees(-90.0)))
+                    .andThen(elevator.setExtensionMeters(() -> Units.inchesToMeters(30)))));
 
-    //eject coral
-   operator.rightBumper().whileTrue(Commands.parallel(arm.setRollerVelocity(() -> -14.0),intake.setRollerVelocity(() -> -20.0)));
+    // eject coral
+    operator
+        .rightBumper()
+        .whileTrue(
+            Commands.parallel(
+                arm.setRollerVelocity(() -> -14.0), intake.setRollerVelocity(() -> -20.0)));
 
-   //Force the robot to think it doesn't have a coral
-   //probably should not do this
-   operator.leftStick().onTrue(Commands.runOnce(() -> arm.hasCoral = false));
+    // Force the robot to think it doesn't have a coral
+    // probably should not do this
+    operator.leftStick().onTrue(Commands.runOnce(() -> arm.hasCoral = false));
   }
 
   private void addAutos() {
