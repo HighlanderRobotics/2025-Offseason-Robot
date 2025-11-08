@@ -368,8 +368,8 @@ public class Superstructure {
               // cant distinguish between coral and algae rn
               if (intake.hasGamePiece()) {
                 target = SuperState.READY_CORAL_INTAKE;
-            //   } else if (arm.hasAlgae) {
-            //     target = SuperState.READY_ALGAE;
+                //   } else if (arm.hasAlgae) {
+                //     target = SuperState.READY_ALGAE;
               } else if (arm.hasCoral) {
                 target = SuperState.READY_CORAL_ARM;
               } else {
