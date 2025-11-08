@@ -8,6 +8,8 @@ import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.canrange.CANrangeIO;
 import frc.robot.canrange.CANrangeIOInputsAutoLogged;
 import frc.robot.pivot.PivotIO;
@@ -129,10 +131,10 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   }
 
   public Command runCurrentZeroing() {
-    return setPivotVoltage(() -> -5.0);
-    // .until(new Trigger(() -> Math.abs(currentFilterValue) > CURRENT_THRESHOLD).debounce(0.25))
-    // .andThen(
-    //     Commands.parallel(Commands.print("Intake Zeroed"), zeroPivot(() -> ZEROING_POSITION)));
+    return setPivotVoltage(() -> -5.0)
+    .until(new Trigger(() -> Math.abs(currentFilterValue) > CURRENT_THRESHOLD).debounce(0.25))
+    .andThen(
+        Commands.parallel(Commands.print("Intake Zeroed"), zeroPivot(() -> ZEROING_POSITION)));
   }
 
   public Command rezero() {

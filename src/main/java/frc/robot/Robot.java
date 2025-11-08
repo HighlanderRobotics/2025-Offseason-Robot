@@ -840,36 +840,36 @@ public class Robot extends LoggedRobot {
     preZeroingReq
         .and(zeroingReq)
         .whileTrue(
-            // Commands.sequence(
-            //     // hold arm still while intake and elevator run zeroing concurrently
-            //     Commands.deadline(
-            //         Commands.parallel(intake.runCurrentZeroing(), elevator.runCurrentZeroing()),
-            //         arm.hold()),
-            //     Commands.print("done zeroing intake/elev"),
-            //     // hold elevator and intake still while arm zeroes
-            //     Commands.deadline(
-            //         arm.runCurrentZeroing(),
-            //         Commands.parallel(
-            //             elevator.setVoltage(() -> -1.0), intake.setPivotVoltage(() -> -3.0))),
-            //     // sets exit state
-            //     superstructure.transitionAfterZeroing(),
-            //     // logging
-            //     Commands.runOnce(
-            //         () -> {
-            //           Logger.recordOutput("Arm manually rezeroed", true);
-            //           possibleCancoderFailure.set(true);
-            //         })));
-            intake.runCurrentZeroing());
+            Commands.sequence(
+                // hold arm still while intake and elevator run zeroing concurrently
+                Commands.deadline(
+                    Commands.parallel(intake.runCurrentZeroing(), elevator.runCurrentZeroing()),
+                    arm.hold()),
+                Commands.print("done zeroing intake/elev")));
+                // hold elevator and intake still while arm zeroes
+                // Commands.deadline(
+                //     arm.runCurrentZeroing(),
+                //     Commands.parallel(
+                //         elevator.setVoltage(() -> -1.0), intake.setPivotVoltage(() -> -3.0))),
+                // // sets exit state
+                // superstructure.transitionAfterZeroing(),
+                // // logging
+                // Commands.runOnce(
+                //     () -> {
+                //       Logger.recordOutput("Arm manually rezeroed", true);
+                //       possibleCancoderFailure.set(true);
+                //     })));
+            // intake.runCurrentZeroing());
 
     // zeroing upon startup
     // assumes cancoder hasn't failed!
-    new Trigger(() -> superstructure.stateIsIdle())
-        .and(() -> !hasZeroedSinceStartup)
-        .and(DriverStation::isEnabled)
-        .onTrue(
-            Commands.parallel(intake.runCurrentZeroing(), elevator.runCurrentZeroing())
-                .andThen(arm.rezeroFromEncoder())
-                .andThen(Commands.runOnce(() -> hasZeroedSinceStartup = true)));
+    // new Trigger(() -> superstructure.stateIsIdle())
+    //     .and(() -> !hasZeroedSinceStartup)
+    //     .and(DriverStation::isEnabled)
+    //     .onTrue(
+    //         Commands.parallel(intake.runCurrentZeroing(), elevator.runCurrentZeroing())
+    //             .andThen(arm.rezeroFromEncoder())
+    //             .andThen(Commands.runOnce(() -> hasZeroedSinceStartup = true)));
 
     // Rezero arm against cancoder
     driver.x().onTrue(Commands.runOnce(() -> arm.rezeroFromEncoder()).ignoringDisable(true));
