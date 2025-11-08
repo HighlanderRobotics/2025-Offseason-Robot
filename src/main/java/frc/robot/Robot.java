@@ -552,6 +552,7 @@ public class Robot extends LoggedRobot {
     SmartDashboard.putData(
         "ninety intake",
         intake.ninety().alongWith(Commands.print("dashboard ninety intake")).ignoringDisable(true));
+    SmartDashboard.putData("Add autos", Commands.runOnce(this::addAutos).ignoringDisable(true));
   }
 
   private TalonFXConfiguration createRollerConfig(
