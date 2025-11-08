@@ -198,8 +198,7 @@ public class Autos {
 
     Command autoCommand =
         Commands.sequence(
-            Commands.runOnce(() -> stateSetter.accept(SuperState.READY_CORAL_ARM)),
-            Commands.runOnce(() -> arm.hasCoral = true),
+            Commands.parallel(Commands.runOnce(() -> stateSetter.accept(SuperState.READY_CORAL_ARM)), Commands.runOnce(() -> arm.hasCoral = true)),
             paths[0].getTrajectory(routine).resetOdometry(),
             runPath(paths[0], routine));
     // intakeAlgaeInAuto(() -> paths[0].getTrajectory(routine).getFinalPose().get()),
