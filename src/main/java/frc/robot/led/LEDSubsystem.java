@@ -13,8 +13,8 @@ import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 public class LEDSubsystem extends SubsystemBase {
-  public static final int LED_LENGTH = 25;
-  public static final int LED_ID = 2;
+  public static final int LED_LENGTH = 30; //no one knows what this number is lmaoooo
+  public static final int LED_ID = 0;
 
   public static final Color PURPLE = new Color("#A000D0");
 
