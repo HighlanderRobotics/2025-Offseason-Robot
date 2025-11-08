@@ -7,6 +7,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Robot;
+import frc.robot.Superstructure;
+import frc.robot.Superstructure.SuperState;
 import frc.robot.cancoder.CANcoderIO;
 import frc.robot.cancoder.CANcoderIOInputsAutoLogged;
 import frc.robot.pivot.PivotIO;
@@ -85,18 +87,18 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     INTAKE_CORAL_STACK(-100, 7.0),
     READY_CORAL_ARM(0, 7.0),
 
-    PRE_L2_RIGHT(-35, 1.0),
+    PRE_L2_RIGHT(-35, 7.0),
     SCORE_L2_RIGHT(-90, -10.0),
-    PRE_L3_RIGHT(-45, 1.0),
+    PRE_L3_RIGHT(-45, 7.0),
     SCORE_L3_RIGHT(-90, -10.0),
-    PRE_L4_RIGHT(-60, 1.0),
+    PRE_L4_RIGHT(-60, 7.0),
     SCORE_L4_RIGHT(-90, -14.0),
 
-    PRE_L2_LEFT(45, 1.0),
+    PRE_L2_LEFT(45, 7.0),
     SCORE_L2_LEFT(90, -10.0),
-    PRE_L3_LEFT(45, 1.0),
+    PRE_L3_LEFT(45, 7.0),
     SCORE_L3_LEFT(90, -10.0),
-    PRE_L4_LEFT(70, 1.0),
+    PRE_L4_LEFT(70, 7.0),
     SCORE_L4_LEFT(90, -10.0),
     // algae
     // These all have voltage control
@@ -116,8 +118,8 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     // PRE_PROCESSOR(180, 0.0),
     // SCORE_PROCESSOR(180, -10.0),
     // climbing
-    PRE_CLIMB(0.0, 0.0),
-    CLIMB(0.0, 0.0);
+    PRE_CLIMB(-108, 0.0),
+    CLIMB(-108, 0.0);
 
     public final Supplier<Rotation2d> position;
     public final DoubleSupplier velocityRPS;
@@ -209,14 +211,20 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     // return this.run(() -> runRollerVelocity(getState().velocityRPS.getAsDouble()));
     return this.run(
         () -> {
-          pivotIO.setMotorPosition(state.getAngle());
+          if (Superstructure.getState() == SuperState.CLIMB || Superstructure.getState() == SuperState.PRE_CLIMB) {
+            pivotIO.setMotorVoltage(-3.0);
+          } else {
+            pivotIO.setMotorPosition(state.getAngle());
+          }
           // // TODO: THIS SUCKS
           // if (Superstructure.stateIsVoltageControl()) {
           //   rollerIO.setRollerVoltage(state.getVelocityRPS());
           // } else {
           //   rollerIO.setRollerVelocity(state.getVelocityRPS());
           // }
-          rollerIO.setRollerVelocity(state.getVelocityRPS());
+          
+            rollerIO.setRollerVelocity(state.getVelocityRPS());
+          
         });
   }
 

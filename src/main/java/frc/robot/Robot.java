@@ -11,6 +11,7 @@ import com.ctre.phoenix6.CANBus.CANBusStatus;
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.ClosedLoopGeneralConfigs;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -263,7 +264,13 @@ public class Robot extends LoggedRobot {
           ClimberSubsystem.KS,
           ClimberSubsystem.KP,
           ClimberSubsystem.KI,
-          ClimberSubsystem.KD);
+          ClimberSubsystem.KD)
+          // Disable both current limits!!!!!!!!!
+          .withCurrentLimits(
+            new CurrentLimitsConfigs()
+            .withStatorCurrentLimitEnable(false)
+            .withSupplyCurrentLimitEnable(false)
+          );
 
   private final ClimberSubsystem climber =
       new ClimberSubsystem(
