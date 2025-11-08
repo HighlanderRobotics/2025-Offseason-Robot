@@ -185,7 +185,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public boolean hasGamePiece() {
     // return (Math.abs(currentFilterValue) > CORAL_CURRENT_THRESHOLD ||
     // Math.abs(currentFilterValue) > ALGAE_CURRENT_THRESHOLD);
-    //return hasAlgae || hasCoral;
+    // return hasAlgae || hasCoral;
     return hasCoral;
   }
 

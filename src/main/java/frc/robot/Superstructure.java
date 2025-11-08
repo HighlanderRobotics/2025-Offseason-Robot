@@ -220,8 +220,8 @@ public class Superstructure {
   @AutoLogOutput(key = "Superstructure/Coral Intake Request")
   public Trigger intakeCoralReq;
 
-//   @AutoLogOutput(key = "Superstructure/Algae Intake Request")
-//   public Trigger intakeAlgaeReq;
+  //   @AutoLogOutput(key = "Superstructure/Algae Intake Request")
+  //   public Trigger intakeAlgaeReq;
 
   @AutoLogOutput(key = "Superstructure/Pre Climb Request")
   public Trigger preClimbReq;

@@ -18,10 +18,7 @@ import frc.robot.Robot;
 import frc.robot.Robot.ScoringSide;
 import frc.robot.swerve.SwerveSubsystem;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Stream;
 
 /** Add your docs here. */
 public class FieldUtils {
@@ -29,97 +26,98 @@ public class FieldUtils {
       new Translation2d(Units.inchesToMeters(176.746), Units.inchesToMeters(158.501));
   public static final Translation2d RED_REEF_CENTER = ChoreoAllianceFlipUtil.flip(BLUE_REEF_CENTER);
 
-//   public static double BLUE_NET_X = 8.08 + Units.inchesToMeters(4);
-//   public static double RED_NET_X = ChoreoAllianceFlipUtil.flipX(BLUE_NET_X);
+  //   public static double BLUE_NET_X = 8.08 + Units.inchesToMeters(4);
+  //   public static double RED_NET_X = ChoreoAllianceFlipUtil.flipX(BLUE_NET_X);
 
-//   public static Pose2d BLUE_PROCESSOR_POS = new Pose2d(5.973, 0, Rotation2d.fromDegrees(270));
-//   public static Pose2d RED_PROCESSOR_POS = ChoreoAllianceFlipUtil.flip(BLUE_PROCESSOR_POS);
-//   public static List<Pose2d> PROCESSOR_POSES = List.of(BLUE_PROCESSOR_POS, RED_PROCESSOR_POS);
+  //   public static Pose2d BLUE_PROCESSOR_POS = new Pose2d(5.973, 0, Rotation2d.fromDegrees(270));
+  //   public static Pose2d RED_PROCESSOR_POS = ChoreoAllianceFlipUtil.flip(BLUE_PROCESSOR_POS);
+  //   public static List<Pose2d> PROCESSOR_POSES = List.of(BLUE_PROCESSOR_POS, RED_PROCESSOR_POS);
 
   public static final double L1_TROUGH_WIDTH_METERS = 0.935;
 
-//   public enum AlgaeIntakeTargets {
-//     // All coordinates are global coordinates from the lower, blue alliance side corner, if the
-//     // walls
-//     // were extended beyond the coral station
-//     // All angles from the center of the coral with 0° across the width of the field,
-//     // counterclockwise
-//     BLUE_AB(new Pose2d(3.64, 4.03, Rotation2d.fromDegrees(180)), AlgaeIntakeTarget.HIGH),
-//     BLUE_CD(new Pose2d(4.06, 3.31, Rotation2d.fromDegrees(240)), AlgaeIntakeTarget.LOW),
-//     BLUE_EF(new Pose2d(4.89, 3.31, Rotation2d.fromDegrees(300)), AlgaeIntakeTarget.HIGH),
-//     BLUE_GH(new Pose2d(5.31, 4.03, Rotation2d.fromDegrees(0)), AlgaeIntakeTarget.LOW),
-//     BLUE_IJ(new Pose2d(4.89, 4.75, Rotation2d.fromDegrees(60)), AlgaeIntakeTarget.HIGH),
-//     BLUE_KL(new Pose2d(4.06, 4.75, Rotation2d.fromDegrees(120)), AlgaeIntakeTarget.LOW),
+  //   public enum AlgaeIntakeTargets {
+  //     // All coordinates are global coordinates from the lower, blue alliance side corner, if the
+  //     // walls
+  //     // were extended beyond the coral station
+  //     // All angles from the center of the coral with 0° across the width of the field,
+  //     // counterclockwise
+  //     BLUE_AB(new Pose2d(3.64, 4.03, Rotation2d.fromDegrees(180)), AlgaeIntakeTarget.HIGH),
+  //     BLUE_CD(new Pose2d(4.06, 3.31, Rotation2d.fromDegrees(240)), AlgaeIntakeTarget.LOW),
+  //     BLUE_EF(new Pose2d(4.89, 3.31, Rotation2d.fromDegrees(300)), AlgaeIntakeTarget.HIGH),
+  //     BLUE_GH(new Pose2d(5.31, 4.03, Rotation2d.fromDegrees(0)), AlgaeIntakeTarget.LOW),
+  //     BLUE_IJ(new Pose2d(4.89, 4.75, Rotation2d.fromDegrees(60)), AlgaeIntakeTarget.HIGH),
+  //     BLUE_KL(new Pose2d(4.06, 4.75, Rotation2d.fromDegrees(120)), AlgaeIntakeTarget.LOW),
 
-//     RED_AB(ChoreoAllianceFlipUtil.flip(BLUE_AB.location), AlgaeIntakeTarget.HIGH),
-//     RED_CD(ChoreoAllianceFlipUtil.flip(BLUE_CD.location), AlgaeIntakeTarget.LOW),
-//     RED_EF(ChoreoAllianceFlipUtil.flip(BLUE_EF.location), AlgaeIntakeTarget.HIGH),
-//     RED_GH(ChoreoAllianceFlipUtil.flip(BLUE_GH.location), AlgaeIntakeTarget.LOW),
-//     RED_IJ(ChoreoAllianceFlipUtil.flip(BLUE_IJ.location), AlgaeIntakeTarget.HIGH),
-//     RED_KL(ChoreoAllianceFlipUtil.flip(BLUE_KL.location), AlgaeIntakeTarget.LOW);
+  //     RED_AB(ChoreoAllianceFlipUtil.flip(BLUE_AB.location), AlgaeIntakeTarget.HIGH),
+  //     RED_CD(ChoreoAllianceFlipUtil.flip(BLUE_CD.location), AlgaeIntakeTarget.LOW),
+  //     RED_EF(ChoreoAllianceFlipUtil.flip(BLUE_EF.location), AlgaeIntakeTarget.HIGH),
+  //     RED_GH(ChoreoAllianceFlipUtil.flip(BLUE_GH.location), AlgaeIntakeTarget.LOW),
+  //     RED_IJ(ChoreoAllianceFlipUtil.flip(BLUE_IJ.location), AlgaeIntakeTarget.HIGH),
+  //     RED_KL(ChoreoAllianceFlipUtil.flip(BLUE_KL.location), AlgaeIntakeTarget.LOW);
 
-//     public final Pose2d location;
-//     public final AlgaeIntakeTarget height;
+  //     public final Pose2d location;
+  //     public final AlgaeIntakeTarget height;
 
-//     private AlgaeIntakeTargets(Pose2d location, AlgaeIntakeTarget height) {
-//       this.location = location;
-//       this.height = height;
-//     }
+  //     private AlgaeIntakeTargets(Pose2d location, AlgaeIntakeTarget height) {
+  //       this.location = location;
+  //       this.height = height;
+  //     }
 
-//     private static final List<Pose2d> transformedPosesLeft =
-//         Arrays.stream(values())
-//             .map(
-//                 (AlgaeIntakeTargets targets) -> {
-//                   return AlgaeIntakeTargets.getRobotTargetLocation(
-//                       targets.location, ScoringSide.LEFT);
-//                 })
-//             .toList();
-//     private static final List<Pose2d> transformedPosesRight =
-//         Arrays.stream(values())
-//             .map(
-//                 (AlgaeIntakeTargets targets) -> {
-//                   return AlgaeIntakeTargets.getRobotTargetLocation(
-//                       targets.location, ScoringSide.RIGHT);
-//                 })
-//             .toList();
+  //     private static final List<Pose2d> transformedPosesLeft =
+  //         Arrays.stream(values())
+  //             .map(
+  //                 (AlgaeIntakeTargets targets) -> {
+  //                   return AlgaeIntakeTargets.getRobotTargetLocation(
+  //                       targets.location, ScoringSide.LEFT);
+  //                 })
+  //             .toList();
+  //     private static final List<Pose2d> transformedPosesRight =
+  //         Arrays.stream(values())
+  //             .map(
+  //                 (AlgaeIntakeTargets targets) -> {
+  //                   return AlgaeIntakeTargets.getRobotTargetLocation(
+  //                       targets.location, ScoringSide.RIGHT);
+  //                 })
+  //             .toList();
 
-//     public static Pose2d getRobotTargetLocation(Pose2d original, ScoringSide scoringSide) {
-//       return original.transformBy(
-//           new Transform2d(
-//               (SwerveSubsystem.SWERVE_CONSTANTS.getBumperLength() / 2),
-//               0,
-//               Rotation2d.fromDegrees(scoringSide == ScoringSide.LEFT ? 90.0 : 270.0)));
-//     }
+  //     public static Pose2d getRobotTargetLocation(Pose2d original, ScoringSide scoringSide) {
+  //       return original.transformBy(
+  //           new Transform2d(
+  //               (SwerveSubsystem.SWERVE_CONSTANTS.getBumperLength() / 2),
+  //               0,
+  //               Rotation2d.fromDegrees(scoringSide == ScoringSide.LEFT ? 90.0 : 270.0)));
+  //     }
 
-//     public static Pose2d getOffsetLocation(Pose2d original) {
-//       return original.transformBy(
-//           new Transform2d(
-//               0,
-//               (-0.3 - Units.inchesToMeters(6))
-//                   * (Robot.getScoringSide() == ScoringSide.LEFT ? 1 : -1),
-//               Rotation2d.kZero));
-//     }
+  //     public static Pose2d getOffsetLocation(Pose2d original) {
+  //       return original.transformBy(
+  //           new Transform2d(
+  //               0,
+  //               (-0.3 - Units.inchesToMeters(6))
+  //                   * (Robot.getScoringSide() == ScoringSide.LEFT ? 1 : -1),
+  //               Rotation2d.kZero));
+  //     }
 
-//     /** Gets the closest offset target to the given pose. */
-//     public static Pose2d getClosestTargetPose(Pose2d pose) {
-//       return pose.nearest(
-//           Robot.getScoringSide() == ScoringSide.LEFT
-//               ? transformedPosesLeft
-//               : transformedPosesRight);
-//     }
+  //     /** Gets the closest offset target to the given pose. */
+  //     public static Pose2d getClosestTargetPose(Pose2d pose) {
+  //       return pose.nearest(
+  //           Robot.getScoringSide() == ScoringSide.LEFT
+  //               ? transformedPosesLeft
+  //               : transformedPosesRight);
+  //     }
 
-//     public static AlgaeIntakeTargets getClosestTarget(Pose2d pose) {
-//       return Collections.min(
-//           Stream.of(AlgaeIntakeTargets.values()).toList(),
-//           Comparator.comparing(
-//                   (AlgaeIntakeTargets other) ->
-//                       pose.getTranslation().getDistance(other.location.getTranslation()))
-//               .thenComparing(
-//                   (AlgaeIntakeTargets other) ->
-//                       Math.abs(
-//                           pose.getRotation().minus(other.location.getRotation()).getRadians())));
-//     }
-//   }
+  //     public static AlgaeIntakeTargets getClosestTarget(Pose2d pose) {
+  //       return Collections.min(
+  //           Stream.of(AlgaeIntakeTargets.values()).toList(),
+  //           Comparator.comparing(
+  //                   (AlgaeIntakeTargets other) ->
+  //                       pose.getTranslation().getDistance(other.location.getTranslation()))
+  //               .thenComparing(
+  //                   (AlgaeIntakeTargets other) ->
+  //                       Math.abs(
+  //
+  // pose.getRotation().minus(other.location.getRotation()).getRadians())));
+  //     }
+  //   }
 
   public enum CageTargets {
     RED_OUTSIDE(new Pose2d(8.760, 0.799, Rotation2d.fromDegrees(0)), Alliance.Red),

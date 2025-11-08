@@ -40,6 +40,7 @@ public class Autos {
   private static boolean autoPreScore;
   private static boolean autoScore;
   private static boolean autoIntakeCoral;
+
   // private static boolean autoIntakeAlgae;
 
   @AutoLogOutput(key = "Superstructure/Auto Pre Score Request")
@@ -89,11 +90,11 @@ public class Autos {
     SLRtoL4("SLR", "L4", PathEndType.SCORE_CORAL),
 
     CMtoH4("CM", "H4", PathEndType.SCORE_CORAL),
-    // H4toGH("H4", "GH", PathEndType.INTAKE_ALGAE),
-    // GHtoBR("GH", "BR", PathEndType.SCORE_ALGAE),
-    // BRtoIJ("BR", "IJ", PathEndType.INTAKE_ALGAE),
-    // IJtoBR("IJ", "BR", PathEndType.SCORE_ALGAE)
-    ;
+  // H4toGH("H4", "GH", PathEndType.INTAKE_ALGAE),
+  // GHtoBR("GH", "BR", PathEndType.SCORE_ALGAE),
+  // BRtoIJ("BR", "IJ", PathEndType.INTAKE_ALGAE),
+  // IJtoBR("IJ", "BR", PathEndType.SCORE_ALGAE)
+  ;
 
     private final String start;
     private final String end;
@@ -244,10 +245,10 @@ public class Autos {
         return runPathThenIntakeCoralGround(path, routine);
       case INTAKE_CORAL_STACK:
         return runPathThenIntakeStackCoral(path, routine);
-      // case SCORE_ALGAE:
-      //   return runPathThenScoreAlgae(path, routine);
-      // case INTAKE_ALGAE:
-      //   return runPathThenIntakeAlgae(path, routine);
+        // case SCORE_ALGAE:
+        //   return runPathThenScoreAlgae(path, routine);
+        // case INTAKE_ALGAE:
+        //   return runPathThenIntakeAlgae(path, routine);
       default: // TODO this should never happen?
         return Commands.none();
     }

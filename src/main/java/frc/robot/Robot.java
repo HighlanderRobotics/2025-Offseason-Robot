@@ -105,29 +105,29 @@ public class Robot extends LoggedRobot {
     STACK
   }
 
-//   public static enum AlgaeIntakeTarget {
-//     LOW(Color.kGreen),
-//     HIGH(Color.kTeal),
-//     STACK(Color.kBlue),
-//     GROUND(LEDSubsystem.PURPLE);
+  //   public static enum AlgaeIntakeTarget {
+  //     LOW(Color.kGreen),
+  //     HIGH(Color.kTeal),
+  //     STACK(Color.kBlue),
+  //     GROUND(LEDSubsystem.PURPLE);
 
-//     private Color color;
+  //     private Color color;
 
-//     private AlgaeIntakeTarget(Color color) {
-//       this.color = color;
-//     }
-//   }
+  //     private AlgaeIntakeTarget(Color color) {
+  //       this.color = color;
+  //     }
+  //   }
 
-//   public static enum AlgaeScoreTarget {
-//     BARGE(Color.kRed),
-//     PROCESSOR(Color.kYellow);
+  //   public static enum AlgaeScoreTarget {
+  //     BARGE(Color.kRed),
+  //     PROCESSOR(Color.kYellow);
 
-//     private Color color;
+  //     private Color color;
 
-//     private AlgaeScoreTarget(Color color) {
-//       this.color = color;
-//     }
-//   }
+  //     private AlgaeScoreTarget(Color color) {
+  //       this.color = color;
+  //     }
+  //   }
 
   public static enum ScoringSide {
     LEFT,
@@ -136,8 +136,8 @@ public class Robot extends LoggedRobot {
 
   @AutoLogOutput private static CoralScoreTarget coralScoreTarget = CoralScoreTarget.L4;
   @AutoLogOutput private static CoralIntakeTarget coralIntakeTarget = CoralIntakeTarget.GROUND;
-//   @AutoLogOutput private static AlgaeIntakeTarget algaeIntakeTarget = AlgaeIntakeTarget.STACK;
-//   @AutoLogOutput private static AlgaeScoreTarget algaeScoreTarget = AlgaeScoreTarget.BARGE;
+  //   @AutoLogOutput private static AlgaeIntakeTarget algaeIntakeTarget = AlgaeIntakeTarget.STACK;
+  //   @AutoLogOutput private static AlgaeScoreTarget algaeScoreTarget = AlgaeScoreTarget.BARGE;
   @AutoLogOutput private static ScoringSide scoringSide = ScoringSide.RIGHT;
 
   private static CANBus canivore = new CANBus("*");
@@ -746,8 +746,8 @@ public class Robot extends LoggedRobot {
             Commands.runOnce(
                 () -> {
                   coralScoreTarget = CoralScoreTarget.L1;
-                //   algaeIntakeTarget = AlgaeIntakeTarget.GROUND;
-                //   algaeScoreTarget = AlgaeScoreTarget.PROCESSOR;
+                  //   algaeIntakeTarget = AlgaeIntakeTarget.GROUND;
+                  //   algaeScoreTarget = AlgaeScoreTarget.PROCESSOR;
                   coralIntakeTarget = CoralIntakeTarget.GROUND;
                 }));
     operator
@@ -756,7 +756,7 @@ public class Robot extends LoggedRobot {
             Commands.runOnce(
                 () -> {
                   coralScoreTarget = CoralScoreTarget.L2;
-                //   algaeIntakeTarget = AlgaeIntakeTarget.STACK;
+                  //   algaeIntakeTarget = AlgaeIntakeTarget.STACK;
                 }));
     operator
         .b()
@@ -764,7 +764,7 @@ public class Robot extends LoggedRobot {
             Commands.runOnce(
                 () -> {
                   coralScoreTarget = CoralScoreTarget.L3;
-                //   algaeIntakeTarget = AlgaeIntakeTarget.LOW;
+                  //   algaeIntakeTarget = AlgaeIntakeTarget.LOW;
                 }));
     operator
         .y()
@@ -772,8 +772,8 @@ public class Robot extends LoggedRobot {
             Commands.runOnce(
                 () -> {
                   coralScoreTarget = CoralScoreTarget.L4;
-                //   algaeIntakeTarget = AlgaeIntakeTarget.HIGH;
-                //   algaeScoreTarget = AlgaeScoreTarget.BARGE;
+                  //   algaeIntakeTarget = AlgaeIntakeTarget.HIGH;
+                  //   algaeScoreTarget = AlgaeScoreTarget.BARGE;
                 }));
 
     operator.leftTrigger().onTrue(Commands.runOnce(() -> scoringSide = ScoringSide.LEFT));
@@ -942,21 +942,21 @@ public class Robot extends LoggedRobot {
     return coralIntakeTarget;
   }
 
-//   public static void setAlgaeIntakeTarget(AlgaeIntakeTarget target) {
-//     algaeIntakeTarget = target;
-//   }
+  //   public static void setAlgaeIntakeTarget(AlgaeIntakeTarget target) {
+  //     algaeIntakeTarget = target;
+  //   }
 
-//   public static AlgaeIntakeTarget getAlgaeIntakeTarget() {
-//     return algaeIntakeTarget;
-//   }
+  //   public static AlgaeIntakeTarget getAlgaeIntakeTarget() {
+  //     return algaeIntakeTarget;
+  //   }
 
-//   public static void setAlgaeScoreTarget(AlgaeScoreTarget target) {
-//     algaeScoreTarget = target;
-//   }
+  //   public static void setAlgaeScoreTarget(AlgaeScoreTarget target) {
+  //     algaeScoreTarget = target;
+  //   }
 
-//   public static AlgaeScoreTarget getAlgaeScoreTarget() {
-//     return algaeScoreTarget;
-//   }
+  //   public static AlgaeScoreTarget getAlgaeScoreTarget() {
+  //     return algaeScoreTarget;
+  //   }
 
   public static ScoringSide getScoringSide() {
     return scoringSide;
