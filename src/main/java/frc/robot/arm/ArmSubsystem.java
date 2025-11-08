@@ -169,7 +169,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   }
 
   public Command intakeAlgae() {
-    return this.run(() -> runRollerVoltage(() -> ALGAE_INTAKE_VOLTAGE))
+    return this.run(() -> runRollerVoltage(ALGAE_INTAKE_VOLTAGE))
         .until(
             new Trigger(() -> Math.abs(currentFilterValue) > ALGAE_CURRENT_THRESHOLD)
                 .debounce(0.25))
@@ -177,7 +177,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   }
 
   public Command intakeCoral() {
-    return this.run(() -> runRollerVoltage(() -> CORAL_INTAKE_VOLTAGE))
+    return this.run(() -> runRollerVoltage(CORAL_INTAKE_VOLTAGE))
         .until(
             new Trigger(() -> Math.abs(currentFilterValue) > CORAL_CURRENT_THRESHOLD)
                 .debounce(0.25))
@@ -233,7 +233,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   }
 
   public Command runCurrentZeroing() {
-    return this.run(() -> setPivotVoltage(() -> 3.0))
+    return this.run(() -> setPivotVoltage(3.0))
         .until(
             new Trigger(() -> Math.abs(currentFilterValue) > ZEROING_CURRENT_THRESHOLD_AMPS)
                 .debounce(0.25))

@@ -79,11 +79,11 @@ public class ClimberSubsystem extends RollerPivotSubsystem {
   }
 
   public Command retract() {
-    return setPivotVoltage(() -> -1.0);
+    return setPivotVoltage(-1.0);
   }
 
   public Command extend() {
-    return setPivotVoltage(() -> 1.0);
+    return setPivotVoltage(1.0);
   }
 
   public Command rezero() {

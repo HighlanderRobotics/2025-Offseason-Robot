@@ -11,7 +11,6 @@ import frc.robot.pivot.PivotIO;
 import frc.robot.pivot.PivotIOInputsAutoLogged;
 import frc.robot.roller.RollerIO;
 import frc.robot.roller.RollerIOInputsAutoLogged;
-import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
@@ -31,21 +30,21 @@ public class RollerPivotSubsystem extends SubsystemBase {
     this.name = name;
   }
 
-  protected void runRollerVoltage(DoubleSupplier volts) {
-    rollerIO.setRollerVoltage(volts.getAsDouble());
+  protected void runRollerVoltage(double volts) {
+    rollerIO.setRollerVoltage(volts);
   }
 
   protected void runRollerVelocity(double velocityRPS) {
     rollerIO.setRollerVelocity(velocityRPS);
   }
 
-  protected void setPivotAngle(Supplier<Rotation2d> target) {
-    Logger.recordOutput(name + "/Pivot Setpoint", target.get());
-    pivotIO.setMotorPosition(target.get());
+  protected void setPivotAngle(Rotation2d target) {
+    Logger.recordOutput(name + "/Pivot Setpoint", target);
+    pivotIO.setMotorPosition(target);
   }
 
-  public Command setPivotVoltage(DoubleSupplier volts) {
-    return this.run(() -> pivotIO.setMotorVoltage(volts.getAsDouble()));
+  public Command setPivotVoltage(double volts) {
+    return this.run(() -> pivotIO.setMotorVoltage(volts));
   }
 
   public Rotation2d getPivotAngle() {
@@ -69,8 +68,7 @@ public class RollerPivotSubsystem extends SubsystemBase {
   }
 
   // this CANNOT be correct LMAO
-  public Command setPivotAndRollers(
-      Supplier<Rotation2d> pivotAngle, DoubleSupplier rollerVelocity) {
+  public Command setPivotAndRollers(Rotation2d pivotAngle, double rollerVelocity) {
     // Command cmd =
     //     Commands.parallel(
     //         Commands.runOnce(() -> setPivotAngle(pivotAngle)),
@@ -79,10 +77,10 @@ public class RollerPivotSubsystem extends SubsystemBase {
     // return cmd;
     return this.run(
         () -> {
-          Logger.recordOutput(name + "/Pivot Setpoint", pivotAngle.get());
-          Logger.recordOutput(name + "/Rollers Setpoint", rollerVelocity.getAsDouble());
+          Logger.recordOutput(name + "/Pivot Setpoint", pivotAngle);
+          Logger.recordOutput(name + "/Rollers Setpoint", rollerVelocity);
           setPivotAngle(pivotAngle);
-          runRollerVelocity(rollerVelocity.getAsDouble());
+          runRollerVelocity(rollerVelocity);
         });
   }
 

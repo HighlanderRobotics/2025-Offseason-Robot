@@ -513,7 +513,7 @@ public class Robot extends LoggedRobot {
     SmartDashboard.putData(
         "Spool in climber (MANUAL STOP)",
         Commands.parallel(
-            intake.setPivotVoltage(() -> -4.0),
+            intake.setPivotVoltage(-4.0),
             Commands.waitUntil(
                     () ->
                         intake.getPivotCurrentFilterValueAmps() > IntakeSubsystem.CURRENT_THRESHOLD)
