@@ -47,7 +47,7 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   private final CANrangeIOInputsAutoLogged leftCanrangeInputs = new CANrangeIOInputsAutoLogged();
   private final CANrangeIOInputsAutoLogged rightCanrangeInputs = new CANrangeIOInputsAutoLogged();
   private final Rotation2d ZEROING_POSITION = Rotation2d.fromRadians(-0.5);
-  public static final double CURRENT_THRESHOLD = 10.0;
+  public static final double CURRENT_THRESHOLD = 60.0;
 
   private LinearFilter pivotCurrentFilter = LinearFilter.movingAverage(10);
   private double pivotCurrentFilterValue = 0.0;
