@@ -211,7 +211,8 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     // return this.run(() -> runRollerVelocity(getState().velocityRPS.getAsDouble()));
     return this.run(
         () -> {
-          if (Superstructure.getState() == SuperState.CLIMB || Superstructure.getState() == SuperState.PRE_CLIMB) {
+          if (Superstructure.getState() == SuperState.CLIMB
+              || Superstructure.getState() == SuperState.PRE_CLIMB) {
             pivotIO.setMotorVoltage(-3.0);
           } else {
             pivotIO.setMotorPosition(state.getAngle());
@@ -222,9 +223,8 @@ public class ArmSubsystem extends RollerPivotSubsystem {
           // } else {
           //   rollerIO.setRollerVelocity(state.getVelocityRPS());
           // }
-          
-            rollerIO.setRollerVelocity(state.getVelocityRPS());
-          
+
+          rollerIO.setRollerVelocity(state.getVelocityRPS());
         });
   }
 

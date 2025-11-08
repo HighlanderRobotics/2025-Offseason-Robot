@@ -255,22 +255,21 @@ public class Robot extends LoggedRobot {
 
   TalonFXConfiguration climberPivotConfig =
       createPivotConfig(
-          InvertedValue.CounterClockwise_Positive,
-          20.0,
-          120.0,
-          ClimberSubsystem.PIVOT_RATIO,
-          ClimberSubsystem.KV,
-          ClimberSubsystem.KG,
-          ClimberSubsystem.KS,
-          ClimberSubsystem.KP,
-          ClimberSubsystem.KI,
-          ClimberSubsystem.KD)
+              InvertedValue.CounterClockwise_Positive,
+              20.0,
+              120.0,
+              ClimberSubsystem.PIVOT_RATIO,
+              ClimberSubsystem.KV,
+              ClimberSubsystem.KG,
+              ClimberSubsystem.KS,
+              ClimberSubsystem.KP,
+              ClimberSubsystem.KI,
+              ClimberSubsystem.KD)
           // Disable both current limits!!!!!!!!!
           .withCurrentLimits(
-            new CurrentLimitsConfigs()
-            .withStatorCurrentLimitEnable(false)
-            .withSupplyCurrentLimitEnable(false)
-          );
+              new CurrentLimitsConfigs()
+                  .withStatorCurrentLimitEnable(false)
+                  .withSupplyCurrentLimitEnable(false));
 
   private final ClimberSubsystem climber =
       new ClimberSubsystem(
