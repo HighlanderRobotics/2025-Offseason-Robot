@@ -1,5 +1,6 @@
 package frc.robot.arm;
 
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -60,6 +61,9 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public boolean hasCoral = false;
 
   public boolean armZeroed = false;
+
+    private LinearFilter pivotCurrentFilter = LinearFilter.movingAverage(10);
+  private double pivotCurrentFilterValue = 0.0;
 
   /**
    * 0 for position is vertical with the EE up. We consider the front of the robot to be the intake,
@@ -162,6 +166,8 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     super.periodic();
     cancoderIO.updateInputs(cancoderInputs);
     Logger.processInputs("Arm/CANcoder", cancoderInputs);
+
+    pivotCurrentFilterValue = pivotCurrentFilter.calculate(pivotInputs.statorCurrentAmps);
   }
 
   public Rotation2d getCANcoderPosition() {
@@ -250,7 +256,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public Command runCurrentZeroing() {
     return setPivotVoltage(() -> -3.0)
         .until(
-            new Trigger(() -> Math.abs(currentFilterValue) > ZEROING_CURRENT_THRESHOLD_AMPS)
+            new Trigger(() -> Math.abs(pivotCurrentFilterValue) > ZEROING_CURRENT_THRESHOLD_AMPS)
                 .debounce(0.25))
         .andThen(
             Commands.parallel(
@@ -265,5 +271,9 @@ public class ArmSubsystem extends RollerPivotSubsystem {
 
   public Command setRollerVelocity(DoubleSupplier vel) {
     return this.run(() -> runRollerVelocity(vel.getAsDouble()));
+  }
+
+  public double getPivotCurrentFilterValueAmps() {
+    return pivotCurrentFilterValue;
   }
 }
