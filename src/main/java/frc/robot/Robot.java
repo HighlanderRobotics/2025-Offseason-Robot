@@ -757,59 +757,57 @@ public class Robot extends LoggedRobot {
                             // : Rotation2d.kCCW_90deg)));
                             ? Rotation2d.kZero
                             : Rotation2d.k180deg)));
-operator
-.povLeft()
-.and(() -> preZeroingReq)
-.whileTrue(
-    Commands.parallel(
-         //   Commands.runOnce(() -> intake.isZeroing = true),
-          //  Commands.runOnce(() -> elevator.isZeroing = true),
-            arm.setPivotVoltage(-3.0))
-        .withTimeout(0.05)
-        .andThen(arm.hold().until(() -> !preZeroingReq && !zeroingReq)));
+    operator
+        .povLeft()
+        .and(() -> preZeroingReq)
+        .whileTrue(
+            Commands.parallel(
+                    //   Commands.runOnce(() -> intake.isZeroing = true),
+                    //  Commands.runOnce(() -> elevator.isZeroing = true),
+                    arm.setPivotVoltage(-3.0))
+                .withTimeout(0.05)
+                .andThen(arm.hold().until(() -> !preZeroingReq && !zeroingReq)));
 
-operator
-.povRight()
-.and(() -> preZeroingReq)
-.whileTrue(
-    Commands.parallel(
-          //  Commands.runOnce(() -> intake.isZeroing = true),
-         //   Commands.runOnce(() -> elevator.isZeroing = true),
-            arm.setPivotVoltage(3.0))
-        .withTimeout(0.05)
-        .andThen(arm.hold().until(() -> !preZeroingReq && !zeroingReq)));
+    operator
+        .povRight()
+        .and(() -> preZeroingReq)
+        .whileTrue(
+            Commands.parallel(
+                    //  Commands.runOnce(() -> intake.isZeroing = true),
+                    //   Commands.runOnce(() -> elevator.isZeroing = true),
+                    arm.setPivotVoltage(3.0))
+                .withTimeout(0.05)
+                .andThen(arm.hold().until(() -> !preZeroingReq && !zeroingReq)));
 
-//preZeroingReq
+    // preZeroingReq
+    driver.start().onTrue(Commands.runOnce(() -> preZeroingReq = true));
+    // zeroingReq
     driver
-        .start()
-        .onTrue(
-            Commands.runOnce(() -> preZeroingReq = true));
-//zeroingReq
-    driver
-    //TODO idk what button
+        // TODO idk what button
         .povUp()
         .and(() -> preZeroingReq)
         .whileTrue(
             Commands.sequence(
-                Commands.runOnce(() -> preZeroingReq = false),
-                Commands.runOnce(() -> zeroingReq = true),
-                intake.runCurrentZeroing(), elevator.runCurrentZeroing()).andThen(
-            Commands.parallel(
-                Commands.runOnce(() -> zeroingReq = false),
-              //  Commands.runOnce(() -> elevator.isZeroing = false),
-            //    Commands.runOnce(() -> intake.isZeroing = false),
-            arm.rezeroFromEncoder()
-                )).andThen(
-                 superstructure.transitionAfterZeroing()
+                    Commands.runOnce(() -> preZeroingReq = false),
+                    Commands.runOnce(() -> zeroingReq = true),
+                    intake.runCurrentZeroing(),
+                    elevator.runCurrentZeroing())
+                .andThen(
+                    Commands.parallel(
+                        Commands.runOnce(() -> zeroingReq = false),
+                        //  Commands.runOnce(() -> elevator.isZeroing = false),
+                        //    Commands.runOnce(() -> intake.isZeroing = false),
+                        arm.rezeroFromEncoder()))
+                .andThen(
+                    superstructure.transitionAfterZeroing()
                     // TODO add transition to specific states after zeroing
-                // only use if cancoder is cooked use:
-                // arm.runCurrentZeroing()
-                ));
+                    // only use if cancoder is cooked use:
+                    // arm.runCurrentZeroing()
+                    ));
 
-//zeroingReq
+    // zeroingReq
 
-
-    //zeroing upon startup 
+    // zeroing upon startup
     new Trigger(() -> superstructure.stateIsIdle())
         .and(() -> !elevator.hasZeroedSinceStartup || !intake.hasZeroedSinceStartup)
         .and(DriverStation::isEnabled)
