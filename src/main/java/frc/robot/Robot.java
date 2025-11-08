@@ -80,6 +80,7 @@ public class Robot extends LoggedRobot {
   public static final boolean TUNING_MODE = true;
   public boolean preZeroingReq = false;
   public boolean zeroingReq = false;
+  public boolean hasZeroedSinceStartup = false;
 
   public enum RobotType {
     REAL,
@@ -785,23 +786,24 @@ public class Robot extends LoggedRobot {
                     Commands.runOnce(() -> preZeroingReq = false),
                     Commands.runOnce(() -> zeroingReq = true),
                     intake.runCurrentZeroing(),
-                    elevator.runCurrentZeroing())
+                    elevator.runCurrentZeroing()
+                     // if cancoder is cooked it would use:
+                    // arm.runCurrentZeroing()
+                    )
                 .andThen(
                     Commands.parallel(
                         Commands.runOnce(() -> zeroingReq = false), arm.rezeroFromEncoder()))
                 .andThen(
                     superstructure.transitionAfterZeroing()
-                    // only use if cancoder is cooked use:
-                    // arm.runCurrentZeroing()
                     ));
 
     // zeroing upon startup
     new Trigger(() -> superstructure.stateIsIdle())
-        .and(() -> !elevator.hasZeroedSinceStartup || !intake.hasZeroedSinceStartup)
+        .and(() -> !hasZeroedSinceStartup)
         .and(DriverStation::isEnabled)
         .onTrue(
             Commands.sequence(intake.runCurrentZeroing(), elevator.runCurrentZeroing())
-                .andThen(arm.rezeroFromEncoder()));
+                .andThen(arm.rezeroFromEncoder()).andThen(Commands.runOnce(() -> hasZeroedSinceStartup = true)));
   }
 
   private void addAutos() {

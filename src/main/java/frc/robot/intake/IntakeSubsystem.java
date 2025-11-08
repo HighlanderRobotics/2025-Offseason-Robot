@@ -98,9 +98,6 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
 
   private boolean hasGamePieceSim = false;
 
-  @AutoLogOutput(key = "Intake/has Zeroed Since Startup")
-  public boolean hasZeroedSinceStartup = false;
-
   @AutoLogOutput(key = "Intake/State")
   private IntakeState state = IntakeState.IDLE;
 
@@ -138,7 +135,6 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
         .until(new Trigger(() -> Math.abs(currentFilterValue) > CURRENT_THRESHOLD).debounce(0.25))
         .andThen(
             Commands.parallel(
-                Commands.runOnce(() -> hasZeroedSinceStartup = true),
                 Commands.print("Intake Zeroed"),
                 zeroPivot(() -> ZEROING_POSITION)));
   }

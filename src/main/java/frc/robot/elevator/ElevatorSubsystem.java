@@ -81,9 +81,6 @@ public class ElevatorSubsystem extends SubsystemBase {
   @AutoLogOutput(key = "Elevator/Current Filter Value")
   private double currentFilterValue = 0.0;
 
-  @AutoLogOutput(key = "Elevator/has Zeroed Since Startup")
-  public boolean hasZeroedSinceStartup = false;
-
   @AutoLogOutput(key = "Elevator/State")
   private ElevatorState state = ElevatorState.IDLE;
 
@@ -158,7 +155,6 @@ public class ElevatorSubsystem extends SubsystemBase {
             (interrupted) -> {
               if (!interrupted) {
                 io.resetEncoder();
-                hasZeroedSinceStartup = true;
                 Commands.print("Elevator Zeroed");
               }
             });
