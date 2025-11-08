@@ -22,7 +22,7 @@ Front Left Encoder (CANcoder) | 0
 Front Right Encoder (CANcoder) | 1
 Back Left Encoder (CANcoder) | 2
 Back Right Encoder (CANcoder) | 3
-Arm Pivot Encoder (CANcoder) (LED cooked) | 4
+Arm Pivot Encoder (CANcoder) | 4
 Left Intake Beambreak (CANrange) | 0
 Right Intake Beambreak (CANrange) | 1
 Gyro (Pigeon2) | 0

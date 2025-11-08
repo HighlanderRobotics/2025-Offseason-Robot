@@ -26,6 +26,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public static final double MAX_ACCELERATION = 10.0;
   public static final double MAX_VELOCITY = 10.0;
   public static final double ROLLERS_RATIO = (44.0 / 16.0) * 23;
+  public static final double ZEROING_CURRENT_THRESHOLD_AMPS = 30.0;
 
   public static final double ZEROING_ANGLE = -108;
 
@@ -46,6 +47,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public static final double CORAL_CURRENT_THRESHOLD = 30.0;
   public static final double TOLERANCE_DEGREES = 10.0;
   public static final double VERTICAL_OFFSET_METERS = Units.inchesToMeters(12.0);
+  public static final double SAFE_ZEROING_ANGLE = -80.0; // idk
 
   public static final double CANCODER_OFFSET = -0.3545; // -0.368896484375;
   // this is because we want it to wrap around from -180 to 180, which is when it's pointed straight
@@ -57,6 +59,8 @@ public class ArmSubsystem extends RollerPivotSubsystem {
 
   public boolean hasAlgae = false;
   public boolean hasCoral = false;
+
+  public boolean armZeroed = false;
 
   /**
    * 0 for position is vertical with the EE up. We consider the front of the robot to be the intake,
@@ -166,7 +170,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   }
 
   public Command intakeAlgae() {
-    return this.run(() -> runRollerVoltage(() -> ALGAE_INTAKE_VOLTAGE))
+    return this.run(() -> runRollerVoltage(ALGAE_INTAKE_VOLTAGE))
         .until(
             new Trigger(() -> Math.abs(currentFilterValue) > ALGAE_CURRENT_THRESHOLD)
                 .debounce(0.25))
@@ -174,7 +178,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   }
 
   public Command intakeCoral() {
-    return this.run(() -> runRollerVoltage(() -> CORAL_INTAKE_VOLTAGE))
+    return this.run(() -> runRollerVoltage(CORAL_INTAKE_VOLTAGE))
         .until(
             new Trigger(() -> Math.abs(currentFilterValue) > CORAL_CURRENT_THRESHOLD)
                 .debounce(0.25))
@@ -209,6 +213,15 @@ public class ArmSubsystem extends RollerPivotSubsystem {
         });
   }
 
+  public Command hold() {
+    return Commands.sequence(
+        Commands.runOnce(() -> setPivotAngle(pivotInputs.position))
+            // holds
+            .until(() -> true),
+        // keeps command active until interrupted
+        this.run(() -> {}));
+  }
+
   public void setSimCoral(boolean hasCoral) {
     if (Robot.isSimulation()) {
       this.hasCoral = hasCoral;
@@ -231,5 +244,25 @@ public class ArmSubsystem extends RollerPivotSubsystem {
 
   public void setHasCoralForAuto(boolean hasCoral) {
     this.hasCoral = hasCoral;
+  }
+
+  public Command runCurrentZeroing() {
+    return this.run(() -> setPivotVoltage(() -> -3.0))
+        .until(
+            new Trigger(() -> Math.abs(currentFilterValue) > ZEROING_CURRENT_THRESHOLD_AMPS)
+                .debounce(0.25))
+        .andThen(
+            Commands.parallel(
+                Commands.runOnce(() -> armZeroed = true),
+                Commands.print("Arm Zeroed"),
+                rezeroAgainstRightBumper()));
+  }
+
+  public Command setPivotAngle(Supplier<Rotation2d> rot) {
+    return this.run(() -> setPivotAngle(rot.get()));
+  }
+
+  public Command setRollerVelocity(DoubleSupplier vel) {
+    return this.run(() -> runRollerVelocity(vel.getAsDouble()));
   }
 }
