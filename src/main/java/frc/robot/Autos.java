@@ -194,7 +194,7 @@ public class Autos {
   public Command getAlgaeAuto() {
     final AutoRoutine routine = factory.newRoutine("Algae auto");
     bindCoralElevatorExtension(routine);
-    Path[] paths = {Path.CMtoH4}; //Path.GHtoBR, Path.BRtoIJ, Path.IJtoBR};
+    Path[] paths = {Path.CMtoH4}; // Path.GHtoBR, Path.BRtoIJ, Path.IJtoBR};
 
     Command autoCommand =
         Commands.sequence(
@@ -202,10 +202,10 @@ public class Autos {
             Commands.runOnce(() -> arm.hasCoral = true),
             paths[0].getTrajectory(routine).resetOdometry(),
             runPath(paths[0], routine));
-            // intakeAlgaeInAuto(() -> paths[0].getTrajectory(routine).getFinalPose().get()),
-            // runPath(paths[1], routine),
-            // runPath(paths[2], routine),
-            // runPath(paths[3], routine));
+    // intakeAlgaeInAuto(() -> paths[0].getTrajectory(routine).getFinalPose().get()),
+    // runPath(paths[1], routine),
+    // runPath(paths[2], routine),
+    // runPath(paths[3], routine));
 
     routine
         .active()
@@ -219,7 +219,7 @@ public class Autos {
 
     // routine
     //     .observe(paths[3].getTrajectory(routine).active());
-        // .onTrue(Commands.runOnce(() -> Robot.setAlgaeIntakeTarget(AlgaeIntakeTarget.LOW)));
+    // .onTrue(Commands.runOnce(() -> Robot.setAlgaeIntakeTarget(AlgaeIntakeTarget.LOW)));
 
     return routine.cmd();
   }
