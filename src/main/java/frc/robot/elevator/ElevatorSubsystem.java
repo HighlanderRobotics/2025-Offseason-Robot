@@ -151,8 +151,7 @@ public class ElevatorSubsystem extends SubsystemBase {
               io.setVoltage(-2.0);
             })
         .until(() -> Math.abs(currentFilterValue) > ZEROING_CURRENT_THRESHOLD_AMPS)
-        .andThen(
-          Commands.parallel(Commands.print("Elevator Zeroed"), rezero()));
+        .andThen(Commands.parallel(Commands.print("Elevator Zeroed"), rezero()));
   }
 
   public boolean atExtension(double expected) {

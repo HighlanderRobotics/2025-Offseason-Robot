@@ -248,7 +248,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   }
 
   public Command runCurrentZeroing() {
-    return this.run(() -> setPivotVoltage(() -> -3.0))
+    return setPivotVoltage(() -> -3.0)
         .until(
             new Trigger(() -> Math.abs(currentFilterValue) > ZEROING_CURRENT_THRESHOLD_AMPS)
                 .debounce(0.25))

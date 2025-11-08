@@ -845,20 +845,20 @@ public class Robot extends LoggedRobot {
                 Commands.deadline(
                     Commands.parallel(intake.runCurrentZeroing(), elevator.runCurrentZeroing()),
                     arm.hold()),
-                Commands.print("done zeroing intake/elev")));
+                Commands.print("done zeroing intake/elev"),
     // hold elevator and intake still while arm zeroes
-    // Commands.deadline(
-    //     arm.runCurrentZeroing(),
-    //     Commands.parallel(
-    //         elevator.setVoltage(() -> -1.0), intake.setPivotVoltage(() -> -3.0))),
-    // // sets exit state
-    // superstructure.transitionAfterZeroing(),
-    // // logging
-    // Commands.runOnce(
-    //     () -> {
-    //       Logger.recordOutput("Arm manually rezeroed", true);
-    //       possibleCancoderFailure.set(true);
-    //     })));
+    Commands.deadline(
+        arm.runCurrentZeroing(),
+        Commands.parallel(
+            elevator.setVoltage(() -> -1.0), intake.setPivotVoltage(() -> -3.0))),
+    // sets exit state
+    superstructure.transitionAfterZeroing(),
+    // logging
+    Commands.runOnce(
+        () -> {
+          Logger.recordOutput("Arm manually rezeroed", true);
+          possibleCancoderFailure.set(true);
+        })));
     // intake.runCurrentZeroing());
 
     // zeroing upon startup
