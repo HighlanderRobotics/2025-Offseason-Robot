@@ -69,21 +69,21 @@ public class RollerPivotSubsystem extends SubsystemBase {
   }
 
   // this CANNOT be correct LMAO
-  public Command setPivotAndRollers(Rotation2d pivotAngle, double rollerVelocity) {
-    // Command cmd =
-    //     Commands.parallel(
-    //         Commands.runOnce(() -> setPivotAngle(pivotAngle)),
-    //         Commands.run(() -> runRollerVoltage(rollerVoltage)));
-    // cmd.addRequirements(this);
-    // return cmd;
-    return this.run(
-        () -> {
-          Logger.recordOutput(name + "/Pivot Setpoint", pivotAngle);
-          Logger.recordOutput(name + "/Rollers Setpoint", rollerVelocity);
-          setPivotAngle(pivotAngle);
-          runRollerVelocity(rollerVelocity);
-        });
-  }
+  // public Command setPivotAndRollers(Rotation2d pivotAngle, double rollerVelocity) {
+  //   // Command cmd =
+  //   //     Commands.parallel(
+  //   //         Commands.runOnce(() -> setPivotAngle(pivotAngle)),
+  //   //         Commands.run(() -> runRollerVoltage(rollerVoltage)));
+  //   // cmd.addRequirements(this);
+  //   // return cmd;
+  //   return this.run(
+  //       () -> {
+  //         Logger.recordOutput(name + "/Pivot Setpoint", pivotAngle);
+  //         Logger.recordOutput(name + "/Rollers Setpoint", rollerVelocity);
+  //         setPivotAngle(pivotAngle);
+  //         runRollerVelocity(rollerVelocity);
+  //       });
+  // }
 
   @Override
   public void periodic() {
