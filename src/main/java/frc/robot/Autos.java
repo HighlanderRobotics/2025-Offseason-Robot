@@ -191,38 +191,38 @@ public class Autos {
     return routine.cmd();
   }
 
-  // public Command getAlgaeAuto() {
-  //   final AutoRoutine routine = factory.newRoutine("Algae auto");
-  //   bindCoralElevatorExtension(routine);
-  //   Path[] paths = {Path.CMtoH4, Path.GHtoBR, Path.BRtoIJ, Path.IJtoBR};
+  public Command getAlgaeAuto() {
+    final AutoRoutine routine = factory.newRoutine("Algae auto");
+    bindCoralElevatorExtension(routine);
+    Path[] paths = {Path.CMtoH4}; //Path.GHtoBR, Path.BRtoIJ, Path.IJtoBR};
 
-  //   Command autoCommand =
-  //       Commands.sequence(
-  //           Commands.runOnce(() -> stateSetter.accept(SuperState.READY_CORAL_ARM)),
-  //           Commands.runOnce(() -> arm.hasCoral = true),
-  //           paths[0].getTrajectory(routine).resetOdometry(),
-  //           runPath(paths[0], routine),
-  //           intakeAlgaeInAuto(() -> paths[0].getTrajectory(routine).getFinalPose().get()),
-  //           runPath(paths[1], routine),
-  //           runPath(paths[2], routine),
-  //           runPath(paths[3], routine));
+    Command autoCommand =
+        Commands.sequence(
+            Commands.runOnce(() -> stateSetter.accept(SuperState.READY_CORAL_ARM)),
+            Commands.runOnce(() -> arm.hasCoral = true),
+            paths[0].getTrajectory(routine).resetOdometry(),
+            runPath(paths[0], routine));
+            // intakeAlgaeInAuto(() -> paths[0].getTrajectory(routine).getFinalPose().get()),
+            // runPath(paths[1], routine),
+            // runPath(paths[2], routine),
+            // runPath(paths[3], routine));
 
-  //   routine
-  //       .active()
-  //       .onTrue(
-  //           Commands.runOnce(
-  //               () -> {
-  //                 Robot.setCoralScoreTarget(CoralScoreTarget.L4);
-  //                 Robot.setAlgaeIntakeTarget(AlgaeIntakeTarget.HIGH);
-  //               }))
-  //       .whileTrue(autoCommand);
+    routine
+        .active()
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  Robot.setCoralScoreTarget(CoralScoreTarget.L4);
+                  // Robot.setAlgaeIntakeTarget(AlgaeIntakeTarget.HIGH);
+                }))
+        .whileTrue(autoCommand);
 
-  //   routine
-  //       .observe(paths[3].getTrajectory(routine).active())
-  //       .onTrue(Commands.runOnce(() -> Robot.setAlgaeIntakeTarget(AlgaeIntakeTarget.LOW)));
+    // routine
+    //     .observe(paths[3].getTrajectory(routine).active());
+        // .onTrue(Commands.runOnce(() -> Robot.setAlgaeIntakeTarget(AlgaeIntakeTarget.LOW)));
 
-  //   return routine.cmd();
-  // }
+    return routine.cmd();
+  }
 
   public void bindCoralElevatorExtension(AutoRoutine routine) {
     bindCoralElevatorExtension(routine, 4); // TODO tune

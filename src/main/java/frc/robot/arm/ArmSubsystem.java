@@ -62,7 +62,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
 
   public boolean armZeroed = false;
 
-    private LinearFilter pivotCurrentFilter = LinearFilter.movingAverage(10);
+  private LinearFilter pivotCurrentFilter = LinearFilter.movingAverage(10);
   private double pivotCurrentFilterValue = 0.0;
 
   /**
