@@ -3,7 +3,6 @@ package frc.robot.utils;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
@@ -25,7 +24,7 @@ public class AutoAim {
   public static final double VELOCITY_TOLERANCE_METERSPERSECOND = 0.5;
   public static final double INITIAL_REEF_KEEPOFF_DISTANCE_METERS = -0.1;
 
-  public static final double ALGAE_APPROACH_SPEED_METERS_PER_SECOND = 1.0;
+  //   public static final double ALGAE_APPROACH_SPEED_METERS_PER_SECOND = 1.0;
 
   // Velocity controllers
   static final ProfiledPIDController VX_CONTROLLER =
@@ -98,21 +97,21 @@ public class AutoAim {
     return speeds;
   }
 
-  public static double getClosestBargeXCoord(Pose2d pose) {
-    return Math.abs(pose.getX() - FieldUtils.BLUE_NET_X)
-            < Math.abs(pose.getX() - FieldUtils.RED_NET_X)
-        ? FieldUtils.BLUE_NET_X
-        : FieldUtils.RED_NET_X;
-  }
+  //   public static double getClosestBargeXCoord(Pose2d pose) {
+  //     return Math.abs(pose.getX() - FieldUtils.BLUE_NET_X)
+  //             < Math.abs(pose.getX() - FieldUtils.RED_NET_X)
+  //         ? FieldUtils.BLUE_NET_X
+  //         : FieldUtils.RED_NET_X;
+  //   }
 
-  public static Rotation2d getClosestBargeRotation(Pose2d pose) {
-    return (Math.abs(pose.getX() - FieldUtils.BLUE_NET_X)
-                > Math.abs(pose.getX() - FieldUtils.RED_NET_X)
-            ? Rotation2d.kCW_90deg
-            : Rotation2d.kCCW_90deg)
-        // TODO: TUNE
-        .plus(Rotation2d.fromDegrees(20.0));
-  }
+  //   public static Rotation2d getClosestBargeRotation(Pose2d pose) {
+  //     return (Math.abs(pose.getX() - FieldUtils.BLUE_NET_X)
+  //                 > Math.abs(pose.getX() - FieldUtils.RED_NET_X)
+  //             ? Rotation2d.kCW_90deg
+  //             : Rotation2d.kCCW_90deg)
+  //         // TODO: TUNE
+  //         .plus(Rotation2d.fromDegrees(20.0));
+  //   }
 
   public static boolean isInTolerance(
       Pose2d current,

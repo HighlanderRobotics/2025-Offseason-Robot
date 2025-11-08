@@ -25,7 +25,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.Robot.RobotType;
-import frc.robot.Robot.ScoringSide;
 import frc.robot.camera.Camera;
 import frc.robot.camera.CameraIOReal;
 import frc.robot.camera.CameraIOSim;
@@ -603,91 +602,92 @@ public class SwerveSubsystem extends SubsystemBase {
     return isInAutoAimTolerance(FieldUtils.CoralTargets.getClosestTargetL4(getPose()));
   }
 
-  public Command autoAimToOffsetAlgaePose() {
-    return translateToPose(
-        () ->
-            FieldUtils.AlgaeIntakeTargets.getOffsetLocation(
-                FieldUtils.AlgaeIntakeTargets.getClosestTargetPose(getPose())));
-  }
+  // public Command autoAimToOffsetAlgaePose() {
+  //   return translateToPose(
+  //       () ->
+  //           FieldUtils.AlgaeIntakeTargets.getOffsetLocation(
+  //               FieldUtils.AlgaeIntakeTargets.getClosestTargetPose(getPose())));
+  // }
 
-  public boolean nearIntakeAlgaeOffsetPose() {
-    return isInAutoAimTolerance(
-        FieldUtils.AlgaeIntakeTargets.getOffsetLocation(
-            FieldUtils.AlgaeIntakeTargets.getClosestTargetPose(getPose())));
-  }
+  // public boolean nearIntakeAlgaeOffsetPose() {
+  //   return isInAutoAimTolerance(
+  //       FieldUtils.AlgaeIntakeTargets.getOffsetLocation(
+  //           FieldUtils.AlgaeIntakeTargets.getClosestTargetPose(getPose())));
+  // }
 
-  public Command approachAlgae() {
-    return driveClosedLoopRobotRelative(
-        () -> {
-          AutoAim.resetPIDControllers(getPose(), getVelocityFieldRelative());
-          ChassisSpeeds calculatedSpeedsRobotRelative =
-              ChassisSpeeds.fromFieldRelativeSpeeds(
-                  AutoAim.calculateSpeeds(
-                      getPose(), FieldUtils.AlgaeIntakeTargets.getClosestTargetPose(getPose())),
-                  getRotation());
-          if (isInAutoAimTolerance(FieldUtils.AlgaeIntakeTargets.getClosestTargetPose(getPose()))) {
-            calculatedSpeedsRobotRelative.vyMetersPerSecond = 0.0;
-          } else if (Robot.getScoringSide().equals(ScoringSide.LEFT)) {
-            calculatedSpeedsRobotRelative.vyMetersPerSecond =
-                -AutoAim.ALGAE_APPROACH_SPEED_METERS_PER_SECOND;
-          } else if (Robot.getScoringSide().equals(ScoringSide.RIGHT)) {
-            calculatedSpeedsRobotRelative.vyMetersPerSecond =
-                AutoAim.ALGAE_APPROACH_SPEED_METERS_PER_SECOND;
-          }
+  // public Command approachAlgae() {
+  //   return driveClosedLoopRobotRelative(
+  //       () -> {
+  //         AutoAim.resetPIDControllers(getPose(), getVelocityFieldRelative());
+  //         ChassisSpeeds calculatedSpeedsRobotRelative =
+  //             ChassisSpeeds.fromFieldRelativeSpeeds(
+  //                 AutoAim.calculateSpeeds(
+  //                     getPose(), FieldUtils.AlgaeIntakeTargets.getClosestTargetPose(getPose())),
+  //                 getRotation());
+  //         if
+  // (isInAutoAimTolerance(FieldUtils.AlgaeIntakeTargets.getClosestTargetPose(getPose()))) {
+  //           calculatedSpeedsRobotRelative.vyMetersPerSecond = 0.0;
+  //         } else if (Robot.getScoringSide().equals(ScoringSide.LEFT)) {
+  //           calculatedSpeedsRobotRelative.vyMetersPerSecond =
+  //               -AutoAim.ALGAE_APPROACH_SPEED_METERS_PER_SECOND;
+  //         } else if (Robot.getScoringSide().equals(ScoringSide.RIGHT)) {
+  //           calculatedSpeedsRobotRelative.vyMetersPerSecond =
+  //               AutoAim.ALGAE_APPROACH_SPEED_METERS_PER_SECOND;
+  //         }
 
-          // IDK why we have to do this but it was in reefscape so...
-          calculatedSpeedsRobotRelative.vxMetersPerSecond *= -1;
-          return calculatedSpeedsRobotRelative;
-        });
-  }
+  //         // IDK why we have to do this but it was in reefscape so...
+  //         calculatedSpeedsRobotRelative.vxMetersPerSecond *= -1;
+  //         return calculatedSpeedsRobotRelative;
+  //       });
+  // }
 
-  public boolean nearAlgaeIntakePose() {
-    return isInAutoAimTolerance(FieldUtils.AlgaeIntakeTargets.getClosestTargetPose(getPose()));
-  }
+  // public boolean nearAlgaeIntakePose() {
+  //   return isInAutoAimTolerance(FieldUtils.AlgaeIntakeTargets.getClosestTargetPose(getPose()));
+  // }
 
-  public Command autoAimToProcessor() {
-    // -0.3 meters transformed needs tuning
-    return translateWithIntermediatePose(
-        () ->
-            getPose()
-                .nearest(FieldUtils.PROCESSOR_POSES)
-                .plus(new Transform2d(0, -0.3, Rotation2d.kZero)),
-        () -> getPose().nearest(FieldUtils.PROCESSOR_POSES));
-  }
+  // public Command autoAimToProcessor() {
+  //   // -0.3 meters transformed needs tuning
+  //   return translateWithIntermediatePose(
+  //       () ->
+  //           getPose()
+  //               .nearest(FieldUtils.PROCESSOR_POSES)
+  //               .plus(new Transform2d(0, -0.3, Rotation2d.kZero)),
+  //       () -> getPose().nearest(FieldUtils.PROCESSOR_POSES));
+  // }
 
-  public boolean nearProcessor() {
-    return isInAutoAimTolerance(getPose().nearest(FieldUtils.PROCESSOR_POSES));
-  }
+  // public boolean nearProcessor() {
+  //   return isInAutoAimTolerance(getPose().nearest(FieldUtils.PROCESSOR_POSES));
+  // }
 
-  public Command autoAimToBarge(DoubleSupplier vyModifier) {
-    return Commands.runOnce(
-            () -> AutoAim.resetPIDControllers(getPose(), getVelocityFieldRelative()))
-        .andThen(
-            driveClosedLoopFieldRelative(
-                () -> {
-                  ChassisSpeeds calculatedSpeeds =
-                      AutoAim.calculateSpeeds(
-                          getPose(),
-                          new Pose2d(
-                              AutoAim.getClosestBargeXCoord(getPose()),
-                              0.0,
-                              AutoAim.getClosestBargeRotation(getPose())));
-                  // Sub calculated velocity for requested velocity
-                  calculatedSpeeds.vyMetersPerSecond = vyModifier.getAsDouble();
-                  return calculatedSpeeds;
-                }));
-  }
+  // public Command autoAimToBarge(DoubleSupplier vyModifier) {
+  //   return Commands.runOnce(
+  //           () -> AutoAim.resetPIDControllers(getPose(), getVelocityFieldRelative()))
+  //       .andThen(
+  //           driveClosedLoopFieldRelative(
+  //               () -> {
+  //                 ChassisSpeeds calculatedSpeeds =
+  //                     AutoAim.calculateSpeeds(
+  //                         getPose(),
+  //                         new Pose2d(
+  //                             AutoAim.getClosestBargeXCoord(getPose()),
+  //                             0.0,
+  //                             AutoAim.getClosestBargeRotation(getPose())));
+  //                 // Sub calculated velocity for requested velocity
+  //                 calculatedSpeeds.vyMetersPerSecond = vyModifier.getAsDouble();
+  //                 return calculatedSpeeds;
+  //               }));
+  // }
 
-  public boolean nearBarge() {
-    return MathUtil.isNear(
-            AutoAim.getClosestBargeXCoord(getPose()),
-            getPose().getX(),
-            AutoAim.TRANSLATION_TOLERANCE_METERS)
-        && MathUtil.isNear(
-            AutoAim.getClosestBargeRotation(getPose()).getRadians(),
-            getPose().getRotation().getRadians(),
-            AutoAim.ROTATION_TOLERANCE_RADIANS);
-  }
+  // public boolean nearBarge() {
+  //   return MathUtil.isNear(
+  //           AutoAim.getClosestBargeXCoord(getPose()),
+  //           getPose().getX(),
+  //           AutoAim.TRANSLATION_TOLERANCE_METERS)
+  //       && MathUtil.isNear(
+  //           AutoAim.getClosestBargeRotation(getPose()).getRadians(),
+  //           getPose().getRotation().getRadians(),
+  //           AutoAim.ROTATION_TOLERANCE_RADIANS);
+  // }
 
   /**
    * Generates a set of samples without using the async thread. Makes lots of Objects, so be careful
