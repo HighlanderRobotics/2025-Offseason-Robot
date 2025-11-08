@@ -845,6 +845,7 @@ public class Robot extends LoggedRobot {
                 Commands.deadline(
                     Commands.parallel(intake.runCurrentZeroing(), elevator.runCurrentZeroing()),
                     arm.hold()),
+                Commands.print("done zeroing intake/elev"),
                 // hold elevator and intake still while arm zeroes
                 Commands.deadline(
                     arm.runCurrentZeroing(),
