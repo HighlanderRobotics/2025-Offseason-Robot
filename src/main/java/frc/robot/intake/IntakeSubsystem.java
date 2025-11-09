@@ -154,16 +154,16 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   }
 
   public Command setStateAngleVelocity() {
-    // return this.run(
-    //     () -> {
-    //       // int slot = hasGamePiece() ? 1 : 0;
-    //       Logger.recordOutput("Intake/Pivot Setpoint", state.position.get());
-    //       // pivotIO.setMotorPosition(state.position.get(), slot);
+    return this.run(
+        () -> {
+          // int slot = hasGamePiece() ? 1 : 0;
+          Logger.recordOutput("Intake/Pivot Setpoint", state.position.get());
+          // pivotIO.setMotorPosition(state.position.get(), slot);
 
-    //       pivotIO.setMotorPosition(state.position.get(), 1);
-    //       rollerIO.setRollerVelocity(state.velocityRPS.getAsDouble());
-    //     });
-    return this.run(() -> pivotIO.setMotorPosition(SuperState.IDLE.intakeState.getAngle()));
+          pivotIO.setMotorPosition(state.position.get(), 1);
+          // rollerIO.setRollerVelocity(state.velocityRPS.getAsDouble());
+        });
+    // return this.run(() -> pivotIO.setMotorPosition(SuperState.IDLE.intakeState.getAngle()));
 
     // this is wrong?
     // return this.run(() -> setPivotAndRollers(getState().position, getState().velocityRPS));

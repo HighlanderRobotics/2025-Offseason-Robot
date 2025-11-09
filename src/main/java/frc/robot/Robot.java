@@ -884,13 +884,13 @@ public class Robot extends LoggedRobot {
 
     // zeroing upon startup
     // assumes cancoder hasn't failed!
-    new Trigger(() -> superstructure.stateIsIdle())
-        .and(() -> !hasZeroedSinceStartup)
-        .and(DriverStation::isEnabled)
-        .onTrue(
-            Commands.parallel(intake.runCurrentZeroing(), elevator.runCurrentZeroing())
-                .andThen(arm.rezeroFromEncoder())
-                .andThen(Commands.runOnce(() -> hasZeroedSinceStartup = true)));
+    // new Trigger(() -> superstructure.stateIsIdle())
+    //     .and(() -> !hasZeroedSinceStartup)
+    //     .and(DriverStation::isEnabled)
+    //     .onTrue(
+    //         Commands.parallel(intake.runCurrentZeroing(), elevator.runCurrentZeroing())
+    //             .andThen(arm.rezeroFromEncoder())
+    //             .andThen(Commands.runOnce(() -> hasZeroedSinceStartup = true)));
 
     // Rezero arm against cancoder
     driver.x().onTrue(Commands.runOnce(() -> arm.rezeroFromEncoder()).ignoringDisable(true));
