@@ -195,7 +195,8 @@ public class Autos {
 
   public Command getAlgaeAuto() {
     final AutoRoutine routine = factory.newRoutine("Algae auto");
-    bindCoralElevatorExtension(routine);
+    // 4.5 should make the elevator extend earlier so it doesn't knock the algae off the reef (in theory)
+    bindCoralElevatorExtension(routine, 4.5); // TODO: TUNE 
     Path[] paths = {Path.CMtoH4}; // Path.GHtoBR, Path.BRtoIJ, Path.IJtoBR};
 
     Command autoCommand =
