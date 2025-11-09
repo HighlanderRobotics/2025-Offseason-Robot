@@ -144,7 +144,9 @@ public class Robot extends LoggedRobot {
   //   @AutoLogOutput private static AlgaeScoreTarget algaeScoreTarget = AlgaeScoreTarget.BARGE;
   @AutoLogOutput private static ScoringSide scoringSide = ScoringSide.RIGHT;
 
-  private Alert possibleCancoderFailure;
+  private Alert manualArmRezeroAlert;
+  private Alert driverJoystickDisconnectedAlert;
+  private Alert operatorJoystickDisconnectedAlert;
 
   private static CANBus canivore = new CANBus("*");
 
@@ -576,7 +578,11 @@ public class Robot extends LoggedRobot {
         intake.ninety().alongWith(Commands.print("dashboard ninety intake")).ignoringDisable(true));
     SmartDashboard.putData("Add autos", Commands.runOnce(this::addAutos).ignoringDisable(true));
 
-    possibleCancoderFailure = new Alert("Arm cancoder may not be working!", AlertType.kError);
+    manualArmRezeroAlert = new Alert("Arm has been manually rezeroed at least once this match. Arm cancoder may not be working!", AlertType.kWarning);
+    
+    driverJoystickDisconnectedAlert = new Alert("Driver controller disconnected!", AlertType.kError);
+    operatorJoystickDisconnectedAlert = new Alert("Operator controller disconnected!", AlertType.kError);
+
   }
 
   private TalonFXConfiguration createRollerConfig(
@@ -863,7 +869,7 @@ public class Robot extends LoggedRobot {
                 Commands.runOnce(
                     () -> {
                       Logger.recordOutput("Arm manually rezeroed", true);
-                      possibleCancoderFailure.set(true);
+                      manualArmRezeroAlert.set(true);
                     })));
     // intake.runCurrentZeroing());
 
@@ -905,6 +911,10 @@ public class Robot extends LoggedRobot {
     // Force the robot to think it doesn't have a coral
     // probably should not do this
     operator.leftStick().onTrue(Commands.runOnce(() -> arm.hasCoral = false));
+
+    new Trigger(() -> DriverStation.isJoystickConnected(0)).negate().onTrue(Commands.runOnce(() -> driverJoystickDisconnectedAlert.set(true))).onFalse(Commands.runOnce(() -> driverJoystickDisconnectedAlert.set(false)));
+
+    new Trigger(() -> DriverStation.isJoystickConnected(1)).negate().onTrue(Commands.runOnce(() -> operatorJoystickDisconnectedAlert.set(true))).onFalse(Commands.runOnce(() -> operatorJoystickDisconnectedAlert.set(false)));
   }
 
   private void addAutos() {
