@@ -165,20 +165,16 @@ public class Camera {
                   inputs.result.metadata.captureTimestampMicros / 1.0e6,
                   deviations
                       .times(DriverStation.isAutonomous() ? 2.0 : 1.0)
-                      .times(
-                          getName().equals("Right_Drivebase")
-                              ? 2.0
-                              : 0.75)
+                      .times(getName().equals("Right_Drivebase") ? 2.0 : 0.75)
                       // reef positions
                       .times(
                           (getName().equals("Right_Elevator"))
                                   && (Superstructure.getState().isScoreCoralRight())
                               ? 0.8
-                              //anecdotally sam says right elevator is not as good as left lol
+                              // anecdotally sam says right elevator is not as good as left lol
                               : 1.5)
                       .times(
-                          (getName().equals("Left_Drivebase")
-                                      || getName().equals("Left_Elevator"))
+                          (getName().equals("Left_Drivebase") || getName().equals("Left_Elevator"))
                                   && (Superstructure.getState().isScoreCoralLeft())
                               ? 0.5
                               : 1.5)
@@ -213,7 +209,7 @@ public class Camera {
               //             || Superstructure.getState() == SuperState.PRE_BARGE_RIGHT
               //         ? 0.5
               //         : 1.0));
-              //the sussifier
+              // the sussifier
             });
 
         hasFutureData |= inputs.result.metadata.captureTimestampMicros > RobotController.getTime();
