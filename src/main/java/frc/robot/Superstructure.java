@@ -9,8 +9,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Robot.AlgaeIntakeTarget;
-import frc.robot.Robot.AlgaeScoreTarget;
 import frc.robot.Robot.CoralIntakeTarget;
 import frc.robot.Robot.CoralScoreTarget;
 import frc.robot.Robot.ScoringSide;
@@ -83,32 +81,33 @@ public class Superstructure {
     PRE_L4_LEFT(ElevatorState.PRE_L4, ArmState.PRE_L4_LEFT, IntakeState.IDLE),
     SCORE_L4_LEFT(ElevatorState.L4, ArmState.SCORE_L4_LEFT, IntakeState.IDLE),
 
-    INTAKE_ALGAE_HIGH_RIGHT(
-        ElevatorState.INTAKE_ALGAE_REEF_HIGH, ArmState.INTAKE_ALGAE_REEF_RIGHT, IntakeState.IDLE),
-    INTAKE_ALGAE_LOW_RIGHT(
-        ElevatorState.INTAKE_ALGAE_REEF_LOW, ArmState.INTAKE_ALGAE_REEF_RIGHT, IntakeState.IDLE),
+    // INTAKE_ALGAE_HIGH_RIGHT(
+    //     ElevatorState.INTAKE_ALGAE_REEF_HIGH, ArmState.INTAKE_ALGAE_REEF_RIGHT,
+    // IntakeState.IDLE),
+    // INTAKE_ALGAE_LOW_RIGHT(
+    //     ElevatorState.INTAKE_ALGAE_REEF_LOW, ArmState.INTAKE_ALGAE_REEF_RIGHT, IntakeState.IDLE),
 
-    INTAKE_ALGAE_HIGH_LEFT(
-        ElevatorState.INTAKE_ALGAE_REEF_HIGH, ArmState.INTAKE_ALGAE_REEF_LEFT, IntakeState.IDLE),
-    INTAKE_ALGAE_LOW_LEFT(
-        ElevatorState.INTAKE_ALGAE_REEF_LOW, ArmState.INTAKE_ALGAE_REEF_LEFT, IntakeState.IDLE),
+    // INTAKE_ALGAE_HIGH_LEFT(
+    //     ElevatorState.INTAKE_ALGAE_REEF_HIGH, ArmState.INTAKE_ALGAE_REEF_LEFT, IntakeState.IDLE),
+    // INTAKE_ALGAE_LOW_LEFT(
+    //     ElevatorState.INTAKE_ALGAE_REEF_LOW, ArmState.INTAKE_ALGAE_REEF_LEFT, IntakeState.IDLE),
 
-    INTAKE_ALGAE_STACK(
-        ElevatorState.INTAKE_ALGAE_STACK, ArmState.INTAKE_ALGAE_STACK, IntakeState.IDLE),
-    INTAKE_ALGAE_GROUND(
-        ElevatorState.INTAKE_ALGAE_GROUND, ArmState.INTAKE_ALGAE_GROUND, IntakeState.IDLE),
+    // INTAKE_ALGAE_STACK(
+    //     ElevatorState.INTAKE_ALGAE_STACK, ArmState.INTAKE_ALGAE_STACK, IntakeState.IDLE),
+    // INTAKE_ALGAE_GROUND(
+    //     ElevatorState.INTAKE_ALGAE_GROUND, ArmState.INTAKE_ALGAE_GROUND, IntakeState.IDLE),
 
-    READY_ALGAE(ElevatorState.READY_ALGAE, ArmState.READY_ALGAE, IntakeState.IDLE),
+    // READY_ALGAE(ElevatorState.READY_ALGAE, ArmState.READY_ALGAE, IntakeState.IDLE),
 
-    PRE_BARGE_RIGHT(ElevatorState.BARGE, ArmState.PRE_BARGE_RIGHT, IntakeState.IDLE),
-    SCORE_BARGE_RIGHT(ElevatorState.BARGE, ArmState.SCORE_BARGE_RIGHT, IntakeState.IDLE),
+    // PRE_BARGE_RIGHT(ElevatorState.BARGE, ArmState.PRE_BARGE_RIGHT, IntakeState.IDLE),
+    // SCORE_BARGE_RIGHT(ElevatorState.BARGE, ArmState.SCORE_BARGE_RIGHT, IntakeState.IDLE),
 
-    PRE_BARGE_LEFT(ElevatorState.BARGE, ArmState.PRE_BARGE_LEFT, IntakeState.IDLE),
-    SCORE_BARGE_LEFT(ElevatorState.BARGE, ArmState.SCORE_BARGE_LEFT, IntakeState.IDLE),
+    // PRE_BARGE_LEFT(ElevatorState.BARGE, ArmState.PRE_BARGE_LEFT, IntakeState.IDLE),
+    // SCORE_BARGE_LEFT(ElevatorState.BARGE, ArmState.SCORE_BARGE_LEFT, IntakeState.IDLE),
 
-    // processor is left side only
-    PRE_PROCESSOR(ElevatorState.PROCESSOR, ArmState.PRE_PROCESSOR, IntakeState.IDLE),
-    SCORE_PROCESSOR(ElevatorState.PROCESSOR, ArmState.SCORE_PROCESSOR, IntakeState.IDLE),
+    // // processor is left side only
+    // PRE_PROCESSOR(ElevatorState.PROCESSOR, ArmState.PRE_PROCESSOR, IntakeState.IDLE),
+    // SCORE_PROCESSOR(ElevatorState.PROCESSOR, ArmState.SCORE_PROCESSOR, IntakeState.IDLE),
 
     PRE_CLIMB(
         ElevatorState.PRE_CLIMB, ArmState.PRE_CLIMB, IntakeState.CLIMB, ClimberState.PRE_CLIMB),
@@ -183,17 +182,35 @@ public class Superstructure {
           || this == SCORE_L4_LEFT;
     }
 
-    public boolean isAlgae() {
-      return this == INTAKE_ALGAE_HIGH_RIGHT
-          || this == INTAKE_ALGAE_LOW_RIGHT
-          || this == INTAKE_ALGAE_STACK
-          || this == INTAKE_ALGAE_GROUND
-          || this == READY_ALGAE
-          || this == PRE_BARGE_RIGHT
-          || this == SCORE_BARGE_RIGHT
-          || this == PRE_PROCESSOR
-          || this == SCORE_PROCESSOR;
+    public boolean isScoreCoralRight() {
+      return this == PRE_L2_RIGHT
+          || this == SCORE_L2_RIGHT
+          || this == PRE_L3_RIGHT
+          || this == SCORE_L3_RIGHT
+          || this == PRE_L4_RIGHT
+          || this == SCORE_L4_RIGHT;
     }
+
+    public boolean isScoreCoralLeft() {
+      return this == PRE_L2_LEFT
+          || this == SCORE_L2_LEFT
+          || this == PRE_L3_LEFT
+          || this == SCORE_L3_LEFT
+          || this == PRE_L4_LEFT
+          || this == SCORE_L4_LEFT;
+    }
+
+    // public boolean isAlgae() {
+    //   return this == INTAKE_ALGAE_HIGH_RIGHT
+    //       || this == INTAKE_ALGAE_LOW_RIGHT
+    //       || this == INTAKE_ALGAE_STACK
+    //       || this == INTAKE_ALGAE_GROUND
+    //       || this == READY_ALGAE
+    //       || this == PRE_BARGE_RIGHT
+    //       || this == SCORE_BARGE_RIGHT
+    //       || this == PRE_PROCESSOR
+    //       || this == SCORE_PROCESSOR;
+    // }
   }
 
   @AutoLogOutput(key = "Superstructure/State")
@@ -221,8 +238,8 @@ public class Superstructure {
   @AutoLogOutput(key = "Superstructure/Coral Intake Request")
   public Trigger intakeCoralReq;
 
-  @AutoLogOutput(key = "Superstructure/Algae Intake Request")
-  public Trigger intakeAlgaeReq;
+  //   @AutoLogOutput(key = "Superstructure/Algae Intake Request")
+  //   public Trigger intakeAlgaeReq;
 
   @AutoLogOutput(key = "Superstructure/Pre Climb Request")
   public Trigger preClimbReq;
@@ -234,7 +251,7 @@ public class Superstructure {
   public Trigger climbCancelReq;
 
   @AutoLogOutput(key = "Superstructure/At Extension?")
-  public Trigger atExtensionTrigger = new Trigger(this::atExtension);
+  public Trigger atExtensionTrigger = new Trigger(this::atExtension).or(Robot::isSimulation);
 
   @AutoLogOutput(key = "Superstructure/Intake Has Game Piece?")
   public Trigger intakeHasGamePieceTrigger;
@@ -271,16 +288,13 @@ public class Superstructure {
   }
 
   private void addTriggers() {
-    preScoreReq = driver.rightTrigger().or(Autos.autoPreScoreReq.and(DriverStation::isAutonomous));
+    preScoreReq = driver.rightTrigger().or(Autos.autoPreScoreReq);
 
-    scoreReq =
-        driver.rightTrigger().negate().or(Autos.autoScoreReq.and(DriverStation::isAutonomous));
+    scoreReq = driver.rightTrigger().negate().and(DriverStation::isTeleop).or(Autos.autoScoreReq);
 
-    intakeCoralReq =
-        driver.leftTrigger().or(Autos.autoIntakeCoralReq.and(DriverStation::isAutonomous));
+    intakeCoralReq = driver.leftTrigger().or(Autos.autoIntakeCoralReq);
 
-    intakeAlgaeReq =
-        driver.leftBumper().or(Autos.autoIntakeAlgaeReq.and(DriverStation::isAutonomous));
+    // intakeAlgaeReq = driver.leftBumper().or(Autos.autoIntakeAlgaeReq);
 
     // TODO seems sus
     preClimbReq =
@@ -354,7 +368,8 @@ public class Superstructure {
               state = nextState;
               setSubstates();
             })
-        .ignoringDisable(true);
+        .ignoringDisable(true)
+        .withName("State Change Command");
   }
 
   private void setSubstates() {
@@ -362,6 +377,27 @@ public class Superstructure {
     arm.setState(state.armState);
     intake.setState(state.intakeState);
     climber.setState(state.climberState);
+  }
+
+  public Command transitionAfterZeroing() {
+    return Commands.runOnce(
+            () -> {
+              SuperState target;
+              // cant distinguish between coral and algae rn
+              if (intake.hasGamePiece()) {
+                target = SuperState.READY_CORAL_INTAKE;
+                //   } else if (arm.hasAlgae) {
+                //     target = SuperState.READY_ALGAE;
+              } else if (arm.hasCoral) {
+                target = SuperState.READY_CORAL_ARM;
+              } else {
+                target = SuperState.IDLE;
+              }
+              System.out.println("Transitioning to " + target + " after zeroing");
+              changeStateTo(target).schedule();
+              ;
+            })
+        .ignoringDisable(true);
   }
 
   private void addTransitions() {
@@ -397,10 +433,7 @@ public class Superstructure {
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L1)
             .and(preScoreReq));
 
-    bindTransition(
-        SuperState.PRE_L1,
-        SuperState.L1,
-        preScoreReq.negate().and(scoreReq).and(atExtensionTrigger));
+    bindTransition(SuperState.PRE_L1, SuperState.L1, scoreReq.and(atExtensionTrigger));
 
     bindTransition(
         SuperState.L1,
@@ -497,9 +530,7 @@ public class Superstructure {
             .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
     bindTransition(
-        SuperState.PRE_L2_RIGHT,
-        SuperState.SCORE_L2_RIGHT,
-        preScoreReq.negate().and(scoreReq).and(atExtensionTrigger));
+        SuperState.PRE_L2_RIGHT, SuperState.SCORE_L2_RIGHT, scoreReq.and(atExtensionTrigger));
 
     bindTransition(
         SuperState.SCORE_L2_RIGHT,
@@ -523,9 +554,7 @@ public class Superstructure {
             .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
     bindTransition(
-        SuperState.PRE_L2_LEFT,
-        SuperState.SCORE_L2_LEFT,
-        preScoreReq.negate().and(scoreReq).and(atExtensionTrigger));
+        SuperState.PRE_L2_LEFT, SuperState.SCORE_L2_LEFT, scoreReq.and(atExtensionTrigger));
 
     bindTransition(
         SuperState.SCORE_L2_LEFT,
@@ -549,9 +578,7 @@ public class Superstructure {
             .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
     bindTransition(
-        SuperState.PRE_L3_RIGHT,
-        SuperState.SCORE_L3_RIGHT,
-        preScoreReq.negate().and(scoreReq).and(atExtensionTrigger));
+        SuperState.PRE_L3_RIGHT, SuperState.SCORE_L3_RIGHT, scoreReq.and(atExtensionTrigger));
 
     bindTransition(
         SuperState.SCORE_L3_RIGHT,
@@ -575,9 +602,7 @@ public class Superstructure {
             .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
     bindTransition(
-        SuperState.PRE_L3_LEFT,
-        SuperState.SCORE_L3_LEFT,
-        preScoreReq.negate().and(scoreReq).and(atExtensionTrigger));
+        SuperState.PRE_L3_LEFT, SuperState.SCORE_L3_LEFT, scoreReq.and(atExtensionTrigger));
 
     bindTransition(
         SuperState.SCORE_L3_LEFT,
@@ -601,9 +626,7 @@ public class Superstructure {
             .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
     bindTransition(
-        SuperState.PRE_L4_RIGHT,
-        SuperState.SCORE_L4_RIGHT,
-        preScoreReq.negate().and(scoreReq).and(atExtensionTrigger));
+        SuperState.PRE_L4_RIGHT, SuperState.SCORE_L4_RIGHT, scoreReq.and(atExtensionTrigger));
 
     bindTransition(
         SuperState.SCORE_L4_RIGHT,
@@ -627,9 +650,7 @@ public class Superstructure {
             .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
     bindTransition(
-        SuperState.PRE_L4_LEFT,
-        SuperState.SCORE_L4_LEFT,
-        preScoreReq.negate().and(scoreReq).and(atExtensionTrigger));
+        SuperState.PRE_L4_LEFT, SuperState.SCORE_L4_LEFT, scoreReq.and(atExtensionTrigger));
 
     bindTransition(
         SuperState.SCORE_L4_LEFT,
@@ -637,174 +658,176 @@ public class Superstructure {
         armHasGamePieceTrigger.negate().debounce(0.1).and(awayFromReefTrigger.debounce(0.15)));
 
     // ---Intake Algae Ground---
-    bindTransition(
-        SuperState.IDLE,
-        SuperState.INTAKE_ALGAE_GROUND,
-        intakeAlgaeReq.and(() -> Robot.getAlgaeIntakeTarget() == AlgaeIntakeTarget.GROUND));
+    // bindTransition(
+    //     SuperState.IDLE,
+    //     SuperState.INTAKE_ALGAE_GROUND,
+    //     intakeAlgaeReq.and(() -> Robot.getAlgaeIntakeTarget() == AlgaeIntakeTarget.GROUND));
 
-    bindTransition(
-        SuperState.INTAKE_ALGAE_GROUND,
-        SuperState.READY_ALGAE,
-        armHasGamePieceTrigger.debounce(0.1));
+    // bindTransition(
+    //     SuperState.INTAKE_ALGAE_GROUND,
+    //     SuperState.READY_ALGAE,
+    //     armHasGamePieceTrigger.debounce(0.1));
 
-    // ---Cancel intake algae ground
-    bindTransition(
-        SuperState.INTAKE_ALGAE_GROUND,
-        SuperState.IDLE,
-        intakeAlgaeReq.negate().and(armHasGamePieceTrigger.negate()));
+    // // ---Cancel intake algae ground
+    // bindTransition(
+    //     SuperState.INTAKE_ALGAE_GROUND,
+    //     SuperState.IDLE,
+    //     intakeAlgaeReq.negate().and(armHasGamePieceTrigger.negate()));
 
-    // ---Intake Algae Stack---
-    bindTransition(
-        SuperState.IDLE,
-        SuperState.INTAKE_ALGAE_STACK,
-        intakeAlgaeReq.and(() -> Robot.getAlgaeIntakeTarget() == AlgaeIntakeTarget.STACK));
+    // // ---Intake Algae Stack---
+    // bindTransition(
+    //     SuperState.IDLE,
+    //     SuperState.INTAKE_ALGAE_STACK,
+    //     intakeAlgaeReq.and(() -> Robot.getAlgaeIntakeTarget() == AlgaeIntakeTarget.STACK));
 
-    bindTransition(
-        SuperState.INTAKE_ALGAE_STACK,
-        SuperState.READY_ALGAE,
-        armHasGamePieceTrigger.debounce(0.1));
+    // bindTransition(
+    //     SuperState.INTAKE_ALGAE_STACK,
+    //     SuperState.READY_ALGAE,
+    //     armHasGamePieceTrigger.debounce(0.1));
 
-    // ---Cancel intake algae stack
-    bindTransition(
-        SuperState.INTAKE_ALGAE_STACK,
-        SuperState.IDLE,
-        intakeAlgaeReq.negate().and(armHasGamePieceTrigger.negate()));
+    // // ---Cancel intake algae stack
+    // bindTransition(
+    //     SuperState.INTAKE_ALGAE_STACK,
+    //     SuperState.IDLE,
+    //     intakeAlgaeReq.negate().and(armHasGamePieceTrigger.negate()));
 
-    // ---Right Intake Algae Low---
-    bindTransition(
-        SuperState.IDLE,
-        SuperState.INTAKE_ALGAE_LOW_RIGHT,
-        intakeAlgaeReq
-            .and(() -> Robot.getAlgaeIntakeTarget() == AlgaeIntakeTarget.LOW)
-            .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
+    // // ---Right Intake Algae Low---
+    // bindTransition(
+    //     SuperState.IDLE,
+    //     SuperState.INTAKE_ALGAE_LOW_RIGHT,
+    //     intakeAlgaeReq
+    //         .and(() -> Robot.getAlgaeIntakeTarget() == AlgaeIntakeTarget.LOW)
+    //         .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
-    bindTransition(
-        SuperState.INTAKE_ALGAE_LOW_RIGHT,
-        SuperState.READY_ALGAE,
-        armHasGamePieceTrigger.debounce(0.1));
+    // bindTransition(
+    //     SuperState.INTAKE_ALGAE_LOW_RIGHT,
+    //     SuperState.READY_ALGAE,
+    //     armHasGamePieceTrigger.debounce(0.1));
 
-    // ---Cancel right intake algae low---
-    bindTransition(
-        SuperState.INTAKE_ALGAE_LOW_RIGHT,
-        SuperState.IDLE,
-        intakeAlgaeReq.negate().and(armHasGamePieceTrigger.negate()));
+    // // ---Cancel right intake algae low---
+    // bindTransition(
+    //     SuperState.INTAKE_ALGAE_LOW_RIGHT,
+    //     SuperState.IDLE,
+    //     intakeAlgaeReq.negate().and(armHasGamePieceTrigger.negate()));
 
-    // ---Left Intake Algae Low---
-    // might hit climber?
-    bindTransition(
-        SuperState.IDLE,
-        SuperState.INTAKE_ALGAE_LOW_LEFT,
-        intakeAlgaeReq
-            .and(() -> Robot.getAlgaeIntakeTarget() == AlgaeIntakeTarget.LOW)
-            .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
+    // // ---Left Intake Algae Low---
+    // // might hit climber?
+    // bindTransition(
+    //     SuperState.IDLE,
+    //     SuperState.INTAKE_ALGAE_LOW_LEFT,
+    //     intakeAlgaeReq
+    //         .and(() -> Robot.getAlgaeIntakeTarget() == AlgaeIntakeTarget.LOW)
+    //         .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
-    bindTransition(
-        SuperState.INTAKE_ALGAE_LOW_LEFT,
-        SuperState.READY_ALGAE,
-        armHasGamePieceTrigger.debounce(0.1));
+    // bindTransition(
+    //     SuperState.INTAKE_ALGAE_LOW_LEFT,
+    //     SuperState.READY_ALGAE,
+    //     armHasGamePieceTrigger.debounce(0.1));
 
-    // ---Cancel left intake algae low---
-    bindTransition(
-        SuperState.INTAKE_ALGAE_LOW_LEFT,
-        SuperState.IDLE,
-        intakeAlgaeReq.negate().and(armHasGamePieceTrigger.negate()));
+    // // ---Cancel left intake algae low---
+    // bindTransition(
+    //     SuperState.INTAKE_ALGAE_LOW_LEFT,
+    //     SuperState.IDLE,
+    //     intakeAlgaeReq.negate().and(armHasGamePieceTrigger.negate()));
 
-    // ---Right Intake Algae High---
-    bindTransition(
-        SuperState.IDLE,
-        SuperState.INTAKE_ALGAE_HIGH_RIGHT,
-        intakeAlgaeReq
-            .and(() -> Robot.getAlgaeIntakeTarget() == AlgaeIntakeTarget.HIGH)
-            .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
+    // // ---Right Intake Algae High---
+    // bindTransition(
+    //     SuperState.IDLE,
+    //     SuperState.INTAKE_ALGAE_HIGH_RIGHT,
+    //     intakeAlgaeReq
+    //         .and(() -> Robot.getAlgaeIntakeTarget() == AlgaeIntakeTarget.HIGH)
+    //         .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
-    bindTransition(
-        SuperState.INTAKE_ALGAE_HIGH_RIGHT,
-        SuperState.READY_ALGAE,
-        armHasGamePieceTrigger.debounce(0.1));
+    // bindTransition(
+    //     SuperState.INTAKE_ALGAE_HIGH_RIGHT,
+    //     SuperState.READY_ALGAE,
+    //     armHasGamePieceTrigger.debounce(0.1));
 
-    // ---Cancel right intake algae high---
-    bindTransition(
-        SuperState.INTAKE_ALGAE_HIGH_RIGHT,
-        SuperState.IDLE,
-        intakeAlgaeReq.negate().and(armHasGamePieceTrigger.negate()));
+    // // ---Cancel right intake algae high---
+    // bindTransition(
+    //     SuperState.INTAKE_ALGAE_HIGH_RIGHT,
+    //     SuperState.IDLE,
+    //     intakeAlgaeReq.negate().and(armHasGamePieceTrigger.negate()));
 
-    // ---Left Intake Algae High---
-    bindTransition(
-        SuperState.IDLE,
-        SuperState.INTAKE_ALGAE_HIGH_LEFT,
-        intakeAlgaeReq
-            .and(() -> Robot.getAlgaeIntakeTarget() == AlgaeIntakeTarget.HIGH)
-            .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
+    // // ---Left Intake Algae High---
+    // bindTransition(
+    //     SuperState.IDLE,
+    //     SuperState.INTAKE_ALGAE_HIGH_LEFT,
+    //     intakeAlgaeReq
+    //         .and(() -> Robot.getAlgaeIntakeTarget() == AlgaeIntakeTarget.HIGH)
+    //         .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
-    bindTransition(
-        SuperState.INTAKE_ALGAE_HIGH_LEFT,
-        SuperState.READY_ALGAE,
-        armHasGamePieceTrigger.debounce(0.1));
+    // bindTransition(
+    //     SuperState.INTAKE_ALGAE_HIGH_LEFT,
+    //     SuperState.READY_ALGAE,
+    //     armHasGamePieceTrigger.debounce(0.1));
 
-    // ---Cancel left intake algae high---
-    bindTransition(
-        SuperState.INTAKE_ALGAE_HIGH_LEFT,
-        SuperState.IDLE,
-        intakeAlgaeReq.negate().and(armHasGamePieceTrigger.negate()));
+    // // ---Cancel left intake algae high---
+    // bindTransition(
+    //     SuperState.INTAKE_ALGAE_HIGH_LEFT,
+    //     SuperState.IDLE,
+    //     intakeAlgaeReq.negate().and(armHasGamePieceTrigger.negate()));
 
-    // ---In case algae drops from the arm for some reason
-    bindTransition(
-        SuperState.READY_ALGAE, SuperState.IDLE, armHasGamePieceTrigger.negate().debounce(0.5));
+    // // ---In case algae drops from the arm for some reason
+    // bindTransition(
+    //     SuperState.READY_ALGAE, SuperState.IDLE, armHasGamePieceTrigger.negate().debounce(0.5));
 
-    // ---Right Score Barge---
-    bindTransition(
-        SuperState.READY_ALGAE,
-        SuperState.PRE_BARGE_RIGHT,
-        preScoreReq
-            .and(() -> Robot.getAlgaeScoreTarget() == AlgaeScoreTarget.BARGE)
-            .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
+    // // ---Right Score Barge---
+    // bindTransition(
+    //     SuperState.READY_ALGAE,
+    //     SuperState.PRE_BARGE_RIGHT,
+    //     preScoreReq
+    //         .and(() -> Robot.getAlgaeScoreTarget() == AlgaeScoreTarget.BARGE)
+    //         .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
-    bindTransition(
-        SuperState.PRE_BARGE_RIGHT, SuperState.SCORE_BARGE_RIGHT, scoreReq.and(atExtensionTrigger));
+    // bindTransition(
+    //     SuperState.PRE_BARGE_RIGHT, SuperState.SCORE_BARGE_RIGHT,
+    // scoreReq.and(atExtensionTrigger));
 
-    bindTransition(
-        SuperState.SCORE_BARGE_RIGHT,
-        SuperState.IDLE,
-        // TODO i don't trust the state timer but i'm not sure if i can use the current check
-        new Trigger(() -> stateTimer.hasElapsed(0.5))
-            .and(armHasGamePieceTrigger.negate())
-            .debounce(0.2));
+    // bindTransition(
+    //     SuperState.SCORE_BARGE_RIGHT,
+    //     SuperState.IDLE,
+    //     // TODO i don't trust the state timer but i'm not sure if i can use the current check
+    //     new Trigger(() -> stateTimer.hasElapsed(0.5))
+    //         .and(armHasGamePieceTrigger.negate())
+    //         .debounce(0.2));
 
-    // ---Left Score Barge---
-    bindTransition(
-        SuperState.READY_ALGAE,
-        SuperState.PRE_BARGE_LEFT,
-        preScoreReq
-            .and(() -> Robot.getAlgaeScoreTarget() == AlgaeScoreTarget.BARGE)
-            .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
+    // // ---Left Score Barge---
+    // bindTransition(
+    //     SuperState.READY_ALGAE,
+    //     SuperState.PRE_BARGE_LEFT,
+    //     preScoreReq
+    //         .and(() -> Robot.getAlgaeScoreTarget() == AlgaeScoreTarget.BARGE)
+    //         .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
-    bindTransition(
-        SuperState.PRE_BARGE_LEFT, SuperState.SCORE_BARGE_LEFT, scoreReq.and(atExtensionTrigger));
+    // bindTransition(
+    //     SuperState.PRE_BARGE_LEFT, SuperState.SCORE_BARGE_LEFT,
+    // scoreReq.and(atExtensionTrigger));
 
-    bindTransition(
-        SuperState.SCORE_BARGE_LEFT,
-        SuperState.IDLE,
-        // TODO i don't trust the state timer but i'm not sure if i can use the current check
-        new Trigger(() -> stateTimer.hasElapsed(0.5))
-            .and(armHasGamePieceTrigger.negate())
-            .debounce(0.2));
+    // bindTransition(
+    //     SuperState.SCORE_BARGE_LEFT,
+    //     SuperState.IDLE,
+    //     // TODO i don't trust the state timer but i'm not sure if i can use the current check
+    //     new Trigger(() -> stateTimer.hasElapsed(0.5))
+    //         .and(armHasGamePieceTrigger.negate())
+    //         .debounce(0.2));
 
-    // ---Score Processor---
-    bindTransition(
-        SuperState.READY_ALGAE,
-        SuperState.PRE_PROCESSOR,
-        preScoreReq.and(() -> Robot.getAlgaeScoreTarget() == AlgaeScoreTarget.PROCESSOR));
+    // // ---Score Processor---
+    // bindTransition(
+    //     SuperState.READY_ALGAE,
+    //     SuperState.PRE_PROCESSOR,
+    //     preScoreReq.and(() -> Robot.getAlgaeScoreTarget() == AlgaeScoreTarget.PROCESSOR));
 
-    bindTransition(
-        SuperState.PRE_PROCESSOR, SuperState.SCORE_PROCESSOR, scoreReq.and(atExtensionTrigger));
+    // bindTransition(
+    //     SuperState.PRE_PROCESSOR, SuperState.SCORE_PROCESSOR, scoreReq.and(atExtensionTrigger));
 
-    bindTransition(
-        SuperState.SCORE_PROCESSOR,
-        SuperState.IDLE,
-        armHasGamePieceTrigger
-            .negate()
-            .debounce(0.2)
-            .and(new Trigger(swerve::nearProcessor).negate()));
+    // bindTransition(
+    //     SuperState.SCORE_PROCESSOR,
+    //     SuperState.IDLE,
+    //     armHasGamePieceTrigger
+    //         .negate()
+    //         .debounce(0.2)
+    //         .and(new Trigger(swerve::nearProcessor).negate()));
 
     // ---Climb---
     bindTransition(SuperState.IDLE, SuperState.PRE_CLIMB, preClimbReq);
@@ -818,6 +841,19 @@ public class Superstructure {
     bindTransition(SuperState.PRE_CLIMB, SuperState.IDLE, climbCancelReq);
   }
 
+  /**
+   * <b>Only for setting initial state at the beginning of auto</b>
+   *
+   * @param state the state to set to
+   */
+  public void resetStateForAuto(SuperState nextState) {
+    System.out.println("Resetting state from " + state + " to " + nextState + " for auto.");
+    stateTimer.reset();
+    this.prevState = state;
+    state = nextState;
+    setSubstates();
+  }
+
   public static SuperState getState() {
     return state;
   }
@@ -826,38 +862,38 @@ public class Superstructure {
     return getState().isCoral();
   }
 
-  public boolean stateIsAlgae() {
-    return getState().isAlgae();
-  }
+  //   public boolean stateIsAlgae() {
+  //     return getState().isAlgae();
+  //   }
 
-  public boolean stateIsIntakeAlgaeReef() {
-    return getState() == SuperState.INTAKE_ALGAE_HIGH_RIGHT
-        || getState() == SuperState.INTAKE_ALGAE_LOW_RIGHT;
-  }
+  //   public boolean stateIsIntakeAlgaeReef() {
+  //     return getState() == SuperState.INTAKE_ALGAE_HIGH_RIGHT
+  //         || getState() == SuperState.INTAKE_ALGAE_LOW_RIGHT;
+  //   }
 
-  public static boolean stateIsVoltageControl() {
-    return state == SuperState.INTAKE_ALGAE_HIGH_RIGHT
-        || state == SuperState.INTAKE_ALGAE_LOW_RIGHT
-        || state == SuperState.INTAKE_ALGAE_HIGH_LEFT
-        || state == SuperState.INTAKE_ALGAE_LOW_LEFT
-        || state == SuperState.INTAKE_ALGAE_GROUND
-        || state == SuperState.INTAKE_ALGAE_STACK
-        || state == SuperState.READY_ALGAE;
-  }
+  //   public static boolean stateIsVoltageControl() {
+  //     return state == SuperState.INTAKE_ALGAE_HIGH_RIGHT
+  //         || state == SuperState.INTAKE_ALGAE_LOW_RIGHT
+  //         || state == SuperState.INTAKE_ALGAE_HIGH_LEFT
+  //         || state == SuperState.INTAKE_ALGAE_LOW_LEFT
+  //         || state == SuperState.INTAKE_ALGAE_GROUND
+  //         || state == SuperState.INTAKE_ALGAE_STACK
+  //         || state == SuperState.READY_ALGAE;
+  //   }
 
   public boolean stateIsIdle() {
     return getState() == SuperState.IDLE;
   }
 
-  public boolean stateIsProcessor() {
-    return getState() == SuperState.READY_ALGAE
-        || getState() == SuperState.PRE_PROCESSOR
-        || getState() == SuperState.SCORE_PROCESSOR;
-  }
+  //   public boolean stateIsProcessor() {
+  //     return getState() == SuperState.READY_ALGAE
+  //         || getState() == SuperState.PRE_PROCESSOR
+  //         || getState() == SuperState.SCORE_PROCESSOR;
+  //   }
 
-  public boolean stateIsBarge() {
-    return getState() == SuperState.READY_ALGAE
-        || getState() == SuperState.PRE_BARGE_RIGHT
-        || getState() == SuperState.SCORE_BARGE_RIGHT;
-  }
+  //   public boolean stateIsBarge() {
+  //     return getState() == SuperState.READY_ALGAE
+  //         || getState() == SuperState.PRE_BARGE_RIGHT
+  //         || getState() == SuperState.SCORE_BARGE_RIGHT;
+  //   }
 }

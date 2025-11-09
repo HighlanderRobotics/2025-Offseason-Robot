@@ -46,12 +46,8 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
   private final CANrangeIO rightCanrangeIO;
   private final CANrangeIOInputsAutoLogged leftCanrangeInputs = new CANrangeIOInputsAutoLogged();
   private final CANrangeIOInputsAutoLogged rightCanrangeInputs = new CANrangeIOInputsAutoLogged();
-  private final Rotation2d ZEROING_POSITION = Rotation2d.fromDegrees(-10.0);
-  public static final double CURRENT_THRESHOLD = 10.0;
-
-  private boolean hasGamePieceSim = false;
-
-  public boolean intakeZeroed = false;
+  private final Rotation2d ZEROING_POSITION = Rotation2d.fromRadians(-0.5);
+  public static final double CURRENT_THRESHOLD = 60.0;
 
   private LinearFilter pivotCurrentFilter = LinearFilter.movingAverage(10);
   private double pivotCurrentFilterValue = 0.0;
@@ -100,6 +96,8 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
     this.rightCanrangeIO = rightCanrangeIO;
   }
 
+  private boolean hasGamePieceSim = false;
+
   @AutoLogOutput(key = "Intake/State")
   private IntakeState state = IntakeState.IDLE;
 
@@ -132,15 +130,12 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
     return leftCanrangeInputs.isDetected || rightCanrangeInputs.isDetected;
   }
 
-  public Command zeroIntake() {
-    return this.run(() -> setPivotAngle(() -> Rotation2d.fromDegrees(-80)))
+  public Command runCurrentZeroing() {
+    return setPivotVoltage(() -> -5.0)
         .until(
             new Trigger(() -> Math.abs(pivotCurrentFilterValue) > CURRENT_THRESHOLD).debounce(0.25))
         .andThen(
-            Commands.parallel(
-                Commands.runOnce(() -> intakeZeroed = true),
-                Commands.print("Intake Zeroed"),
-                zeroPivot(() -> ZEROING_POSITION)));
+            Commands.parallel(Commands.print("Intake Zeroed"), zeroPivot(() -> ZEROING_POSITION)));
   }
 
   public Command rezero() {
@@ -167,6 +162,7 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
           pivotIO.setMotorPosition(state.position.get(), 1);
           rollerIO.setRollerVelocity(state.velocityRPS.getAsDouble());
         });
+    // return this.run(() -> pivotIO.setMotorPosition(SuperState.IDLE.intakeState.getAngle()));
 
     // this is wrong?
     // return this.run(() -> setPivotAndRollers(getState().position, getState().velocityRPS));
@@ -209,5 +205,9 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
     config.Feedback.SensorToMechanismRatio = 12.5;
 
     return config;
+  }
+
+  public Command setRollerVelocity(DoubleSupplier vel) {
+    return this.run(() -> runRollerVelocity(vel.getAsDouble()));
   }
 }

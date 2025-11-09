@@ -7,6 +7,7 @@ import frc.robot.pivot.PivotIO;
 import frc.robot.roller.RollerIO;
 import frc.robot.rollerpivot.RollerPivotSubsystem;
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 public class ClimberSubsystem extends RollerPivotSubsystem {
   public static final double PIVOT_RATIO = (45.0 / 1.0);
@@ -24,14 +25,15 @@ public class ClimberSubsystem extends RollerPivotSubsystem {
   public static final double KV = 0.0;
   public static final double jKgMetersSquared = 0.01;
   public static final double TOLERANCE_DEGREES = 5.0;
-  public static final Rotation2d CLIMB_EXTENSION_DEGREES = Rotation2d.fromDegrees(70);
+
+  // public static final Rotation2d CLIMB_EXTENSION_DEGREES = Rotation2d.fromDegrees(70);
 
   public enum ClimberState {
     IDLE(Rotation2d.fromDegrees(0), 0.0),
-    // climbing
-    // TODO climber stuff is very tbd rn
-    PRE_CLIMB(Rotation2d.fromRadians(17.93), -5.0),
-    CLIMB(Rotation2d.fromDegrees(0.0), 0.0);
+    PRE_CLIMB(
+        Rotation2d.fromRadians(21.15819),
+        -5.0), // not actually how many radians it is because there's the spool but
+    CLIMB(Rotation2d.fromRadians(-20.0), 0.0);
 
     public final Rotation2d position;
     public final double volts;
@@ -66,6 +68,7 @@ public class ClimberSubsystem extends RollerPivotSubsystem {
     return this.run(
         () -> {
           pivotIO.setMotorPosition(state.position);
+          Logger.recordOutput("Climber/Pivot Setpoint", state.position);
           rollerIO.setRollerVoltage(state.volts);
         });
   }

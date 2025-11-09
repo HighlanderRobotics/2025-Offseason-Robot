@@ -49,14 +49,14 @@ public class ElevatorSubsystem extends SubsystemBase {
     PRE_L4(Units.metersToInches(1.37795)), // 54.25), // 29.375), // 58.75),
     L4(Units.metersToInches(1.23)), // 26), // 52),//49
     // algae
-    INTAKE_ALGAE_REEF_HIGH(Units.metersToInches(1.0)),
-    INTAKE_ALGAE_REEF_LOW(Units.metersToInches(0.6)),
-    INTAKE_ALGAE_STACK(10),
-    INTAKE_ALGAE_GROUND(25),
-    READY_ALGAE(0),
+    // INTAKE_ALGAE_REEF_HIGH(Units.metersToInches(1.0)),
+    // INTAKE_ALGAE_REEF_LOW(Units.metersToInches(0.6)),
+    // INTAKE_ALGAE_STACK(10),
+    // INTAKE_ALGAE_GROUND(25),
+    // READY_ALGAE(0),
 
-    BARGE(58.75),
-    PROCESSOR(4),
+    // BARGE(58.75),
+    // PROCESSOR(4),
     // climbing
     PRE_CLIMB(0),
     CLIMB(0);
@@ -80,9 +80,6 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   @AutoLogOutput(key = "Elevator/Current Filter Value")
   private double currentFilterValue = 0.0;
-
-  @AutoLogOutput(key = "Elevator/Has Zeroed")
-  private boolean hasZeroed = false;
 
   @AutoLogOutput(key = "Elevator/State")
   private ElevatorState state = ElevatorState.IDLE;
@@ -154,13 +151,7 @@ public class ElevatorSubsystem extends SubsystemBase {
               io.setVoltage(-2.0);
             })
         .until(() -> Math.abs(currentFilterValue) > ZEROING_CURRENT_THRESHOLD_AMPS)
-        .finallyDo(
-            (interrupted) -> {
-              if (!interrupted) {
-                io.resetEncoder();
-                hasZeroed = true;
-              }
-            });
+        .andThen(Commands.parallel(Commands.print("Elevator Zeroed"), rezero()));
   }
 
   public boolean atExtension(double expected) {
@@ -203,6 +194,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   }
 
   public Command rezero() {
-    return Commands.runOnce(() -> io.resetEncoder(0.0));
+    // return Commands.runOnce(() -> io.resetEncoder(0.0));
+    return Commands.runOnce(() -> io.resetEncoder(-0.0125));
   }
 }

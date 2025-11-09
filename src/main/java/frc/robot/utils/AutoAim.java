@@ -3,11 +3,11 @@ package frc.robot.utils;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
+import org.littletonrobotics.junction.Logger;
 
 public class AutoAim {
   static final double MAX_ANGULAR_SPEED = 10.0;
@@ -24,7 +24,7 @@ public class AutoAim {
   public static final double VELOCITY_TOLERANCE_METERSPERSECOND = 0.5;
   public static final double INITIAL_REEF_KEEPOFF_DISTANCE_METERS = -0.1;
 
-  public static final double ALGAE_APPROACH_SPEED_METERS_PER_SECOND = 1.0;
+  //   public static final double ALGAE_APPROACH_SPEED_METERS_PER_SECOND = 1.0;
 
   // Velocity controllers
   static final ProfiledPIDController VX_CONTROLLER =
@@ -74,34 +74,44 @@ public class AutoAim {
     VY_CONTROLLER.setConstraints(yConstraints);
     HEADING_CONTROLLER.setConstraints(headingConstraints);
 
-    if (isInTolerance(robotPose, target, TRANSLATION_TOLERANCE_METERS, ROTATION_TOLERANCE_RADIANS))
-      return new ChassisSpeeds();
+    ChassisSpeeds speeds;
 
-    return new ChassisSpeeds(
-        VX_CONTROLLER.calculate(robotPose.getX(), target.getX())
-            + VX_CONTROLLER.getSetpoint().velocity,
-        VY_CONTROLLER.calculate(robotPose.getY(), target.getY())
-            + VY_CONTROLLER.getSetpoint().velocity,
-        HEADING_CONTROLLER.calculate(
-                robotPose.getRotation().getRadians(), target.getRotation().getRadians())
-            + HEADING_CONTROLLER.getSetpoint().velocity);
+    if (isInTolerance(
+        robotPose, target, TRANSLATION_TOLERANCE_METERS, ROTATION_TOLERANCE_RADIANS)) {
+      speeds = new ChassisSpeeds();
+    } else {
+      speeds =
+          new ChassisSpeeds(
+              VX_CONTROLLER.calculate(robotPose.getX(), target.getX())
+                  + VX_CONTROLLER.getSetpoint().velocity,
+              VY_CONTROLLER.calculate(robotPose.getY(), target.getY())
+                  + VY_CONTROLLER.getSetpoint().velocity,
+              HEADING_CONTROLLER.calculate(
+                      robotPose.getRotation().getRadians(), target.getRotation().getRadians())
+                  + HEADING_CONTROLLER.getSetpoint().velocity);
+    }
+    Logger.recordOutput(
+        "AutoAim/Target Speeds Robot Relative",
+        ChassisSpeeds.fromFieldRelativeSpeeds(speeds, robotPose.getRotation()));
+
+    return speeds;
   }
 
-  public static double getClosestBargeXCoord(Pose2d pose) {
-    return Math.abs(pose.getX() - FieldUtils.BLUE_NET_X)
-            < Math.abs(pose.getX() - FieldUtils.RED_NET_X)
-        ? FieldUtils.BLUE_NET_X
-        : FieldUtils.RED_NET_X;
-  }
+  //   public static double getClosestBargeXCoord(Pose2d pose) {
+  //     return Math.abs(pose.getX() - FieldUtils.BLUE_NET_X)
+  //             < Math.abs(pose.getX() - FieldUtils.RED_NET_X)
+  //         ? FieldUtils.BLUE_NET_X
+  //         : FieldUtils.RED_NET_X;
+  //   }
 
-  public static Rotation2d getClosestBargeRotation(Pose2d pose) {
-    return (Math.abs(pose.getX() - FieldUtils.BLUE_NET_X)
-                > Math.abs(pose.getX() - FieldUtils.RED_NET_X)
-            ? Rotation2d.kCW_90deg
-            : Rotation2d.kCCW_90deg)
-        // TODO: TUNE
-        .plus(Rotation2d.fromDegrees(20.0));
-  }
+  //   public static Rotation2d getClosestBargeRotation(Pose2d pose) {
+  //     return (Math.abs(pose.getX() - FieldUtils.BLUE_NET_X)
+  //                 > Math.abs(pose.getX() - FieldUtils.RED_NET_X)
+  //             ? Rotation2d.kCW_90deg
+  //             : Rotation2d.kCCW_90deg)
+  //         // TODO: TUNE
+  //         .plus(Rotation2d.fromDegrees(20.0));
+  //   }
 
   public static boolean isInTolerance(
       Pose2d current,
