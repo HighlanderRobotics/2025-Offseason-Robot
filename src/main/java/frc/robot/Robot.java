@@ -25,6 +25,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -592,6 +593,10 @@ public class Robot extends LoggedRobot {
         new Alert("Driver controller disconnected!", AlertType.kError);
     operatorJoystickDisconnectedAlert =
         new Alert("Operator controller disconnected!", AlertType.kError);
+
+    Logger.recordOutput(
+        "test",
+        new Pose2d(new Translation2d(), Rotation2d.k180deg.plus(Rotation2d.fromDegrees(45.0))));
   }
 
   private TalonFXConfiguration createRollerConfig(
@@ -942,7 +947,28 @@ public class Robot extends LoggedRobot {
     autoChooser.addOption("Center auto", autos.getAlgaeAuto());
     autoChooser.addOption(
         "left taxi",
-        swerve.driveClosedLoopRobotRelative(() -> new ChassisSpeeds(1.0, 0.0, 0.0)).withTimeout(2));
+        Commands.sequence(
+            Commands.runOnce(
+                () ->
+                    swerve.setYaw(
+                        DriverStation.getAlliance().equals(Alliance.Blue)
+                            ? Rotation2d.k180deg.plus(Rotation2d.fromDegrees(-45.0))
+                            : Rotation2d.kZero.plus(Rotation2d.fromDegrees(-45.0)))),
+            swerve
+                .driveClosedLoopRobotRelative(() -> new ChassisSpeeds(1.0, 0.0, 0.0))
+                .withTimeout(2)));
+    autoChooser.addOption(
+        "right taxi",
+        Commands.sequence(
+            Commands.runOnce(
+                () ->
+                    swerve.setYaw(
+                        DriverStation.getAlliance().equals(Alliance.Blue)
+                            ? Rotation2d.kZero.plus(Rotation2d.fromDegrees(45.0))
+                            : Rotation2d.k180deg.plus(Rotation2d.fromDegrees(45.0)))),
+            swerve
+                .driveClosedLoopRobotRelative(() -> new ChassisSpeeds(1.0, 0.0, 0.0))
+                .withTimeout(2)));
     haveAutosGenerated = true;
   }
 
