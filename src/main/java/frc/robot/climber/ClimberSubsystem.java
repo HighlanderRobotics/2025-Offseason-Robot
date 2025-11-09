@@ -31,9 +31,9 @@ public class ClimberSubsystem extends RollerPivotSubsystem {
   public enum ClimberState {
     IDLE(Rotation2d.fromDegrees(0), 0.0),
     PRE_CLIMB(
-        Rotation2d.fromRadians(24.867),
+        Rotation2d.fromRadians(21.15819),
         -5.0), // not actually how many radians it is because there's the spool but
-    CLIMB(Rotation2d.fromRadians(-20.0), 0.0);
+    CLIMB(Rotation2d.fromRadians(0.0), 0.0);
 
     public final Rotation2d position;
     public final double volts;
