@@ -480,7 +480,11 @@ public class Robot extends LoggedRobot {
                         modifyJoystick(driver.getRightX())
                             * SwerveSubsystem.SWERVE_CONSTANTS.getMaxAngularSpeed())
                     .times(-1)
-                    .times(Superstructure.getState() == SuperState.PRE_CLIMB || Superstructure.getState() == SuperState.CLIMB ? 0.5 : 1.0)));
+                    .times(
+                        Superstructure.getState() == SuperState.PRE_CLIMB
+                                || Superstructure.getState() == SuperState.CLIMB
+                            ? 0.5
+                            : 1.0)));
 
     addControllerBindings();
 
