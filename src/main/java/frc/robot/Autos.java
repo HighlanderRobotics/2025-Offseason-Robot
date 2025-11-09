@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 /** Add your docs here. */
 public class Autos {
@@ -194,7 +195,8 @@ public class Autos {
 
   public Command getAlgaeAuto() {
     final AutoRoutine routine = factory.newRoutine("Algae auto");
-    bindCoralElevatorExtension(routine);
+    // 4.5 should make the elevator extend earlier so it doesn't knock the algae off the reef (in theory)
+    bindCoralElevatorExtension(routine, 4.5); // TODO: TUNE 
     Path[] paths = {Path.CMtoH4}; // Path.GHtoBR, Path.BRtoIJ, Path.IJtoBR};
 
     Command autoCommand =
@@ -300,12 +302,17 @@ public class Autos {
     return Commands.sequence(
             Commands.waitUntil(
                 new Trigger(
-                        () ->
-                            swerve.isInAutoAimTolerance(
-                                Robot.getCoralScoreTarget().equals(Robot.CoralScoreTarget.L4)
-                                    ? FieldUtils.CoralTargets.getClosestTargetL4(trajEndPose.get())
-                                    : FieldUtils.CoralTargets.getClosestTargetL23(
-                                        trajEndPose.get())))
+                        () -> {
+                          boolean isInTolerance =
+                              swerve.isInAutoAimTolerance(
+                                  Robot.getCoralScoreTarget().equals(Robot.CoralScoreTarget.L4)
+                                      ? FieldUtils.CoralTargets.getClosestTargetL4(
+                                          trajEndPose.get())
+                                      : FieldUtils.CoralTargets.getClosestTargetL23(
+                                          trajEndPose.get()));
+                          Logger.recordOutput("AutoAim/Is in tolerance", isInTolerance);
+                          return isInTolerance;
+                        })
                     .and(swerve::isNotMoving)
                     .debounce(0.06 * 2)),
             setAutoScoreReqTrue(),
