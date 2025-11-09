@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 /** Add your docs here. */
 public class Autos {
@@ -300,12 +301,17 @@ public class Autos {
     return Commands.sequence(
             Commands.waitUntil(
                 new Trigger(
-                        () ->
-                            swerve.isInAutoAimTolerance(
-                                Robot.getCoralScoreTarget().equals(Robot.CoralScoreTarget.L4)
-                                    ? FieldUtils.CoralTargets.getClosestTargetL4(trajEndPose.get())
-                                    : FieldUtils.CoralTargets.getClosestTargetL23(
-                                        trajEndPose.get())))
+                        () -> {
+                          boolean isInTolerance =
+                              swerve.isInAutoAimTolerance(
+                                  Robot.getCoralScoreTarget().equals(Robot.CoralScoreTarget.L4)
+                                      ? FieldUtils.CoralTargets.getClosestTargetL4(
+                                          trajEndPose.get())
+                                      : FieldUtils.CoralTargets.getClosestTargetL23(
+                                          trajEndPose.get()));
+                          Logger.recordOutput("AutoAim/Is in tolerance", isInTolerance);
+                          return isInTolerance;
+                        })
                     .and(swerve::isNotMoving)
                     .debounce(0.06 * 2)),
             setAutoScoreReqTrue(),

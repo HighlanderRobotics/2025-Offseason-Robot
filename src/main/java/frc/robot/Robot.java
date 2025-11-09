@@ -81,7 +81,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 public class Robot extends LoggedRobot {
-  public static final RobotType ROBOT_TYPE = Robot.isReal() ? RobotType.REAL : RobotType.SIM;
+  public static final RobotType ROBOT_TYPE = Robot.isReal() ? RobotType.REAL : RobotType.REPLAY;
   public static final boolean TUNING_MODE = true;
   public boolean hasZeroedSinceStartup = false;
 

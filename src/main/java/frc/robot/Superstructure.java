@@ -415,10 +415,7 @@ public class Superstructure {
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L1)
             .and(preScoreReq));
 
-    bindTransition(
-        SuperState.PRE_L1,
-        SuperState.L1,
-        preScoreReq.negate().and(scoreReq).and(atExtensionTrigger));
+    bindTransition(SuperState.PRE_L1, SuperState.L1, scoreReq.and(atExtensionTrigger));
 
     bindTransition(
         SuperState.L1,
@@ -515,9 +512,7 @@ public class Superstructure {
             .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
     bindTransition(
-        SuperState.PRE_L2_RIGHT,
-        SuperState.SCORE_L2_RIGHT,
-        preScoreReq.negate().and(scoreReq).and(atExtensionTrigger));
+        SuperState.PRE_L2_RIGHT, SuperState.SCORE_L2_RIGHT, scoreReq.and(atExtensionTrigger));
 
     bindTransition(
         SuperState.SCORE_L2_RIGHT,
@@ -541,9 +536,7 @@ public class Superstructure {
             .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
     bindTransition(
-        SuperState.PRE_L2_LEFT,
-        SuperState.SCORE_L2_LEFT,
-        preScoreReq.negate().and(scoreReq).and(atExtensionTrigger));
+        SuperState.PRE_L2_LEFT, SuperState.SCORE_L2_LEFT, scoreReq.and(atExtensionTrigger));
 
     bindTransition(
         SuperState.SCORE_L2_LEFT,
@@ -567,9 +560,7 @@ public class Superstructure {
             .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
     bindTransition(
-        SuperState.PRE_L3_RIGHT,
-        SuperState.SCORE_L3_RIGHT,
-        preScoreReq.negate().and(scoreReq).and(atExtensionTrigger));
+        SuperState.PRE_L3_RIGHT, SuperState.SCORE_L3_RIGHT, scoreReq.and(atExtensionTrigger));
 
     bindTransition(
         SuperState.SCORE_L3_RIGHT,
@@ -593,9 +584,7 @@ public class Superstructure {
             .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
     bindTransition(
-        SuperState.PRE_L3_LEFT,
-        SuperState.SCORE_L3_LEFT,
-        preScoreReq.negate().and(scoreReq).and(atExtensionTrigger));
+        SuperState.PRE_L3_LEFT, SuperState.SCORE_L3_LEFT, scoreReq.and(atExtensionTrigger));
 
     bindTransition(
         SuperState.SCORE_L3_LEFT,
@@ -619,9 +608,7 @@ public class Superstructure {
             .and(() -> Robot.getScoringSide() == ScoringSide.RIGHT));
 
     bindTransition(
-        SuperState.PRE_L4_RIGHT,
-        SuperState.SCORE_L4_RIGHT,
-        preScoreReq.negate().and(scoreReq).and(atExtensionTrigger));
+        SuperState.PRE_L4_RIGHT, SuperState.SCORE_L4_RIGHT, scoreReq.and(atExtensionTrigger));
 
     bindTransition(
         SuperState.SCORE_L4_RIGHT,
@@ -645,9 +632,7 @@ public class Superstructure {
             .and(() -> Robot.getScoringSide() == ScoringSide.LEFT));
 
     bindTransition(
-        SuperState.PRE_L4_LEFT,
-        SuperState.SCORE_L4_LEFT,
-        preScoreReq.negate().and(scoreReq).and(atExtensionTrigger));
+        SuperState.PRE_L4_LEFT, SuperState.SCORE_L4_LEFT, scoreReq.and(atExtensionTrigger));
 
     bindTransition(
         SuperState.SCORE_L4_LEFT,
