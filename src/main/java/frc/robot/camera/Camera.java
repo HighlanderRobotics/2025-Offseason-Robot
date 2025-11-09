@@ -14,9 +14,11 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.numbers.N8;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.Robot;
 import frc.robot.Robot.RobotType;
+import frc.robot.Superstructure;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.utils.Tracer;
 import java.util.NoSuchElementException;
@@ -162,40 +164,37 @@ public class Camera {
                   visionPose.toPose2d(),
                   inputs.result.metadata.captureTimestampMicros / 1.0e6,
                   deviations
-                      // .times(DriverStation.isAutonomous() ? 2.0 : 1.0)
-                      // .times(
-                      //     getName().equals("Front_Left_Camera")
-                      //             || getName().equals("Front_Right_Camera")
-                      //         ? 0.75
-                      //         : 2.0)
-                      // reef positions
-                      // .times(
-                      //     (getName().equals("Front_Left_Camera")
-                      //                 || getName().equals("Front_Right_Camera"))
-                      //             && (Superstructure.getState().isScoreCoral()
-                      //                 || Superstructure.getState()
-                      //                     == SuperState.INTAKE_ALGAE_HIGH_LEFT
-                      //                 || Superstructure.getState()
-                      //                     == SuperState.INTAKE_ALGAE_HIGH_RIGHT
-                      //                 || Superstructure.getState()
-                      //                     == SuperState.INTAKE_ALGAE_LOW_LEFT
-                      //                 || Superstructure.getState()
-                      //                     == SuperState.INTAKE_ALGAE_LOW_RIGHT)
-                      //         ? 0.5
-                      //         : 1.5) // TODO tune these sorts of numbers
-                      // hp tags
+                      .times(DriverStation.isAutonomous() ? 2.0 : 1.0)
                       .times(
-                          // !camera.getName().equals("Front_Camera")
-                          // &&
-                          estPose.get().targetsUsed.stream()
-                                  .anyMatch(
-                                      t ->
-                                          t.getFiducialId() == 12
-                                              || t.getFiducialId() == 13
-                                              || t.getFiducialId() == 2
-                                              || t.getFiducialId() == 1)
-                              ? 1.5
-                              : 1.0)
+                          getName().equals("Right_Drivebase")
+                              ? 2.0
+                              : 0.75)
+                      // reef positions
+                      .times(
+                          (getName().equals("Right_Elevator"))
+                                  && (Superstructure.getState().isScoreCoralRight())
+                              ? 0.8
+                              //anecdotally sam says right elevator is not as good as left lol
+                              : 1.5)
+                      .times(
+                          (getName().equals("Left_Drivebase")
+                                      || getName().equals("Left_Elevator"))
+                                  && (Superstructure.getState().isScoreCoralLeft())
+                              ? 0.5
+                              : 1.5)
+                      // hp tags
+                      // .times(
+                      //     // !camera.getName().equals("Front_Camera")
+                      //     // &&
+                      //     estPose.get().targetsUsed.stream()
+                      //             .anyMatch(
+                      //                 t ->
+                      //                     t.getFiducialId() == 12
+                      //                         || t.getFiducialId() == 13
+                      //                         || t.getFiducialId() == 2
+                      //                         || t.getFiducialId() == 1)
+                      //         ? 1.5
+                      //         : 1.0)
                       // barge tags
                       .times(
                           // !camera.getName().equals("Front_Right_Camera")
@@ -214,6 +213,7 @@ public class Camera {
               //             || Superstructure.getState() == SuperState.PRE_BARGE_RIGHT
               //         ? 0.5
               //         : 1.0));
+              //the sussifier
             });
 
         hasFutureData |= inputs.result.metadata.captureTimestampMicros > RobotController.getTime();

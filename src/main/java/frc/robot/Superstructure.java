@@ -182,6 +182,24 @@ public class Superstructure {
           || this == SCORE_L4_LEFT;
     }
 
+    public boolean isScoreCoralRight() {
+        return this == PRE_L2_RIGHT
+        || this == SCORE_L2_RIGHT
+        || this == PRE_L3_RIGHT
+        || this == SCORE_L3_RIGHT
+        || this == PRE_L4_RIGHT
+        || this == SCORE_L4_RIGHT;
+    }
+
+    public boolean isScoreCoralLeft() {
+        return this == PRE_L2_LEFT
+        || this == SCORE_L2_LEFT
+        || this == PRE_L3_LEFT
+        || this == SCORE_L3_LEFT
+        || this == PRE_L4_LEFT
+        || this == SCORE_L4_LEFT;
+    }
+
     // public boolean isAlgae() {
     //   return this == INTAKE_ALGAE_HIGH_RIGHT
     //       || this == INTAKE_ALGAE_LOW_RIGHT
