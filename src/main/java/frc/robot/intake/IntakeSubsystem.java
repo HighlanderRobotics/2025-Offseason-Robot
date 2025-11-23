@@ -124,8 +124,7 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
     return rightCanrangeInputs.distanceMeters;
   }
 
-  @AutoLogOutput(key = "Intake/Has Game Piece")
-  public boolean hasGamePiece() {
+  public boolean getBothBeambreaks() {
     // return getleftCanrangeDistanceMeters() < 0.01 || getRightCanrangeDistanceMeters() < 0.01;
     return leftCanrangeInputs.isDetected || rightCanrangeInputs.isDetected;
   }
@@ -209,5 +208,19 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
 
   public Command setRollerVelocity(DoubleSupplier vel) {
     return this.run(() -> runRollerVelocity(vel.getAsDouble()));
+  }
+
+  @AutoLogOutput(key = "Intake/Left Beambreak")
+  public boolean getLeftBeambreak() {
+    return leftCanrangeInputs.isDetected;
+  }
+
+  @AutoLogOutput(key = "Intake/Right Beambreak")
+  public boolean getRightBeambreak() {
+    return rightCanrangeInputs.isDetected;
+  }
+
+  public boolean getEitherBeambreak() {
+    return getLeftBeambreak() || getRightBeambreak();
   }
 }

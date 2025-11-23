@@ -202,7 +202,7 @@ public class Robot extends LoggedRobot {
                       new TrapezoidProfile.Constraints(
                           ArmSubsystem.MAX_VELOCITY, ArmSubsystem.MAX_ACCELERATION))),
           ROBOT_TYPE != RobotType.SIM
-              ? new PivotIOReal(9, armPivotConfig)
+              ? new PivotIOReal(9, armPivotConfig, "Arm")
               : new PivotIOSim(
                   ArmSubsystem.MIN_ANGLE.getRadians(),
                   ArmSubsystem.MAX_ANGLE.getRadians(),
@@ -241,7 +241,7 @@ public class Robot extends LoggedRobot {
                       new TrapezoidProfile.Constraints(
                           IntakeSubsystem.MAX_VELOCITY, IntakeSubsystem.MAX_ACCELERATION))),
           ROBOT_TYPE != RobotType.SIM
-              ? new PivotIOReal(12, IntakeSubsystem.getIntakePivotConfig())
+              ? new PivotIOReal(12, IntakeSubsystem.getIntakePivotConfig(), "Intake")
               : new PivotIOSim(
                   IntakeSubsystem.MIN_ANGLE.getRadians(),
                   IntakeSubsystem.MAX_ANGLE.getRadians(),
@@ -289,7 +289,7 @@ public class Robot extends LoggedRobot {
                       new TrapezoidProfile.Constraints(
                           ClimberSubsystem.MAX_VELOCITY, ClimberSubsystem.MAX_ACCELERATION))),
           ROBOT_TYPE != RobotType.SIM
-              ? new PivotIOReal(14, climberPivotConfig)
+              ? new PivotIOReal(14, climberPivotConfig, "Climber")
               : new PivotIOSim(
                   ClimberSubsystem.MIN_ANGLE.getRadians(),
                   ClimberSubsystem.MAX_ANGLE.getRadians(),

@@ -36,10 +36,10 @@ public class ElevatorSubsystem extends SubsystemBase {
     // So the constructor handles the conversion
     IDLE(0),
     PRE_HANDOFF(Units.metersToInches(0.88 / 2.0) + 14),
-    HANDOFF(Units.metersToInches(0.849)), // 0.451)),
+    HANDOFF(Units.metersToInches(0.87)), // 0.451)),
     // i have no idea why these are different
-    RIGHT_POST_HANDOFF(Units.metersToInches(0.89)),
-    LEFT_POST_HANDOFF(Units.metersToInches(0.97)),
+    // RIGHT_POST_HANDOFF(Units.metersToInches(0.89)),
+    POST_HANDOFF(Units.metersToInches(0.97)),
     INTAKE_CORAL_STACK(0),
     // coral
     PRE_L2(Units.metersToInches(0.12)),
