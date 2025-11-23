@@ -173,11 +173,12 @@ public class Camera {
                               ? 0.8
                               // anecdotally sam says right elevator is not as good as left lol
                               : 1.5)
-                      .times(
-                          (getName().equals("Left_Drivebase") || getName().equals("Left_Elevator"))
-                                  && (Superstructure.getState().isScoreCoralLeft())
-                              ? 0.5
-                              : 1.5)
+                      // .times(
+                      //     (getName().equals("Left_Drivebase") ||
+                      // getName().equals("Left_Elevator"))
+                      //             && (Superstructure.getState().isScoreCoralLeft())
+                      //         ? 0.5
+                      //         : 1.5)
                       // hp tags
                       // .times(
                       //     // !camera.getName().equals("Front_Camera")
