@@ -11,12 +11,14 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 // import frc.robot.Robot.AlgaeIntakeTarget;
 import frc.robot.Robot.CoralIntakeTarget;
 import frc.robot.Robot.CoralScoreTarget;
+import frc.robot.Robot.RobotType;
 import frc.robot.Robot.ScoringSide;
 import frc.robot.Superstructure.SuperState;
 import frc.robot.arm.ArmSubsystem;
@@ -92,6 +94,8 @@ public class Autos {
     SLRtoL4("SLR", "L4", PathEndType.SCORE_CORAL),
 
     CMtoH4("CM", "H4", PathEndType.SCORE_CORAL),
+
+    CMtoI4("CM", "I4", PathEndType.SCORE_CORAL),
   // H4toGH("H4", "GH", PathEndType.INTAKE_ALGAE),
   // GHtoBR("GH", "BR", PathEndType.SCORE_ALGAE),
   // BRtoIJ("BR", "IJ", PathEndType.INTAKE_ALGAE),
@@ -121,18 +125,20 @@ public class Autos {
     this.stateSetter = stateSetter;
     factory =
         new AutoFactory(
-            swerve::getPose, swerve::resetPose, swerve.choreoDriveController(), true, swerve
-            // ,
-            // (traj, edge) -> {
-            //   if (Robot.ROBOT_TYPE != RobotType.REAL)
-            //     Logger.recordOutput(
-            //         "Choreo/Active Traj",
-            //         DriverStation.getAlliance().isPresent()
-            //                 && DriverStation.getAlliance().get().equals(Alliance.Blue)
-            //             ? traj.getPoses()
-            //             : traj.flipped().getPoses());
-            // }
-            );
+            swerve::getPose,
+            swerve::resetPose,
+            swerve.choreoDriveController(),
+            true,
+            swerve,
+            (traj, edge) -> {
+              if (Robot.ROBOT_TYPE != RobotType.REAL)
+                Logger.recordOutput(
+                    "Choreo/Active Traj",
+                    DriverStation.getAlliance().isPresent()
+                            && DriverStation.getAlliance().get().equals(Alliance.Blue)
+                        ? traj.getPoses()
+                        : traj.flipped().getPoses());
+            });
   }
 
   public Command getLeftStackAuto() {
@@ -198,7 +204,7 @@ public class Autos {
     // 4.5 should make the elevator extend earlier so it doesn't knock the algae off the reef (in
     // theory)
     bindCoralElevatorExtension(routine, 4.5); // TODO: TUNE
-    Path[] paths = {Path.CMtoH4}; // Path.GHtoBR, Path.BRtoIJ, Path.IJtoBR};
+    Path[] paths = {Path.CMtoI4}; // CMtoH4 // Path.GHtoBR, Path.BRtoIJ, Path.IJtoBR};
 
     Command autoCommand =
         Commands.sequence(
