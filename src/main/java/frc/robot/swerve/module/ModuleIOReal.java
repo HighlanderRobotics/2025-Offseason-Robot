@@ -12,6 +12,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.google.common.collect.ImmutableSet;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.AngularVelocity;
+import frc.robot.Robot;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.swerve.module.Module.ModuleConstants;
 import frc.robot.swerve.odometry.PhoenixOdometryThread;
@@ -122,6 +123,9 @@ public class ModuleIOReal implements ModuleIO {
     driveTalon.optimizeBusUtilization();
     turnTalon.optimizeBusUtilization();
     cancoder.optimizeBusUtilization();
+
+    Robot.orchestra.addInstrument(driveTalon);
+    Robot.orchestra.addInstrument(turnTalon);
   }
 
   @Override

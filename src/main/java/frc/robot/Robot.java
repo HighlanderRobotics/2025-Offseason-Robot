@@ -7,6 +7,7 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Meter;
 
 import com.ctre.phoenix6.CANBus;
+import com.ctre.phoenix6.Orchestra;
 import com.ctre.phoenix6.CANBus.CANBusStatus;
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
@@ -369,6 +370,8 @@ public class Robot extends LoggedRobot {
   private final LoggedMechanismLigament2d intakeLigament =
       new LoggedMechanismLigament2d("Intake", IntakeSubsystem.LENGTH_METERS, 0.0);
 
+  public static final Orchestra orchestra = new Orchestra();
+
   @SuppressWarnings("resource")
   public Robot() {
     DriverStation.silenceJoystickConnectionWarning(true);
@@ -597,6 +600,9 @@ public class Robot extends LoggedRobot {
     Logger.recordOutput(
         "test",
         new Pose2d(new Translation2d(), Rotation2d.k180deg.plus(Rotation2d.fromDegrees(45.0))));
+
+    orchestra.loadMusic("scotland-the-brave.chrp");
+    SmartDashboard.putData("SCOTLAND FOREVER!!", Commands.runOnce(() -> orchestra.play()));
   }
 
   private TalonFXConfiguration createRollerConfig(

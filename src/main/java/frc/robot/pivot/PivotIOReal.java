@@ -13,6 +13,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
+import frc.robot.Robot;
 
 public class PivotIOReal implements PivotIO {
   private final TalonFX motor;
@@ -49,6 +50,8 @@ public class PivotIOReal implements PivotIO {
 
     motor.getConfigurator().apply(config);
     motor.optimizeBusUtilization();
+
+    Robot.orchestra.addInstrument(motor);
   }
 
   @Override

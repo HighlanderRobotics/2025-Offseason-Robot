@@ -14,6 +14,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
+import frc.robot.Robot;
 
 public class ElevatorIOReal implements ElevatorIO {
   private TalonFX leader = new TalonFX(10, "*");
@@ -96,6 +97,9 @@ public class ElevatorIOReal implements ElevatorIO {
         followerTemp);
     leader.optimizeBusUtilization();
     follower.optimizeBusUtilization();
+
+    Robot.orchestra.addInstrument(leader);
+    Robot.orchestra.addInstrument(follower);
   }
 
   @Override

@@ -10,6 +10,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
+import frc.robot.Robot;
 
 public class RollerIOReal implements RollerIO {
   private final TalonFX rollerMotor;
@@ -43,6 +44,8 @@ public class RollerIOReal implements RollerIO {
 
     rollerMotor.getConfigurator().apply(config);
     rollerMotor.optimizeBusUtilization();
+
+    Robot.orchestra.addInstrument(rollerMotor);
   }
 
   public void updateInputs(RollerIOInputs inputs) {
