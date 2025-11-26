@@ -268,16 +268,17 @@ public class FieldUtils {
       return original
           .transformBy(
               new Transform2d(
-                  0.0, 0.0, Rotation2d.fromDegrees(scoringSide == ScoringSide.LEFT ? 90.0 : 270.0)))
+                  // away from the reef
+                  (0.291
+                      + (SwerveSubsystem.SWERVE_CONSTANTS.getBumperLength() / 2)
+                      + Units.inchesToMeters(4.5)),
+                  0,
+                  Rotation2d.kZero))
           .transformBy(
               new Transform2d(
-                  Units.inchesToMeters(7.879),
-                  // * (Robot.getScoringSide() == ScoringSide.LEFT ? -1 : 1),
-                  (0.291
-                          + (SwerveSubsystem.SWERVE_CONSTANTS.getBumperLength() / 2)
-                          + Units.inchesToMeters(4.5))
-                      * (Robot.getScoringSide() == ScoringSide.LEFT ? -1 : 1),
-                  Rotation2d.kZero));
+                  0.0, 0.0, Rotation2d.fromDegrees(scoringSide == ScoringSide.LEFT ? 90.0 : 270.0)))
+          // side to side
+          .transformBy(new Transform2d(Units.inchesToMeters(-7.879), 0, Rotation2d.kZero));
     }
 
     public static Pose2d getRobotTargetLocationL4(Pose2d original, ScoringSide scoringSide) {
@@ -294,7 +295,7 @@ public class FieldUtils {
           .transformBy(
               new Transform2d(
                   0.0, 0.0, Rotation2d.fromDegrees(scoringSide == ScoringSide.LEFT ? 90.0 : 270.0)))
-                  //side to side
+          // side to side
           .transformBy(new Transform2d(Units.inchesToMeters(-7.879), 0, Rotation2d.kZero));
     }
 

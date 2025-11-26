@@ -593,16 +593,16 @@ public class Robot extends LoggedRobot {
 
     Logger.recordOutput(
         "test g left",
-        CoralTargets.getRobotTargetLocationL4(CoralTargets.BLUE_G.location, ScoringSide.LEFT));
+        CoralTargets.getRobotTargetLocationL23(CoralTargets.BLUE_G.location, ScoringSide.LEFT));
     Logger.recordOutput(
         "test g right",
-        CoralTargets.getRobotTargetLocationL4(CoralTargets.BLUE_G.location, ScoringSide.RIGHT));
+        CoralTargets.getRobotTargetLocationL23(CoralTargets.BLUE_G.location, ScoringSide.RIGHT));
     Logger.recordOutput(
         "test h left",
-        CoralTargets.getRobotTargetLocationL4(CoralTargets.BLUE_H.location, ScoringSide.LEFT));
+        CoralTargets.getRobotTargetLocationL23(CoralTargets.BLUE_H.location, ScoringSide.LEFT));
     Logger.recordOutput(
         "test h right",
-        CoralTargets.getRobotTargetLocationL4(CoralTargets.BLUE_H.location, ScoringSide.RIGHT));
+        CoralTargets.getRobotTargetLocationL23(CoralTargets.BLUE_H.location, ScoringSide.RIGHT));
   }
 
   private TalonFXConfiguration createRollerConfig(
