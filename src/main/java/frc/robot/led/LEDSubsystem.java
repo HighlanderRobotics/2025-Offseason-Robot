@@ -4,12 +4,19 @@
 
 package frc.robot.led;
 
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Robot;
+import frc.robot.Superstructure;
+import frc.robot.Superstructure.SuperState;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class LEDSubsystem extends SubsystemBase {
@@ -23,11 +30,54 @@ public class LEDSubsystem extends SubsystemBase {
   private double rainbowStart = 0;
   private double dashStart = 0;
 
+  // public enum LEDState {
+  //   DISABLED,
+  //   IDLE,
+  //   READY_CORAL
+  // }
+
+  // @AutoLogOutput(key = "LEDs/State")
+  // private LEDState state = LEDState.DISABLED;
+
   /** Creates a new LEDSubsystem. */
   public LEDSubsystem(LEDIO io) {
     this.io = io;
     io.solid(Color.kPurple);
+
+    // new Trigger(DriverStation::isDisabled)
+    //     // .whileTrue(Commands.runOnce(() -> setState(LEDState.DISABLED)));
+    //     .whileTrue(
+    //         setRunAlongCmd(
+    //                 () ->
+    //                     DriverStation.getAlliance()
+    //                         .map((a) -> a == Alliance.Blue ? Color.kBlue : Color.kRed)
+    //                         .orElse(Color.kWhite),
+    //                 LEDSubsystem.PURPLE,
+    //                 4,
+    //                 1.0)
+    //             .repeatedly()
+    //             .ignoringDisable(true));
+
+    // new Trigger(() -> Superstructure.getState() == SuperState.IDLE)
+    //     .and(DriverStation::isEnabled)
+    //     .whileTrue(
+    //         setBlinkingCmd(() -> Robot.getCoralScoreTarget().getColor(), () -> Color.kBlack, 5.0)
+    //             .repeatedly());
+
+    // new Trigger(
+    //         () ->
+    //             Superstructure.getState().isScoreCoral()
+    //                 || Superstructure.getState().isReadyIntakeCoral())
+    //     .whileTrue(Commands.runOnce(() -> setState(LEDState.READY_CORAL)));
   }
+
+  // public void setState(LEDState state) {
+  //   this.state = state;
+  // }
+
+  // public LEDState getState() {
+  //   return state;
+  // }
 
   @Override
   public void periodic() {
@@ -103,4 +153,37 @@ public class LEDSubsystem extends SubsystemBase {
           dashStart %= LED_LENGTH;
         });
   }
+
+  // public Command set(Supplier<LEDState> ledStateSupplier) {
+  //   switch (ledStateSupplier.get()) {
+  //     case DISABLED:
+  //       return setRunAlongCmd(
+  //               () ->
+  //                   DriverStation.getAlliance()
+  //                       .map((a) -> a == Alliance.Blue ? Color.kBlue : Color.kRed)
+  //                       .orElse(Color.kWhite),
+  //               LEDSubsystem.PURPLE,
+  //               4,
+  //               1.0)
+  //           .repeatedly()
+  //           .until(DriverStation::isEnabled)
+  //           .ignoringDisable(true);
+  //     case IDLE:
+  //       return setBlinkingCmd(() -> Robot.getCoralScoreTarget().getColor(), () -> Color.kBlack, 5.0)
+  //           .repeatedly();
+  //     case READY_CORAL:
+  //       return setBlinkingCmd(() -> Robot.getCoralScoreTarget().getColor(), () -> Color.kWhite, 5.0)
+  //           .repeatedly();
+  //     default:
+  //       return setRunAlongCmd(
+  //               () ->
+  //                   DriverStation.getAlliance()
+  //                       .map((a) -> a == Alliance.Blue ? Color.kBlue : Color.kRed)
+  //                       .orElse(Color.kWhite),
+  //               LEDSubsystem.PURPLE,
+  //               4,
+  //               1.0)
+  //           .repeatedly();
+  //   }
+  // }
 }
