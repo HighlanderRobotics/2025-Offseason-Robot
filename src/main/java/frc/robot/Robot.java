@@ -63,6 +63,7 @@ import frc.robot.roller.RollerIOSim;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.swerve.odometry.PhoenixOdometryThread;
 import frc.robot.utils.CommandXboxControllerSubsystem;
+import frc.robot.utils.FieldUtils.CoralTargets;
 import java.util.Optional;
 import java.util.Set;
 import org.ironmaple.simulation.SimulatedArena;
@@ -82,7 +83,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 public class Robot extends LoggedRobot {
-  public static final RobotType ROBOT_TYPE = Robot.isReal() ? RobotType.REAL : RobotType.REPLAY;
+  public static final RobotType ROBOT_TYPE = Robot.isReal() ? RobotType.REAL : RobotType.SIM;
   public static final boolean TUNING_MODE = true;
   public boolean hasZeroedSinceStartup = false;
 
@@ -589,6 +590,19 @@ public class Robot extends LoggedRobot {
     Logger.recordOutput(
         "test",
         new Pose2d(new Translation2d(), Rotation2d.k180deg.plus(Rotation2d.fromDegrees(45.0))));
+
+    Logger.recordOutput(
+        "test g left",
+        CoralTargets.getRobotTargetLocationL4(CoralTargets.BLUE_G.location, ScoringSide.LEFT));
+    Logger.recordOutput(
+        "test g right",
+        CoralTargets.getRobotTargetLocationL4(CoralTargets.BLUE_G.location, ScoringSide.RIGHT));
+    Logger.recordOutput(
+        "test h left",
+        CoralTargets.getRobotTargetLocationL4(CoralTargets.BLUE_H.location, ScoringSide.LEFT));
+    Logger.recordOutput(
+        "test h right",
+        CoralTargets.getRobotTargetLocationL4(CoralTargets.BLUE_H.location, ScoringSide.RIGHT));
   }
 
   private TalonFXConfiguration createRollerConfig(

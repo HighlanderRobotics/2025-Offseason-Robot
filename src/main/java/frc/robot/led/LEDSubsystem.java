@@ -4,19 +4,12 @@
 
 package frc.robot.led;
 
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Robot;
-import frc.robot.Superstructure;
-import frc.robot.Superstructure.SuperState;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
-import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class LEDSubsystem extends SubsystemBase {
@@ -169,10 +162,12 @@ public class LEDSubsystem extends SubsystemBase {
   //           .until(DriverStation::isEnabled)
   //           .ignoringDisable(true);
   //     case IDLE:
-  //       return setBlinkingCmd(() -> Robot.getCoralScoreTarget().getColor(), () -> Color.kBlack, 5.0)
+  //       return setBlinkingCmd(() -> Robot.getCoralScoreTarget().getColor(), () -> Color.kBlack,
+  // 5.0)
   //           .repeatedly();
   //     case READY_CORAL:
-  //       return setBlinkingCmd(() -> Robot.getCoralScoreTarget().getColor(), () -> Color.kWhite, 5.0)
+  //       return setBlinkingCmd(() -> Robot.getCoralScoreTarget().getColor(), () -> Color.kWhite,
+  // 5.0)
   //           .repeatedly();
   //     default:
   //       return setRunAlongCmd(
