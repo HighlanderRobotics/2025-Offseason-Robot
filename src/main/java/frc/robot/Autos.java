@@ -22,6 +22,7 @@ import frc.robot.Robot.RobotType;
 import frc.robot.Robot.ScoringSide;
 import frc.robot.Superstructure.SuperState;
 import frc.robot.arm.ArmSubsystem;
+import frc.robot.intake.IntakeSubsystem;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.utils.AutoAim;
 import frc.robot.utils.FieldUtils;
@@ -36,6 +37,7 @@ public class Autos {
 
   private final SwerveSubsystem swerve;
   private final ArmSubsystem arm;
+  private final IntakeSubsystem intake;
   private final AutoFactory factory;
   private Consumer<SuperState> stateSetter;
 
@@ -96,6 +98,7 @@ public class Autos {
     CMtoH4("CM", "H4", PathEndType.SCORE_CORAL),
 
     CMtoI4("CM", "I4", PathEndType.SCORE_CORAL),
+    I4toPLO("I4", "PLO", PathEndType.INTAKE_CORAL_GROUND)
   // H4toGH("H4", "GH", PathEndType.INTAKE_ALGAE),
   // GHtoBR("GH", "BR", PathEndType.SCORE_ALGAE),
   // BRtoIJ("BR", "IJ", PathEndType.INTAKE_ALGAE),
@@ -119,9 +122,14 @@ public class Autos {
     }
   }
 
-  public Autos(SwerveSubsystem swerve, ArmSubsystem arm, Consumer<SuperState> stateSetter) {
+  public Autos(
+      SwerveSubsystem swerve,
+      ArmSubsystem arm,
+      IntakeSubsystem intake,
+      Consumer<SuperState> stateSetter) {
     this.swerve = swerve;
     this.arm = arm;
+    this.intake = intake;
     this.stateSetter = stateSetter;
     factory =
         new AutoFactory(
@@ -204,7 +212,7 @@ public class Autos {
     // 4.5 should make the elevator extend earlier so it doesn't knock the algae off the reef (in
     // theory)
     bindCoralElevatorExtension(routine, 4.5); // TODO: TUNE
-    Path[] paths = {Path.CMtoI4}; // CMtoH4 // Path.GHtoBR, Path.BRtoIJ, Path.IJtoBR};
+    Path[] paths = {Path.CMtoI4, Path.I4toPLO}; // CMtoH4 // Path.GHtoBR, Path.BRtoIJ, Path.IJtoBR};
 
     Command autoCommand =
         Commands.sequence(
@@ -212,8 +220,10 @@ public class Autos {
                 Commands.runOnce(() -> stateSetter.accept(SuperState.READY_CORAL_ARM)),
                 Commands.runOnce(() -> arm.hasCoral = true)),
             Commands.runOnce(() -> Robot.setScoringSide(ScoringSide.LEFT)),
+            Commands.runOnce(() -> Robot.setCoralIntakeTarget(CoralIntakeTarget.GROUND)),
             paths[0].getTrajectory(routine).resetOdometry(),
-            runPath(paths[0], routine));
+            runPath(paths[0], routine),
+            runPath(paths[1], routine));
     // intakeAlgaeInAuto(() -> paths[0].getTrajectory(routine).getFinalPose().get()),
     // runPath(paths[1], routine),
     // runPath(paths[2], routine),
@@ -347,15 +357,17 @@ public class Autos {
                 routine.observe(
                     path.getTrajectory(routine)
                         .atTime(
-                            path.getTrajectory(routine).getRawTrajectory().getTotalTime()
-                                - (path.end.length() == 1 ? 0.3 : 0.0)))),
+                            path.getTrajectory(routine).getRawTrajectory().getTotalTime() - 0.85))),
         intakeGroundCoralInAuto(() -> path.getTrajectory(routine).getFinalPose()));
   }
 
   // bruh why was i inconsistent on this
   // TODO intakeCoralInAuto (cause ground/stack intake)
   public Command intakeGroundCoralInAuto(Supplier<Optional<Pose2d>> pose) {
-    return Commands.none();
+    return Commands.sequence(
+        Commands.runOnce(() -> autoIntakeCoral = true),
+        Commands.waitUntil(new Trigger(intake::getEitherBeambreak).debounce(0.1)),
+        Commands.runOnce(() -> autoIntakeCoral = false));
   }
 
   // TODO: SHOULD THIS AUTOALIGN??

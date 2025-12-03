@@ -482,25 +482,8 @@ public class Robot extends LoggedRobot {
 
     addControllerBindings();
 
-    autos = new Autos(swerve, arm, superstructure::resetStateForAuto);
+    autos = new Autos(swerve, arm, intake, superstructure::resetStateForAuto);
     autoChooser.addDefaultOption("None", Commands.none());
-
-    // Generates autos on connected
-    new Trigger(
-            () ->
-                DriverStation.isDSAttached()
-                    && DriverStation.getAlliance().isPresent()
-                    && !haveAutosGenerated)
-        .onTrue(Commands.print("Connected"))
-        .onTrue(Commands.runOnce(this::addAutos).ignoringDisable(true));
-
-    new Trigger(
-            () -> {
-              boolean allianceChanged = !DriverStation.getAlliance().equals(lastAlliance);
-              lastAlliance = DriverStation.getAlliance();
-              return allianceChanged && DriverStation.getAlliance().isPresent();
-            })
-        .onTrue(Commands.runOnce(this::addAutos).ignoringDisable(true));
 
     // Run auto when auto starts. Matches Choreolib's defer impl
     RobotModeTriggers.autonomous()
@@ -575,7 +558,15 @@ public class Robot extends LoggedRobot {
     SmartDashboard.putData(
         "ninety intake",
         intake.ninety().alongWith(Commands.print("dashboard ninety intake")).ignoringDisable(true));
-    SmartDashboard.putData("Add autos", Commands.runOnce(this::addAutos).ignoringDisable(true));
+    SmartDashboard.putData(
+        "Add autos",
+        Commands.runOnce(
+                () -> {
+                  if (DriverStation.getAlliance().isPresent()) {
+                    addAutos();
+                  }
+                })
+            .ignoringDisable(true));
 
     manualArmRezeroAlert =
         new Alert(
