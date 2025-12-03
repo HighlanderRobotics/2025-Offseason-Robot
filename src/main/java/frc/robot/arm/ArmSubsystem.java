@@ -65,6 +65,8 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public boolean armZeroed = false;
 
   private LinearFilter pivotCurrentFilter = LinearFilter.movingAverage(10);
+
+  @AutoLogOutput(key = "Arm/Current Filter Value")
   private double pivotCurrentFilterValue = 0.0;
 
   @AutoLogOutput(key = "Arm/REAL setpoint")
