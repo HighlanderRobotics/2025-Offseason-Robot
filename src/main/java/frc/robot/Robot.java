@@ -63,6 +63,7 @@ import frc.robot.roller.RollerIOSim;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.swerve.odometry.PhoenixOdometryThread;
 import frc.robot.utils.CommandXboxControllerSubsystem;
+import frc.robot.utils.FieldUtils.CoralTargets;
 import java.util.Optional;
 import java.util.Set;
 import org.ironmaple.simulation.SimulatedArena;
@@ -102,6 +103,10 @@ public class Robot extends LoggedRobot {
 
     private CoralScoreTarget(Color color) {
       this.color = color;
+    }
+
+    public Color getColor() {
+      return color;
     }
   }
 
@@ -429,42 +434,30 @@ public class Robot extends LoggedRobot {
 
     driver.setDefaultCommand(driver.rumbleCmd(0.0, 0.0));
     operator.setDefaultCommand(operator.rumbleCmd(0.0, 0.0));
-    leds.setDefaultCommand(
-        Commands.either(
-                // enabled
-                leds.setBlinkingCmd(
-                    () -> getCoralScoreTarget().color,
-                    () ->
-                        Superstructure.getState() == SuperState.IDLE ? Color.kBlack : Color.kWhite,
-                    5.0),
-                // Commands.either(
-                //     // if we're in an algae state, override it with the split color
-                //     leds.setBlinkingSplitCmd(
-                //         () -> getAlgaeIntakeTarget().color, () -> getAlgaeScoreTarget().color,
-                // 5.0),
-                //     // otherwise set it to the blinking pattern
-                //     leds.setBlinkingCmd(
-                //         () -> getCoralScoreTarget().color,
-                //         () ->
-                //             Superstructure.getState() == SuperState.IDLE
-                //                 ? Color.kBlack
-                //                 : Color.kWhite,
-                //         5.0),
-                //     superstructure::stateIsAlgae),
-                // not enabled
-                leds.setRunAlongCmd(
-                    () ->
-                        DriverStation.getAlliance()
-                            .map((a) -> a == Alliance.Blue ? Color.kBlue : Color.kRed)
-                            .orElse(Color.kWhite),
-                    // () -> wrist.hasZeroed ? LEDSubsystem.PURPLE : Color.kOrange, //TODO add check
-                    // for zero
-                    LEDSubsystem.PURPLE,
-                    4,
-                    1.0),
-                DriverStation::isEnabled)
-            .repeatedly()
-            .ignoringDisable(true));
+    // leds.setDefaultCommand(leds.set(leds::getState));
+    // Commands.either(
+    //         // enabled
+    //         leds.setBlinkingCmd(
+    //                 () -> getCoralScoreTarget().color,
+    //                 () ->
+    //                     Superstructure.getState() == SuperState.IDLE
+    //                         ? Color.kBlack
+    //                         : Color.kWhite,
+    //                 5.0)
+    //             .until(() -> !DriverStation.isEnabled()),
+    //         // not enabled
+    //         leds.setRunAlongCmd(
+    //                 () ->
+    //                     DriverStation.getAlliance()
+    //                         .map((a) -> a == Alliance.Blue ? Color.kBlue : Color.kRed)
+    //                         .orElse(Color.kWhite),
+    //                 LEDSubsystem.PURPLE,
+    //                 4,
+    //                 1.0)
+    //             .until(() -> DriverStation.isEnabled()),
+    //         () -> DriverStation.isEnabled())
+    //     .repeatedly()
+    //     .ignoringDisable(true));
 
     if (ROBOT_TYPE == RobotType.SIM) {
       SimulatedArena.getInstance().addDriveTrainSimulation(swerveSimulation);
@@ -597,6 +590,19 @@ public class Robot extends LoggedRobot {
     Logger.recordOutput(
         "test",
         new Pose2d(new Translation2d(), Rotation2d.k180deg.plus(Rotation2d.fromDegrees(45.0))));
+
+    Logger.recordOutput(
+        "test g left",
+        CoralTargets.getRobotTargetLocationL23(CoralTargets.BLUE_G.location, ScoringSide.LEFT));
+    Logger.recordOutput(
+        "test g right",
+        CoralTargets.getRobotTargetLocationL23(CoralTargets.BLUE_G.location, ScoringSide.RIGHT));
+    Logger.recordOutput(
+        "test h left",
+        CoralTargets.getRobotTargetLocationL23(CoralTargets.BLUE_H.location, ScoringSide.LEFT));
+    Logger.recordOutput(
+        "test h right",
+        CoralTargets.getRobotTargetLocationL23(CoralTargets.BLUE_H.location, ScoringSide.RIGHT));
   }
 
   private TalonFXConfiguration createRollerConfig(
@@ -876,7 +882,8 @@ public class Robot extends LoggedRobot {
                 Commands.deadline(
                     arm.runCurrentZeroing(),
                     Commands.parallel(
-                        elevator.setVoltage(() -> -1.0), intake.setPivotVoltage(() -> -3.0))),
+                        elevator.setVoltage(() -> -1.0).repeatedly(),
+                        intake.setPivotVoltage(() -> -3.0).repeatedly())),
                 // sets exit state
                 superstructure.transitionAfterZeroing(),
                 // logging
@@ -898,7 +905,7 @@ public class Robot extends LoggedRobot {
     //             .andThen(Commands.runOnce(() -> hasZeroedSinceStartup = true)));
 
     // Rezero arm against cancoder
-    driver.x().onTrue(Commands.runOnce(() -> arm.rezeroFromEncoder()).ignoringDisable(true));
+    driver.x().onTrue(arm.rezeroFromEncoder());
 
     // antijam algae
     // i am pulling these numbers out of my ass
