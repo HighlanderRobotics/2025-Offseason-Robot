@@ -13,9 +13,11 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
+import org.littletonrobotics.junction.Logger;
 
 public class PivotIOReal implements PivotIO {
   private final TalonFX motor;
+  private final String name;
 
   private final StatusSignal<AngularVelocity> angularVelocityRotsPerSec;
   private final StatusSignal<Current> supplyCurrentAmps;
@@ -28,8 +30,9 @@ public class PivotIOReal implements PivotIO {
   private final MotionMagicVoltage motionMagic = new MotionMagicVoltage(0.0);
   private final PositionVoltage positionVoltage = new PositionVoltage(0.0).withEnableFOC(true);
 
-  public PivotIOReal(int motorID, TalonFXConfiguration config) {
+  public PivotIOReal(int motorID, TalonFXConfiguration config, String name) {
     motor = new TalonFX(motorID, "*");
+    this.name = name;
 
     angularVelocityRotsPerSec = motor.getVelocity();
     supplyCurrentAmps = motor.getSupplyCurrent();
@@ -77,6 +80,7 @@ public class PivotIOReal implements PivotIO {
   @Override
   public void setMotorPosition(Rotation2d targetPosition, int slot) {
     // motor.setControl(motionMagic.withPosition(targetPosition.getRotations()).withSlot(slot));
+    Logger.recordOutput(name + "/Pivot Setpoint/", targetPosition);
     motor.setControl(positionVoltage.withPosition(targetPosition.getRotations()).withSlot(slot));
   }
 
