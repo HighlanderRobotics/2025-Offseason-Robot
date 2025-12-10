@@ -7,8 +7,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Robot;
+import frc.robot.Robot.ScoringSide;
 import frc.robot.Superstructure;
-import frc.robot.Superstructure.SuperState;
 import frc.robot.cancoder.CANcoderIO;
 import frc.robot.cancoder.CANcoderIOInputsAutoLogged;
 import frc.robot.pivot.PivotIO;
@@ -67,6 +67,9 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   private LinearFilter pivotCurrentFilter = LinearFilter.movingAverage(10);
   private double pivotCurrentFilterValue = 0.0;
 
+  @AutoLogOutput(key = "Arm/REAL setpoint")
+  public Rotation2d setpoint = Rotation2d.kZero;
+
   /**
    * 0 for position is vertical with the EE up. We consider the front of the robot to be the intake,
    * so left and right are based on that. Positive is counterclockwise from the robot's POV (which
@@ -76,47 +79,23 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public enum ArmState {
     IDLE(0, 0.0),
     // coral
-    PRE_RIGHT_HANDOFF(90, 7.0),
-    RIGHT_HANDOFF(180, 7.0),
-    RIGHT_POST_HANDOFF(89, 7.0),
-
-    PRE_LEFT_HANDOFF(-90, 7.0),
-    LEFT_HANDOFF(-180, 7.0),
-    LEFT_POST_HANDOFF(-89, 7.0),
+    PRE_HANDOFF(90, 7.0),
+    HANDOFF_CENTER(180, 7.0),
+    HANDOFF_RIGHT(184, 7.0),
+    HANDOFF_LEFT(176, 7.0),
+    POST_HANDOFF(89, 7.0),
 
     INTAKE_CORAL_STACK(-100, 7.0),
     READY_CORAL_ARM(0, 7.0),
 
-    PRE_L2_RIGHT(-35, 7.0),
-    SCORE_L2_RIGHT(-90, -10.0),
-    PRE_L3_RIGHT(-45, 7.0),
-    SCORE_L3_RIGHT(-90, -10.0),
-    PRE_L4_RIGHT(-60, 10.0),
-    SCORE_L4_RIGHT(-90, -14.0),
+    // Right side by default
+    PRE_L2(-35, 7.0),
+    SCORE_L2(-90, -10.0),
+    PRE_L3(-45, 7.0),
+    SCORE_L3(-90, -10.0),
+    PRE_L4(-60, 10.0),
+    SCORE_L4(-90, -14.0),
 
-    PRE_L2_LEFT(45, 7.0),
-    SCORE_L2_LEFT(90, -10.0),
-    PRE_L3_LEFT(45, 7.0),
-    SCORE_L3_LEFT(90, -10.0),
-    PRE_L4_LEFT(70, 10.0),
-    SCORE_L4_LEFT(90, -10.0),
-    // algae
-    // These all have voltage control
-    // INTAKE_ALGAE_REEF_RIGHT(-90, 10.0),
-    // INTAKE_ALGAE_REEF_LEFT(90, 10.0),
-    // INTAKE_ALGAE_GROUND(125, 15.0),
-    // // TODO: SET POS BACK TO 90 deg
-    // INTAKE_ALGAE_STACK(90, 8.0),
-    // READY_ALGAE(0, 8.0),
-
-    // PRE_BARGE_RIGHT(-20, 4.0),
-    // SCORE_BARGE_RIGHT(-20, -10.0),
-
-    // PRE_BARGE_LEFT(20, 4.0),
-    // SCORE_BARGE_LEFT(20, -10.0),
-
-    // PRE_PROCESSOR(180, 0.0),
-    // SCORE_PROCESSOR(180, -10.0),
     // climbing
     PRE_CLIMB(-108, 0.0),
     CLIMB(-108, 0.0);
@@ -206,24 +185,67 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   }
 
   public Command setStateAngleVelocity() {
-    // return setPivotAndRollers(
-    //     () -> getState().position.get(), () -> getState().velocityRPS.getAsDouble());
-    // return this.run(() -> runRollerVelocity(getState().velocityRPS.getAsDouble()));
     return this.run(
         () -> {
-          if (Superstructure.getState() == SuperState.CLIMB
-              || Superstructure.getState() == SuperState.PRE_CLIMB) {
-            pivotIO.setMotorVoltage(-3.0);
-          } else {
-            pivotIO.setMotorPosition(state.getAngle());
-          }
-          // // TODO: THIS SUCKS
-          // if (Superstructure.stateIsVoltageControl()) {
-          //   rollerIO.setRollerVoltage(state.getVelocityRPS());
-          // } else {
-          //   rollerIO.setRollerVelocity(state.getVelocityRPS());
-          // }
+          switch (Superstructure.getState()) {
+              // switch to voltage control for climb because we may climb early due to irreparable
+              // zeroing issues
+            case CLIMB:
+            case PRE_CLIMB:
+              pivotIO.setMotorVoltage(-3.0);
+              break;
+            case INTAKE_CORAL_STACK:
+              pivotIO.setMotorPosition(state.getAngle());
+              break;
+            case PRE_HANDOFF_RIGHT:
+              pivotIO.setMotorPosition(
+                  Robot.getScoringSide() == ScoringSide.RIGHT
+                      ? ArmState.HANDOFF_RIGHT.getAngle()
+                      : Rotation2d.fromDegrees(-176));
+              setpoint =
+                  Robot.getScoringSide() == ScoringSide.RIGHT
+                      ? ArmState.HANDOFF_RIGHT.getAngle()
+                      : Rotation2d.fromDegrees(-176);
+              break;
+            case HANDOFF_RIGHT:
+              pivotIO.setMotorPosition(
+                  Robot.getScoringSide() == ScoringSide.RIGHT
+                      ? ArmState.HANDOFF_RIGHT.getAngle()
+                      : Rotation2d.fromDegrees(-176));
+              setpoint =
+                  Robot.getScoringSide() == ScoringSide.RIGHT
+                      ? ArmState.HANDOFF_RIGHT.getAngle()
+                      : Rotation2d.fromDegrees(-176);
+              break;
 
+            case PRE_HANDOFF_LEFT:
+              pivotIO.setMotorPosition(
+                  Robot.getScoringSide() == ScoringSide.RIGHT
+                      ? ArmState.HANDOFF_LEFT.getAngle()
+                      : Rotation2d.fromDegrees(-184));
+              setpoint =
+                  Robot.getScoringSide() == ScoringSide.RIGHT
+                      ? ArmState.HANDOFF_LEFT.getAngle()
+                      : Rotation2d.fromDegrees(-184);
+              break;
+            case HANDOFF_LEFT:
+              pivotIO.setMotorPosition(
+                  Robot.getScoringSide() == ScoringSide.RIGHT
+                      ? ArmState.HANDOFF_LEFT.getAngle()
+                      : Rotation2d.fromDegrees(-184));
+              setpoint =
+                  Robot.getScoringSide() == ScoringSide.RIGHT
+                      ? ArmState.HANDOFF_LEFT.getAngle()
+                      : Rotation2d.fromDegrees(-184);
+              break;
+
+            default:
+              setpoint =
+                  state.getAngle().times(Robot.getScoringSide() == ScoringSide.LEFT ? -1.0 : 1.0);
+              pivotIO.setMotorPosition(
+                  state.getAngle().times(Robot.getScoringSide() == ScoringSide.LEFT ? -1.0 : 1.0));
+          }
+          ;
           rollerIO.setRollerVelocity(state.getVelocityRPS());
         });
   }
@@ -283,5 +305,9 @@ public class ArmSubsystem extends RollerPivotSubsystem {
 
   public double getPivotCurrentFilterValueAmps() {
     return pivotCurrentFilterValue;
+  }
+
+  public Rotation2d getSetpoint() {
+    return setpoint;
   }
 }

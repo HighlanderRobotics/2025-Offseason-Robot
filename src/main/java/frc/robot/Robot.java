@@ -63,6 +63,7 @@ import frc.robot.roller.RollerIOSim;
 import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.swerve.odometry.PhoenixOdometryThread;
 import frc.robot.utils.CommandXboxControllerSubsystem;
+import frc.robot.utils.FieldUtils.CoralTargets;
 import java.util.Optional;
 import java.util.Set;
 import org.ironmaple.simulation.SimulatedArena;
@@ -82,7 +83,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 public class Robot extends LoggedRobot {
-  public static final RobotType ROBOT_TYPE = Robot.isReal() ? RobotType.REAL : RobotType.REPLAY;
+  public static final RobotType ROBOT_TYPE = Robot.isReal() ? RobotType.REAL : RobotType.SIM;
   public static final boolean TUNING_MODE = true;
   public boolean hasZeroedSinceStartup = false;
 
@@ -102,6 +103,10 @@ public class Robot extends LoggedRobot {
 
     private CoralScoreTarget(Color color) {
       this.color = color;
+    }
+
+    public Color getColor() {
+      return color;
     }
   }
 
@@ -202,7 +207,7 @@ public class Robot extends LoggedRobot {
                       new TrapezoidProfile.Constraints(
                           ArmSubsystem.MAX_VELOCITY, ArmSubsystem.MAX_ACCELERATION))),
           ROBOT_TYPE != RobotType.SIM
-              ? new PivotIOReal(9, armPivotConfig)
+              ? new PivotIOReal(9, armPivotConfig, "Arm")
               : new PivotIOSim(
                   ArmSubsystem.MIN_ANGLE.getRadians(),
                   ArmSubsystem.MAX_ANGLE.getRadians(),
@@ -216,7 +221,7 @@ public class Robot extends LoggedRobot {
   TalonFXConfiguration intakeRollerConfig =
       createRollerConfig(
           InvertedValue.Clockwise_Positive,
-          80.0,
+          40.0,
           2.5,
           0.48,
           0.9,
@@ -241,7 +246,7 @@ public class Robot extends LoggedRobot {
                       new TrapezoidProfile.Constraints(
                           IntakeSubsystem.MAX_VELOCITY, IntakeSubsystem.MAX_ACCELERATION))),
           ROBOT_TYPE != RobotType.SIM
-              ? new PivotIOReal(12, IntakeSubsystem.getIntakePivotConfig())
+              ? new PivotIOReal(12, IntakeSubsystem.getIntakePivotConfig(), "Intake")
               : new PivotIOSim(
                   IntakeSubsystem.MIN_ANGLE.getRadians(),
                   IntakeSubsystem.MAX_ANGLE.getRadians(),
@@ -289,7 +294,7 @@ public class Robot extends LoggedRobot {
                       new TrapezoidProfile.Constraints(
                           ClimberSubsystem.MAX_VELOCITY, ClimberSubsystem.MAX_ACCELERATION))),
           ROBOT_TYPE != RobotType.SIM
-              ? new PivotIOReal(14, climberPivotConfig)
+              ? new PivotIOReal(14, climberPivotConfig, "Climber")
               : new PivotIOSim(
                   ClimberSubsystem.MIN_ANGLE.getRadians(),
                   ClimberSubsystem.MAX_ANGLE.getRadians(),
@@ -429,42 +434,30 @@ public class Robot extends LoggedRobot {
 
     driver.setDefaultCommand(driver.rumbleCmd(0.0, 0.0));
     operator.setDefaultCommand(operator.rumbleCmd(0.0, 0.0));
-    leds.setDefaultCommand(
-        Commands.either(
-                // enabled
-                leds.setBlinkingCmd(
-                    () -> getCoralScoreTarget().color,
-                    () ->
-                        Superstructure.getState() == SuperState.IDLE ? Color.kBlack : Color.kWhite,
-                    5.0),
-                // Commands.either(
-                //     // if we're in an algae state, override it with the split color
-                //     leds.setBlinkingSplitCmd(
-                //         () -> getAlgaeIntakeTarget().color, () -> getAlgaeScoreTarget().color,
-                // 5.0),
-                //     // otherwise set it to the blinking pattern
-                //     leds.setBlinkingCmd(
-                //         () -> getCoralScoreTarget().color,
-                //         () ->
-                //             Superstructure.getState() == SuperState.IDLE
-                //                 ? Color.kBlack
-                //                 : Color.kWhite,
-                //         5.0),
-                //     superstructure::stateIsAlgae),
-                // not enabled
-                leds.setRunAlongCmd(
-                    () ->
-                        DriverStation.getAlliance()
-                            .map((a) -> a == Alliance.Blue ? Color.kBlue : Color.kRed)
-                            .orElse(Color.kWhite),
-                    // () -> wrist.hasZeroed ? LEDSubsystem.PURPLE : Color.kOrange, //TODO add check
-                    // for zero
-                    LEDSubsystem.PURPLE,
-                    4,
-                    1.0),
-                DriverStation::isEnabled)
-            .repeatedly()
-            .ignoringDisable(true));
+    // leds.setDefaultCommand(leds.set(leds::getState));
+    // Commands.either(
+    //         // enabled
+    //         leds.setBlinkingCmd(
+    //                 () -> getCoralScoreTarget().color,
+    //                 () ->
+    //                     Superstructure.getState() == SuperState.IDLE
+    //                         ? Color.kBlack
+    //                         : Color.kWhite,
+    //                 5.0)
+    //             .until(() -> !DriverStation.isEnabled()),
+    //         // not enabled
+    //         leds.setRunAlongCmd(
+    //                 () ->
+    //                     DriverStation.getAlliance()
+    //                         .map((a) -> a == Alliance.Blue ? Color.kBlue : Color.kRed)
+    //                         .orElse(Color.kWhite),
+    //                 LEDSubsystem.PURPLE,
+    //                 4,
+    //                 1.0)
+    //             .until(() -> DriverStation.isEnabled()),
+    //         () -> DriverStation.isEnabled())
+    //     .repeatedly()
+    //     .ignoringDisable(true));
 
     if (ROBOT_TYPE == RobotType.SIM) {
       SimulatedArena.getInstance().addDriveTrainSimulation(swerveSimulation);
@@ -597,11 +590,24 @@ public class Robot extends LoggedRobot {
     Logger.recordOutput(
         "test",
         new Pose2d(new Translation2d(), Rotation2d.k180deg.plus(Rotation2d.fromDegrees(45.0))));
+
+    Logger.recordOutput(
+        "test g left",
+        CoralTargets.getRobotTargetLocationL23(CoralTargets.BLUE_G.location, ScoringSide.LEFT));
+    Logger.recordOutput(
+        "test g right",
+        CoralTargets.getRobotTargetLocationL23(CoralTargets.BLUE_G.location, ScoringSide.RIGHT));
+    Logger.recordOutput(
+        "test h left",
+        CoralTargets.getRobotTargetLocationL23(CoralTargets.BLUE_H.location, ScoringSide.LEFT));
+    Logger.recordOutput(
+        "test h right",
+        CoralTargets.getRobotTargetLocationL23(CoralTargets.BLUE_H.location, ScoringSide.RIGHT));
   }
 
   private TalonFXConfiguration createRollerConfig(
       InvertedValue inverted,
-      double currentLimit,
+      double supplyCurrentLimit,
       double sensorToMechanismRatio,
       double kS,
       double kV,
@@ -610,7 +616,7 @@ public class Robot extends LoggedRobot {
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     config.MotorOutput.Inverted = inverted;
-    config.CurrentLimits.SupplyCurrentLimit = currentLimit;
+    config.CurrentLimits.SupplyCurrentLimit = supplyCurrentLimit;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
     config.Slot0.kS = kS;
@@ -876,7 +882,8 @@ public class Robot extends LoggedRobot {
                 Commands.deadline(
                     arm.runCurrentZeroing(),
                     Commands.parallel(
-                        elevator.setVoltage(() -> -1.0), intake.setPivotVoltage(() -> -3.0))),
+                        elevator.setVoltage(() -> -1.0).repeatedly(),
+                        intake.setPivotVoltage(() -> -3.0).repeatedly())),
                 // sets exit state
                 superstructure.transitionAfterZeroing(),
                 // logging
@@ -898,7 +905,7 @@ public class Robot extends LoggedRobot {
     //             .andThen(Commands.runOnce(() -> hasZeroedSinceStartup = true)));
 
     // Rezero arm against cancoder
-    driver.x().onTrue(Commands.runOnce(() -> arm.rezeroFromEncoder()).ignoringDisable(true));
+    driver.x().onTrue(arm.rezeroFromEncoder());
 
     // antijam algae
     // i am pulling these numbers out of my ass

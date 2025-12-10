@@ -329,7 +329,7 @@ public class OffseasonBotSwerveConstants extends SwerveConstants {
             LEFT_DRIVEBASE_DIST_COEFFS);
     return new CameraConstants[] {
       rightElevatorCamConstants,
-      rightDrivebaseCamConstants,
+      // rightDrivebaseCamConstants,
       leftElevatorCamConstants,
       leftDrivebaseCamConstants
     };

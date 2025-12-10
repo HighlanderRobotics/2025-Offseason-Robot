@@ -173,11 +173,12 @@ public class Camera {
                               ? 0.8
                               // anecdotally sam says right elevator is not as good as left lol
                               : 1.5)
-                      .times(
-                          (getName().equals("Left_Drivebase") || getName().equals("Left_Elevator"))
-                                  && (Superstructure.getState().isScoreCoralLeft())
-                              ? 0.5
-                              : 1.5)
+                      // .times(
+                      //     (getName().equals("Left_Drivebase") ||
+                      // getName().equals("Left_Elevator"))
+                      //             && (Superstructure.getState().isScoreCoralLeft())
+                      //         ? 0.5
+                      //         : 1.5)
                       // hp tags
                       // .times(
                       //     // !camera.getName().equals("Front_Camera")
@@ -203,7 +204,20 @@ public class Camera {
                                               || t.getFiducialId() == 15
                                               || t.getFiducialId() == 14)
                               ? 1.2
-                              : 1.0));
+                              : 1.0)
+                      .times(
+                          estPose.get().targetsUsed.stream()
+                                  // use red reef tags only
+                                  .anyMatch(
+                                      t ->
+                                          t.getFiducialId() == 6
+                                              || t.getFiducialId() == 7
+                                              || t.getFiducialId() == 8
+                                              || t.getFiducialId() == 9
+                                              || t.getFiducialId() == 10
+                                              || t.getFiducialId() == 11)
+                              ? 0.5
+                              : 1000.0));
               // .times(
               //     Superstructure.getState() == SuperState.PRE_BARGE_LEFT
               //             || Superstructure.getState() == SuperState.PRE_BARGE_RIGHT

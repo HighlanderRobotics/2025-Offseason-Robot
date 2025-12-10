@@ -19,7 +19,7 @@ public class CANrangeIOReal implements CANrangeIO {
 
     final CANrangeConfiguration config = new CANrangeConfiguration();
     config.ToFParams.UpdateFrequency = 50; // update frequency in Hz
-    config.ProximityParams.ProximityThreshold = 0.05;
+    config.ProximityParams.ProximityThreshold = 0.1;
 
     BaseStatusSignal.setUpdateFrequencyForAll(50.0, distance, isDetected);
 
