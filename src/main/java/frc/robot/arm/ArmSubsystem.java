@@ -79,11 +79,11 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   public enum ArmState {
     IDLE(0, 0.0),
     // coral
-    PRE_HANDOFF(90, 7.0),
-    HANDOFF_CENTER(180, 7.0),
-    HANDOFF_RIGHT(184, 7.0),
-    HANDOFF_LEFT(176, 7.0),
-    POST_HANDOFF(89, 7.0),
+    PRE_HANDOFF(90, 10.0),
+    HANDOFF_CENTER(180, 10.0),
+    HANDOFF_RIGHT(184, 12.0),
+    HANDOFF_LEFT(176, 12.0),
+    POST_HANDOFF(89, 10.0),
 
     INTAKE_CORAL_STACK(-100, 7.0),
     READY_CORAL_ARM(0, 7.0),
@@ -93,7 +93,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     SCORE_L2(-90, -10.0),
     PRE_L3(-45, 7.0),
     SCORE_L3(-90, -10.0),
-    PRE_L4(-60, 10.0),
+    PRE_L4(-60, 12.0),
     SCORE_L4(-90, -14.0),
 
     // climbing
