@@ -361,7 +361,7 @@ public class Superstructure {
     bindTransition(
         SuperState.INTAKE_CORAL_GROUND,
         SuperState.READY_CORAL_INTAKE,
-        (intakeEitherBeambreakTrigger).debounce(0.05));
+        (intakeEitherBeambreakTrigger).debounce(0.05).and(intakeCoralReq.negate()));
 
     // ---Cancel intake coral ground---
     bindTransition(
