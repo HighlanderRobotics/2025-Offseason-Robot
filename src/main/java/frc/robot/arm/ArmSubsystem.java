@@ -198,27 +198,45 @@ public class ArmSubsystem extends RollerPivotSubsystem {
               pivotIO.setMotorPosition(state.getAngle());
               break;
             case PRE_HANDOFF_RIGHT:
-            case HANDOFF_RIGHT:
+              pivotIO.setMotorPosition(
+                  Robot.getScoringSide() == ScoringSide.RIGHT
+                      ? ArmState.HANDOFF_RIGHT.getAngle()
+                      : Rotation2d.fromDegrees(-176));
               setpoint =
-                  ArmState.HANDOFF_RIGHT
-                      .getAngle()
-                      .minus(
-                          Robot.getScoringSide() == ScoringSide.RIGHT
-                              ? Rotation2d.kZero
-                              : Rotation2d.fromDegrees(360));
-              pivotIO.setMotorPosition(setpoint);
+                  Robot.getScoringSide() == ScoringSide.RIGHT
+                      ? ArmState.HANDOFF_RIGHT.getAngle()
+                      : Rotation2d.fromDegrees(-176);
+              break;
+            case HANDOFF_RIGHT:
+              pivotIO.setMotorPosition(
+                  Robot.getScoringSide() == ScoringSide.RIGHT
+                      ? ArmState.HANDOFF_RIGHT.getAngle()
+                      : Rotation2d.fromDegrees(-176));
+              setpoint =
+                  Robot.getScoringSide() == ScoringSide.RIGHT
+                      ? ArmState.HANDOFF_RIGHT.getAngle()
+                      : Rotation2d.fromDegrees(-176);
               break;
 
             case PRE_HANDOFF_LEFT:
-            case HANDOFF_LEFT:
+              pivotIO.setMotorPosition(
+                  Robot.getScoringSide() == ScoringSide.RIGHT
+                      ? ArmState.HANDOFF_LEFT.getAngle()
+                      : Rotation2d.fromDegrees(-184));
               setpoint =
-                  ArmState.HANDOFF_LEFT
-                      .getAngle()
-                      .minus(
-                          Robot.getScoringSide() == ScoringSide.RIGHT
-                              ? Rotation2d.kZero
-                              : Rotation2d.fromDegrees(360));
-              pivotIO.setMotorPosition(setpoint);
+                  Robot.getScoringSide() == ScoringSide.RIGHT
+                      ? ArmState.HANDOFF_LEFT.getAngle()
+                      : Rotation2d.fromDegrees(-184);
+              break;
+            case HANDOFF_LEFT:
+              pivotIO.setMotorPosition(
+                  Robot.getScoringSide() == ScoringSide.RIGHT
+                      ? ArmState.HANDOFF_LEFT.getAngle()
+                      : Rotation2d.fromDegrees(-184));
+              setpoint =
+                  Robot.getScoringSide() == ScoringSide.RIGHT
+                      ? ArmState.HANDOFF_LEFT.getAngle()
+                      : Rotation2d.fromDegrees(-184);
               break;
 
             default:

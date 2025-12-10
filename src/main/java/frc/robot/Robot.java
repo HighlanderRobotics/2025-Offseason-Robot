@@ -221,7 +221,7 @@ public class Robot extends LoggedRobot {
   TalonFXConfiguration intakeRollerConfig =
       createRollerConfig(
           InvertedValue.Clockwise_Positive,
-          80.0,
+          40.0,
           2.5,
           0.48,
           0.9,
@@ -607,7 +607,7 @@ public class Robot extends LoggedRobot {
 
   private TalonFXConfiguration createRollerConfig(
       InvertedValue inverted,
-      double currentLimit,
+      double supplyCurrentLimit,
       double sensorToMechanismRatio,
       double kS,
       double kV,
@@ -616,7 +616,7 @@ public class Robot extends LoggedRobot {
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     config.MotorOutput.Inverted = inverted;
-    config.CurrentLimits.SupplyCurrentLimit = currentLimit;
+    config.CurrentLimits.SupplyCurrentLimit = supplyCurrentLimit;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
     config.Slot0.kS = kS;
