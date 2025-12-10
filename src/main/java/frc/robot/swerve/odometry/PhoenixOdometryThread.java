@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
@@ -134,7 +135,7 @@ public class PhoenixOdometryThread extends Thread implements OdometryThreadIO {
                 "stream timestamps",
                 () ->
                     journal.stream()
-                        .filter(signal -> signal.timestamp > timestamp)
+                        .filter(samples -> samples.timestamp > timestamp)
                         .collect(Collectors.toUnmodifiableList()));
           } finally {
             readLock.unlock();
@@ -146,7 +147,7 @@ public class PhoenixOdometryThread extends Thread implements OdometryThreadIO {
   public void run() {
     while (true) {
       // Wait for updates from all signals
-      var writeLock = journalLock.writeLock();
+      Lock writeLock = journalLock.writeLock();
       Tracer.trace(
           "Odometry Thread",
           () -> {
@@ -170,7 +171,11 @@ public class PhoenixOdometryThread extends Thread implements OdometryThreadIO {
                       filteredSignals.stream()
                           .collect(
                               Collectors.toUnmodifiableMap(
-                                  s -> s.id, s -> s.signal().getValueAsDouble()))));
+                                  // The key for this map entry
+                                  registeredSignal -> registeredSignal.id(), 
+                                  // The value for that key
+                                  registeredSignal -> registeredSignal.signal().getValueAsDouble()
+                                ))));
             } finally {
               writeLock.unlock();
             }
@@ -184,7 +189,7 @@ public class PhoenixOdometryThread extends Thread implements OdometryThreadIO {
     double timestamp = RobotController.getFPGATime() / 1e6;
 
     final double totalLatency =
-        signals.stream().mapToDouble(s -> s.signal().getTimestamp().getLatency()).sum();
+        signals.stream().mapToDouble(registeredSignal -> registeredSignal.signal().getTimestamp().getLatency()).sum();
 
     // Account for mean latency for a "good enough" timestamp
     if (!signals.isEmpty()) {
