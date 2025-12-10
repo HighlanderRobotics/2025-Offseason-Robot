@@ -172,10 +172,10 @@ public class PhoenixOdometryThread extends Thread implements OdometryThreadIO {
                           .collect(
                               Collectors.toUnmodifiableMap(
                                   // The key for this map entry
-                                  registeredSignal -> registeredSignal.id(), 
+                                  registeredSignal -> registeredSignal.id(),
                                   // The value for that key
-                                  registeredSignal -> registeredSignal.signal().getValueAsDouble()
-                                ))));
+                                  registeredSignal ->
+                                      registeredSignal.signal().getValueAsDouble()))));
             } finally {
               writeLock.unlock();
             }
@@ -189,7 +189,9 @@ public class PhoenixOdometryThread extends Thread implements OdometryThreadIO {
     double timestamp = RobotController.getFPGATime() / 1e6;
 
     final double totalLatency =
-        signals.stream().mapToDouble(registeredSignal -> registeredSignal.signal().getTimestamp().getLatency()).sum();
+        signals.stream()
+            .mapToDouble(registeredSignal -> registeredSignal.signal().getTimestamp().getLatency())
+            .sum();
 
     // Account for mean latency for a "good enough" timestamp
     if (!signals.isEmpty()) {
