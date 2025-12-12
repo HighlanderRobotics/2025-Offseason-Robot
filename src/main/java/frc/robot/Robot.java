@@ -977,6 +977,11 @@ public class Robot extends LoggedRobot {
                 .driveClosedLoopRobotRelative(() -> new ChassisSpeeds(1.0, 0.0, 0.0))
                 .withTimeout(2)));
     haveAutosGenerated = true;
+
+    // Sysid autos
+    autoChooser.addOption("Elevator Sysid", elevator.runSysid());
+    autoChooser.addOption("Arm Roller Sysid", arm.runRollerSysid());
+    autoChooser.addOption("Arm Pivot Sysid", arm.runPivotSysid());
   }
 
   @Override
