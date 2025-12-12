@@ -1,6 +1,5 @@
 package frc.robot.elevator;
 
-import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
@@ -161,7 +160,8 @@ public class ElevatorSubsystem extends SubsystemBase {
   }
 
   public Command runSysid() {
-    // This was originally created so we could sysid voltage and current. Idt we use current control so i've removed that sysid, but this function can stay
+    // This was originally created so we could sysid voltage and current. Idt we use current control
+    // so i've removed that sysid, but this function can stay
     final Function<SysIdRoutine, Command> runSysid =
         (routine) ->
             Commands.sequence(
@@ -180,8 +180,7 @@ public class ElevatorSubsystem extends SubsystemBase {
                 routine
                     .dynamic(SysIdRoutine.Direction.kReverse)
                     .until(() -> inputs.leaderPositionMeters < Units.inchesToMeters(10.0)));
-    return Commands.sequence(
-        runCurrentZeroing(), runSysid.apply(voltageSysid));
+    return Commands.sequence(runCurrentZeroing(), runSysid.apply(voltageSysid));
   }
 
   public Command rezero() {

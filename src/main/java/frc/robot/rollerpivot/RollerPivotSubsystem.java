@@ -1,5 +1,7 @@
 package frc.robot.rollerpivot;
 
+import static edu.wpi.first.units.Units.Volts;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -16,9 +18,6 @@ import frc.robot.pivot.PivotIO;
 import frc.robot.pivot.PivotIOInputsAutoLogged;
 import frc.robot.roller.RollerIO;
 import frc.robot.roller.RollerIOInputsAutoLogged;
-
-import static edu.wpi.first.units.Units.Volts;
-
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
@@ -38,29 +37,43 @@ public class RollerPivotSubsystem extends SubsystemBase {
   private final SysIdRoutine pivotSysid;
 
   public RollerPivotSubsystem(RollerIO rollerIO, PivotIO pivotIO, String name) {
+    this(
+        rollerIO,
+        pivotIO,
+        name,
+        // Defualt configs with state loggers
+        new Config(
+            null,
+            null,
+            null,
+            (sysIdState) -> Logger.recordOutput(name + "/Roller/SysId State", sysIdState)),
+        new Config(
+            null,
+            null,
+            null,
+            (sysIdState) -> Logger.recordOutput(name + "Pivot/SysId State", sysIdState)));
+  }
+
+  public RollerPivotSubsystem(
+      RollerIO rollerIO,
+      PivotIO pivotIO,
+      String name,
+      SysIdRoutine.Config rollerSysidConfig,
+      SysIdRoutine.Config pivotSysIdConfig) {
     this.rollerIO = rollerIO;
     this.pivotIO = pivotIO;
     this.name = name;
 
-    rollerSysid = new SysIdRoutine(
-        // Defualt for now ig
-        // Ramp rate: 1 volt, step rate: 7 volts, timeout: 10 volts
-        new Config(
-          null,
-          null,
-          null,
-          (sysIdState) -> Logger.recordOutput(name + "/Roller/SysId State", sysIdState)
-        ),
-        new Mechanism((voltage) -> runRollerVoltage(voltage.in(Volts)), null, this)
-      );
-    pivotSysid = new SysIdRoutine(
-      new Config(
-        null,
-        null,
-        null,
-        (sysIdState) -> Logger.recordOutput(name + "Pivot/SysId State", sysIdState)
-      ),
-      new Mechanism((voltage) -> runRollerVoltage(voltage.in(Volts)), null, this));
+    rollerSysid =
+        new SysIdRoutine(
+            // Defualt for now ig
+            // Ramp rate: 1 volt, step rate: 7 volts, timeout: 10 volts
+            rollerSysidConfig,
+            new Mechanism((voltage) -> runRollerVoltage(voltage.in(Volts)), null, this));
+    pivotSysid =
+        new SysIdRoutine(
+            pivotSysIdConfig,
+            new Mechanism((voltage) -> runRollerVoltage(voltage.in(Volts)), null, this));
   }
 
   protected void runRollerVoltage(double volts) {
@@ -142,20 +155,19 @@ public class RollerPivotSubsystem extends SubsystemBase {
 
   public Command runRollerSysid() {
     return Commands.sequence(
-      // Run a quasistatic (w/o acceleration) sysid in each direction, and a dynamic (with acceleration) sysid
-      rollerSysid.quasistatic(Direction.kForward),
-      rollerSysid.quasistatic(Direction.kReverse),
-      rollerSysid.dynamic(Direction.kForward),
-      rollerSysid.dynamic(Direction.kReverse)
-    );
+        // Run a quasistatic (w/o acceleration) sysid in each direction, and a dynamic (with
+        // acceleration) sysid
+        rollerSysid.quasistatic(Direction.kForward),
+        rollerSysid.quasistatic(Direction.kReverse),
+        rollerSysid.dynamic(Direction.kForward),
+        rollerSysid.dynamic(Direction.kReverse));
   }
 
   public Command runPivotSysid() {
     return Commands.sequence(
-      pivotSysid.quasistatic(Direction.kForward),
-      pivotSysid.quasistatic(Direction.kReverse),
-      pivotSysid.dynamic(Direction.kForward),
-      pivotSysid.dynamic(Direction.kReverse)
-    );
+        pivotSysid.quasistatic(Direction.kForward),
+        pivotSysid.quasistatic(Direction.kReverse),
+        pivotSysid.dynamic(Direction.kForward),
+        pivotSysid.dynamic(Direction.kReverse));
   }
 }
