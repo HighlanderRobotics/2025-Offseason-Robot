@@ -97,7 +97,7 @@ public class ElevatorSubsystem extends SubsystemBase {
                 null,
                 null,
                 null,
-                (state) -> Logger.recordOutput("Elevator/SysIdTestStateVolts", state.toString())),
+                (state) -> Logger.recordOutput("Elevator/SysId State", state.toString())),
             new Mechanism((volts) -> io.setVoltage(volts.in(Volts)), null, this));
   }
 

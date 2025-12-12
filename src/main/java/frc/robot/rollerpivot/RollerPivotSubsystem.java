@@ -45,11 +45,21 @@ public class RollerPivotSubsystem extends SubsystemBase {
     rollerSysid = new SysIdRoutine(
         // Defualt for now ig
         // Ramp rate: 1 volt, step rate: 7 volts, timeout: 10 volts
-        new Config(),
+        new Config(
+          null,
+          null,
+          null,
+          (sysIdState) -> Logger.recordOutput(name + "/Roller/SysId State", sysIdState)
+        ),
         new Mechanism((voltage) -> runRollerVoltage(voltage.in(Volts)), null, this)
       );
     pivotSysid = new SysIdRoutine(
-      new Config(),
+      new Config(
+        null,
+        null,
+        null,
+        (sysIdState) -> Logger.recordOutput(name + "Pivot/SysId State", sysIdState)
+      ),
       new Mechanism((voltage) -> runRollerVoltage(voltage.in(Volts)), null, this));
   }
 
