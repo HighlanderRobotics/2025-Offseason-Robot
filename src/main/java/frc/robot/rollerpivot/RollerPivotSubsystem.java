@@ -35,6 +35,7 @@ public class RollerPivotSubsystem extends SubsystemBase {
 
   // Sysid stuff
   private final SysIdRoutine rollerSysid;
+  private final SysIdRoutine pivotSysid;
 
   public RollerPivotSubsystem(RollerIO rollerIO, PivotIO pivotIO, String name) {
     this.rollerIO = rollerIO;
@@ -47,6 +48,9 @@ public class RollerPivotSubsystem extends SubsystemBase {
         new Config(),
         new Mechanism((voltage) -> runRollerVoltage(voltage.in(Volts)), null, this)
       );
+    pivotSysid = new SysIdRoutine(
+      new Config(),
+      new Mechanism((voltage) -> runRollerVoltage(voltage.in(Volts)), null, this));
   }
 
   protected void runRollerVoltage(double volts) {
@@ -133,6 +137,15 @@ public class RollerPivotSubsystem extends SubsystemBase {
       rollerSysid.quasistatic(Direction.kReverse),
       rollerSysid.dynamic(Direction.kForward),
       rollerSysid.dynamic(Direction.kReverse)
+    );
+  }
+
+  public Command runPivotSysid() {
+    return Commands.sequence(
+      pivotSysid.quasistatic(Direction.kForward),
+      pivotSysid.quasistatic(Direction.kReverse),
+      pivotSysid.dynamic(Direction.kForward),
+      pivotSysid.dynamic(Direction.kReverse)
     );
   }
 }
