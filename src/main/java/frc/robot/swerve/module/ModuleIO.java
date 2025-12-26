@@ -42,4 +42,8 @@ public interface ModuleIO {
   public void setTurnVoltage(double volts);
 
   public void setTurnPositionSetpoint(Rotation2d setpoint);
+
+  public void setDriveStatorCurrentLimit(double amps);
+
+  public double getDriveStatorCurrentLimit();
 }

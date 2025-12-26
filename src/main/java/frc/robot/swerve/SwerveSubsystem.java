@@ -19,10 +19,12 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Robot;
 import frc.robot.Robot.RobotType;
 import frc.robot.camera.Camera;
@@ -105,6 +107,11 @@ public class SwerveSubsystem extends SubsystemBase {
   private Alert missingGyroData = new Alert("Missing Gyro Data", AlertType.kWarning);
 
   boolean hasFrontTags = false;
+
+  private static final double SLIP_RATIO_TOLERANCE = 0.3;
+  private Trigger slippingTrigger;
+  private double slipRatio;
+  private Trigger lowVoltageTrigger;
 
   public SwerveSubsystem(SwerveDriveSimulation swerveSimulation) {
     if (Robot.ROBOT_TYPE == RobotType.SIM) {
@@ -189,6 +196,8 @@ public class SwerveSubsystem extends SubsystemBase {
             VecBuilder.fill(0.9, 0.9, 0.4));
 
     this.odometryThread = PhoenixOdometryThread.getInstance();
+    slippingTrigger = new Trigger(() -> slipRatio > SLIP_RATIO_TOLERANCE).debounce(0.5);
+    lowVoltageTrigger = new Trigger(() -> RobotController.getBatteryVoltage() < 7.0).debounce(0.5); //TODO tune
   }
 
   @Override
@@ -221,7 +230,40 @@ public class SwerveSubsystem extends SubsystemBase {
 
           Tracer.trace("Update odometry", this::updateOdometry);
           Tracer.trace("Update vision", this::updateVision);
+          adjustCurrentLimits();
         });
+  }
+
+  private void adjustCurrentLimits() {
+    runTractionControl();
+    scaleBasedOnVoltage();
+  }
+
+  private void runTractionControl() {
+    for (Module m : modules) {
+      double robotVel = Math.sqrt(Math.pow(getVelocityRobotRelative().vxMetersPerSecond, 2) + Math.pow(getVelocityRobotRelative().vyMetersPerSecond, 2));
+      //this is the definition used for acceleration (as opposed to braking)
+      //i think this is a measurement of how much you're slipping (1 is full slipping)
+      slipRatio = (robotVel - m.getVelocityMetersPerSec()) / robotVel;
+      //decrease current limits until we stop slipping
+      if (slippingTrigger.getAsBoolean() && m.getDriveStatorCurrentLimit() > 100) { //above some minimum current limit
+        m.setDriveStatorCurrentLimit(m.getDriveStatorCurrentLimit() - slipRatio * 20); //TODO find scale factor
+        //maybe check what the requested velocity is?
+      } else {
+        m.setDriveStatorCurrentLimit(120.0); //full send
+      }
+    }
+  }
+
+  private void scaleBasedOnVoltage() {
+    for (Module m : modules) {
+      if (lowVoltageTrigger.getAsBoolean() && m.getDriveStatorCurrentLimit() > 100) {
+        m.setDriveStatorCurrentLimit(m.getDriveStatorCurrentLimit() * 0.9); //TODO find scale factor
+          //maybe check what the requested velocity is?
+      } else {
+        m.setDriveStatorCurrentLimit(120.0); //full send
+      }
+    }
   }
 
   private void updateOdometry() {

@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VoltageOut;
@@ -52,6 +53,8 @@ public class ModuleIOReal implements ModuleIO {
   private final VelocityTorqueCurrentFOC driveVelocityControl =
       new VelocityTorqueCurrentFOC(0.0).withSlot(0);
   private final MotionMagicVoltage turnPID = new MotionMagicVoltage(0.0);
+
+  private double driveStatorCurrentLimit = 120.0; //TODO maybe don't make this hardcoded
 
   public ModuleIOReal(ModuleConstants moduleConstants) {
     this.constants = moduleConstants;
@@ -180,5 +183,18 @@ public class ModuleIOReal implements ModuleIO {
   @Override
   public void setTurnPositionSetpoint(Rotation2d setpoint) {
     turnTalon.setControl(turnPID.withPosition(setpoint.getRotations()));
+  }
+
+  @Override
+  public void setDriveStatorCurrentLimit(double amps) {
+    TalonFXConfiguration config = SwerveSubsystem.SWERVE_CONSTANTS.getDriveConfiguration();
+    config.CurrentLimits.StatorCurrentLimit = amps;
+    driveTalon.getConfigurator().apply(config);
+    driveStatorCurrentLimit = amps;
+  }
+
+  @Override
+  public double getDriveStatorCurrentLimit() {
+    return driveStatorCurrentLimit;
   }
 }

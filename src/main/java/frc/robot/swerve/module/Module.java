@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import frc.robot.swerve.SwerveSubsystem;
+
 import org.littletonrobotics.junction.Logger;
 
 // A single module
@@ -111,5 +112,12 @@ public class Module {
 
   public void setTurnSetpoint(Rotation2d rotation) {
     io.setTurnPositionSetpoint(rotation);
+  }
+
+  public void setDriveStatorCurrentLimit(double amps) {
+    io.setDriveStatorCurrentLimit(amps);
+  }
+  public double getDriveStatorCurrentLimit() {
+    return io.getDriveStatorCurrentLimit();
   }
 }

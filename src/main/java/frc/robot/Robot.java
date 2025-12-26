@@ -374,6 +374,8 @@ public class Robot extends LoggedRobot {
   private final LoggedMechanismLigament2d intakeLigament =
       new LoggedMechanismLigament2d("Intake", IntakeSubsystem.LENGTH_METERS, 0.0);
 
+  private double minVoltage = Double.MAX_VALUE;
+
   @SuppressWarnings("resource")
   public Robot() {
     DriverStation.silenceJoystickConnectionWarning(true);
@@ -1040,6 +1042,11 @@ public class Robot extends LoggedRobot {
 
     if (Robot.ROBOT_TYPE != RobotType.REAL)
       Logger.recordOutput("Mechanism/Elevator", elevatorMech2d);
+
+    if (RobotController.getBatteryVoltage() < minVoltage) {
+        minVoltage = RobotController.getBatteryVoltage();
+        Logger.recordOutput("Lowest Voltage", minVoltage);
+    }
   }
 
   @Override
