@@ -204,6 +204,9 @@ public class Superstructure {
   @AutoLogOutput(key = "Superstructure/Away From Reef?")
   public Trigger awayFromReefTrigger;
 
+  @AutoLogOutput(key = "Superstructure/Force Handoff Request")
+  public Trigger forceHandoffReq;
+
   /** Creates a new Superstructure. */
   public Superstructure(
       ElevatorSubsystem elevator,
@@ -251,6 +254,12 @@ public class Superstructure {
             .y()
             .debounce(0.5)
             .or(operator.leftStick().and(operator.rightTrigger()).debounce(0.5));
+
+    forceHandoffReq =
+        driver
+            .povUp()
+            .whileTrue(
+                arm.setRollerVelocity(() -> 20).alongWith(intake.setRollerVelocity(() -> -20)));
 
     intakeRightBeambreakTrigger = new Trigger(intake::getRightBeambreak);
 

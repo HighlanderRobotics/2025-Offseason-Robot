@@ -46,7 +46,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
   // public static final double ALGAE_INTAKE_VOLTAGE = 8.0;
   public static final double CORAL_INTAKE_VOLTAGE = 5.0;
   // public static final double ALGAE_CURRENT_THRESHOLD = 20.0;
-  public static final double CORAL_CURRENT_THRESHOLD = 30.0;
+  public static final double CORAL_CURRENT_THRESHOLD = 25.0;
   public static final double TOLERANCE_DEGREES = 10.0;
   public static final double VERTICAL_OFFSET_METERS = Units.inchesToMeters(12.0);
   public static final double SAFE_ZEROING_ANGLE = -80.0; // idk
@@ -180,6 +180,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     return hasCoral;
   }
 
+  @AutoLogOutput(key = "Arm/At Extension?")
   public boolean isNearAngle(Rotation2d target) {
     return isNear(target, TOLERANCE_DEGREES);
   }

@@ -147,6 +147,7 @@ public class IntakeSubsystem extends RollerPivotSubsystem {
     return this.runOnce(() -> pivotIO.resetEncoder(Rotation2d.fromDegrees(90)));
   }
 
+  @AutoLogOutput(key = "Intake/At Extension?")
   public boolean isNearAngle(Rotation2d target) {
     return isNear(target, TOLERANCE_DEGREES);
   }
