@@ -2,6 +2,7 @@ package frc.robot.elevator;
 
 import static edu.wpi.first.units.Units.Volts;
 
+import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.util.Units;
@@ -165,6 +166,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     final Function<SysIdRoutine, Command> runSysid =
         (routine) ->
             Commands.sequence(
+                Commands.runOnce(() -> SignalLogger.start()),
                 routine
                     .quasistatic(SysIdRoutine.Direction.kForward)
                     .until(() -> inputs.leaderPositionMeters > Units.inchesToMeters(50.0)),
@@ -179,7 +181,8 @@ public class ElevatorSubsystem extends SubsystemBase {
                 Commands.waitUntil(() -> inputs.leaderVelocityMetersPerSec < 0.1),
                 routine
                     .dynamic(SysIdRoutine.Direction.kReverse)
-                    .until(() -> inputs.leaderPositionMeters < Units.inchesToMeters(10.0)));
+                    .until(() -> inputs.leaderPositionMeters < Units.inchesToMeters(10.0)),
+                Commands.runOnce(() -> SignalLogger.stop()));
     return Commands.sequence(runCurrentZeroing(), runSysid.apply(voltageSysid));
   }
 

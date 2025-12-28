@@ -979,7 +979,12 @@ public class Robot extends LoggedRobot {
     haveAutosGenerated = true;
 
     // Sysid autos
-    autoChooser.addOption("Elevator Sysid", elevator.runSysid());
+    autoChooser.addOption(
+        "Elevator Sysid",
+        Commands.parallel(
+            elevator.runSysid(),
+            intake.setPivotVoltage(() -> -5),
+            arm.setPivotAngle(() -> Rotation2d.kZero)));
     autoChooser.addOption("Arm Roller Sysid", arm.runRollerSysid());
     autoChooser.addOption("Arm Pivot Sysid", arm.runPivotSysid());
   }
