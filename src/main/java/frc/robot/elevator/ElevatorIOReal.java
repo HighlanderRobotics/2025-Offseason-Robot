@@ -50,9 +50,10 @@ public class ElevatorIOReal implements ElevatorIO {
         ElevatorSubsystem.GEAR_RATIO / (Math.PI * ElevatorSubsystem.SPROCKET_DIAMETER_METERS);
 
     config.Slot0.GravityType = GravityTypeValue.Elevator_Static;
-    config.Slot0.kS = 0.24;
-    config.Slot0.kG = 0.56;
-    config.Slot0.kV = 0.6;
+    config.Slot0.kS = 1.1993;
+    config.Slot0.kG = 0.59103;
+    config.Slot0.kV = 2.7884;
+    config.Slot0.kA = 0.19544;
     config.Slot0.kP = 110.0;
     config.Slot0.kD = 0.0;
 

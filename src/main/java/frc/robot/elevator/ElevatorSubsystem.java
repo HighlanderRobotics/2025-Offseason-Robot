@@ -1,8 +1,8 @@
 package frc.robot.elevator;
 
-import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 
+import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.util.Units;
@@ -88,7 +88,6 @@ public class ElevatorSubsystem extends SubsystemBase {
   private double setpoint = 0.0;
 
   private final SysIdRoutine voltageSysid;
-  private final SysIdRoutine currentSysid;
 
   public ElevatorSubsystem(ElevatorIO io) {
     this.io = io;
@@ -98,17 +97,8 @@ public class ElevatorSubsystem extends SubsystemBase {
                 null,
                 null,
                 null,
-                (state) -> Logger.recordOutput("Elevator/SysIdTestStateVolts", state.toString())),
+                (state) -> Logger.recordOutput("Elevator/SysId State", state.toString())),
             new Mechanism((volts) -> io.setVoltage(volts.in(Volts)), null, this));
-
-    currentSysid =
-        new SysIdRoutine(
-            new Config(
-                Volts.of(30.0).per(Second),
-                Volts.of(120.0),
-                null,
-                (state) -> Logger.recordOutput("Elevator/SysIdTestStateCurrent", state.toString())),
-            new Mechanism((volts) -> io.setCurrent(volts.in(Volts)), null, this));
   }
 
   @Override
@@ -171,9 +161,12 @@ public class ElevatorSubsystem extends SubsystemBase {
   }
 
   public Command runSysid() {
+    // This was originally created so we could sysid voltage and current. Idt we use current control
+    // so i've removed that sysid, but this function can stay
     final Function<SysIdRoutine, Command> runSysid =
         (routine) ->
             Commands.sequence(
+                Commands.runOnce(() -> SignalLogger.start()),
                 routine
                     .quasistatic(SysIdRoutine.Direction.kForward)
                     .until(() -> inputs.leaderPositionMeters > Units.inchesToMeters(50.0)),
@@ -188,9 +181,9 @@ public class ElevatorSubsystem extends SubsystemBase {
                 Commands.waitUntil(() -> inputs.leaderVelocityMetersPerSec < 0.1),
                 routine
                     .dynamic(SysIdRoutine.Direction.kReverse)
-                    .until(() -> inputs.leaderPositionMeters < Units.inchesToMeters(10.0)));
-    return Commands.sequence(
-        runCurrentZeroing(), runSysid.apply(voltageSysid), runSysid.apply(currentSysid));
+                    .until(() -> inputs.leaderPositionMeters < Units.inchesToMeters(10.0)),
+                Commands.runOnce(() -> SignalLogger.stop()));
+    return Commands.sequence(runCurrentZeroing(), runSysid.apply(voltageSysid));
   }
 
   public Command rezero() {

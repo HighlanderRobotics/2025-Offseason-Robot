@@ -1,10 +1,17 @@
 package frc.robot.rollerpivot;
 
+import static edu.wpi.first.units.Units.Volts;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import frc.robot.Robot;
 import frc.robot.Robot.RobotType;
 import frc.robot.pivot.PivotIO;
@@ -25,10 +32,48 @@ public class RollerPivotSubsystem extends SubsystemBase {
   private LinearFilter currentFilter = LinearFilter.movingAverage(10);
   protected double currentFilterValue = 0.0;
 
+  // Sysid stuff
+  private final SysIdRoutine rollerSysid;
+  private final SysIdRoutine pivotSysid;
+
   public RollerPivotSubsystem(RollerIO rollerIO, PivotIO pivotIO, String name) {
+    this(
+        rollerIO,
+        pivotIO,
+        name,
+        // Defualt configs with state loggers
+        new Config(
+            null,
+            null,
+            null,
+            (sysIdState) -> Logger.recordOutput(name + "/Roller/SysId State", sysIdState)),
+        new Config(
+            null,
+            null,
+            null,
+            (sysIdState) -> Logger.recordOutput(name + "Pivot/SysId State", sysIdState)));
+  }
+
+  public RollerPivotSubsystem(
+      RollerIO rollerIO,
+      PivotIO pivotIO,
+      String name,
+      SysIdRoutine.Config rollerSysidConfig,
+      SysIdRoutine.Config pivotSysIdConfig) {
     this.rollerIO = rollerIO;
     this.pivotIO = pivotIO;
     this.name = name;
+
+    rollerSysid =
+        new SysIdRoutine(
+            // Defualt for now ig
+            // Ramp rate: 1 volt, step rate: 7 volts, timeout: 10 volts
+            rollerSysidConfig,
+            new Mechanism((voltage) -> runRollerVoltage(voltage.in(Volts)), null, this));
+    pivotSysid =
+        new SysIdRoutine(
+            pivotSysIdConfig,
+            new Mechanism((voltage) -> runRollerVoltage(voltage.in(Volts)), null, this));
   }
 
   protected void runRollerVoltage(double volts) {
@@ -106,5 +151,23 @@ public class RollerPivotSubsystem extends SubsystemBase {
     currentFilterValue = currentFilter.calculate(rollerInputs.statorCurrentAmps);
     if (Robot.ROBOT_TYPE != RobotType.REAL)
       Logger.recordOutput(name + "/Filtered Current", currentFilterValue);
+  }
+
+  public Command runRollerSysid() {
+    return Commands.sequence(
+        // Run a quasistatic (w/o acceleration) sysid in each direction, and a dynamic (with
+        // acceleration) sysid
+        rollerSysid.quasistatic(Direction.kForward),
+        rollerSysid.quasistatic(Direction.kReverse),
+        rollerSysid.dynamic(Direction.kForward),
+        rollerSysid.dynamic(Direction.kReverse));
+  }
+
+  public Command runPivotSysid() {
+    return Commands.sequence(
+        pivotSysid.quasistatic(Direction.kForward),
+        pivotSysid.quasistatic(Direction.kReverse),
+        pivotSysid.dynamic(Direction.kForward),
+        pivotSysid.dynamic(Direction.kReverse));
   }
 }
