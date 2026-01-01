@@ -94,7 +94,7 @@ public class ArmSubsystem extends RollerPivotSubsystem {
     PRE_L3(-45, 7.0),
     SCORE_L3(-90, -10.0),
     PRE_L4(-60, 12.0),
-    SCORE_L4(-90, -14.0),
+    SCORE_L4(-90, -10.0),
 
     // climbing
     PRE_CLIMB(-108, 0.0),

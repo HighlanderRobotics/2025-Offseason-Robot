@@ -850,14 +850,14 @@ public class Robot extends LoggedRobot {
         .povDown()
         .and(preZeroingReq)
         .and(zeroingReq.negate())
-        .whileTrue(Commands.parallel(arm.setPivotVoltage(() -> -3.0)).withTimeout(0.05));
+        .whileTrue(Commands.parallel(arm.setPivotVoltage(() -> -5.0)).withTimeout(0.1));
 
     // jog arm down
     operator
         .povUp()
         .and(preZeroingReq)
         .and(zeroingReq.negate())
-        .whileTrue(Commands.parallel(arm.setPivotVoltage(() -> 3.0)).withTimeout(0.05));
+        .whileTrue(Commands.parallel(arm.setPivotVoltage(() -> 5.0)).withTimeout(0.1));
 
     // hold arm still when it's not being requested to jog up or down or zeroing req
     operator
