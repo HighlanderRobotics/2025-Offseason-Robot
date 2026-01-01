@@ -97,7 +97,7 @@ public class Robot extends LoggedRobot {
     L1(Color.kGreen),
     L2(Color.kTeal),
     L3(Color.kBlue),
-    L4(LEDSubsystem.PURPLE);
+    L4(Color.kMediumPurple);
 
     private Color color;
 
@@ -140,8 +140,18 @@ public class Robot extends LoggedRobot {
   //   }
 
   public static enum ScoringSide {
-    LEFT,
-    RIGHT
+    LEFT(Color.kOrange),
+    RIGHT(Color.kHotPink);
+
+    private Color color;
+
+    private ScoringSide(Color color) {
+      this.color = color;
+    }
+
+    public Color getColor() {
+      return color;
+    }
   }
 
   @AutoLogOutput private static CoralScoreTarget coralScoreTarget = CoralScoreTarget.L4;
@@ -329,7 +339,7 @@ public class Robot extends LoggedRobot {
       new SwerveDriveSimulation(driveTrainSimConfig, new Pose2d(3, 3, Rotation2d.kZero));
   // Subsystem initialization
   private final SwerveSubsystem swerve = new SwerveSubsystem(swerveSimulation);
-  private final LEDSubsystem leds = new LEDSubsystem(new LEDIOReal());
+  private final LEDSubsystem leds;
 
   private final CommandXboxControllerSubsystem driver = new CommandXboxControllerSubsystem(0);
   private final CommandXboxControllerSubsystem operator = new CommandXboxControllerSubsystem(1);
@@ -424,6 +434,8 @@ public class Robot extends LoggedRobot {
     Logger.recordOutput("Canivore Status", canivoreStatus.Status);
 
     PhoenixOdometryThread.getInstance().start();
+
+    leds = new LEDSubsystem(new LEDIOReal(), superstructure::atExtension);
 
     // Set default commands
     elevator.setDefaultCommand(elevator.setStateExtension());
@@ -524,9 +536,7 @@ public class Robot extends LoggedRobot {
             })
         .onTrue(
             Commands.runOnce(() -> addAutos())
-                .alongWith(
-                    leds.setBlinkingCmd(() -> Color.kWhite, () -> Color.kBlack, 20.0)
-                        .withTimeout(1.0))
+                .alongWith(leds.blinkCmd(Color.kWhite, Color.kBlack, 20.0).withTimeout(1.0))
                 .ignoringDisable(true));
 
     // Add autos when first connecting to DS
@@ -539,9 +549,7 @@ public class Robot extends LoggedRobot {
         .onTrue(Commands.print("connected"))
         .onTrue(
             Commands.runOnce(() -> addAutos())
-                .alongWith(
-                    leds.setBlinkingCmd(() -> Color.kWhite, () -> Color.kBlack, 20.0)
-                        .withTimeout(1.0))
+                .alongWith(leds.blinkCmd(Color.kWhite, Color.kBlack, 20.0).withTimeout(1.0))
                 .ignoringDisable(true));
     SmartDashboard.putData(
         "rezero elevator",

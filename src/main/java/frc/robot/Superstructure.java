@@ -23,6 +23,7 @@ import frc.robot.swerve.SwerveSubsystem;
 import frc.robot.utils.CommandXboxControllerSubsystem;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class Superstructure {
 
@@ -62,14 +63,14 @@ public class Superstructure {
     READY_CORAL_ARM(ElevatorState.IDLE, ArmState.READY_CORAL_ARM, IntakeState.IDLE),
 
     PRE_L1(ElevatorState.IDLE, ArmState.IDLE, IntakeState.PRE_L1),
-    L1(ElevatorState.IDLE, ArmState.IDLE, IntakeState.SCORE_L1),
+    SCORE_L1(ElevatorState.IDLE, ArmState.IDLE, IntakeState.SCORE_L1),
 
-    PRE_L2_RIGHT(ElevatorState.PRE_L2, ArmState.PRE_L2, IntakeState.IDLE),
-    SCORE_L2_RIGHT(ElevatorState.L2, ArmState.SCORE_L2, IntakeState.IDLE),
-    PRE_L3_RIGHT(ElevatorState.PRE_L3, ArmState.PRE_L3, IntakeState.IDLE),
-    SCORE_L3_RIGHT(ElevatorState.L3, ArmState.SCORE_L3, IntakeState.IDLE),
-    PRE_L4_RIGHT(ElevatorState.PRE_L4, ArmState.PRE_L4, IntakeState.IDLE),
-    SCORE_L4_RIGHT(ElevatorState.L4, ArmState.SCORE_L4, IntakeState.IDLE),
+    PRE_L2(ElevatorState.PRE_L2, ArmState.PRE_L2, IntakeState.IDLE),
+    SCORE_L2(ElevatorState.L2, ArmState.SCORE_L2, IntakeState.IDLE),
+    PRE_L3(ElevatorState.PRE_L3, ArmState.PRE_L3, IntakeState.IDLE),
+    SCORE_L3(ElevatorState.L3, ArmState.SCORE_L3, IntakeState.IDLE),
+    PRE_L4(ElevatorState.PRE_L4, ArmState.PRE_L4, IntakeState.IDLE),
+    SCORE_L4(ElevatorState.L4, ArmState.SCORE_L4, IntakeState.IDLE),
 
     // rip algae 2025-2025
 
@@ -115,33 +116,33 @@ public class Superstructure {
           || this == HANDOFF_RIGHT
           || this == INTAKE_CORAL_STACK
           || this == PRE_L1
-          || this == L1
-          || this == PRE_L2_RIGHT
-          || this == SCORE_L2_RIGHT
-          || this == PRE_L3_RIGHT
-          || this == SCORE_L3_RIGHT
-          || this == PRE_L4_RIGHT
-          || this == SCORE_L4_RIGHT;
+          || this == SCORE_L1
+          || this == PRE_L2
+          || this == SCORE_L2
+          || this == PRE_L3
+          || this == SCORE_L3
+          || this == PRE_L4
+          || this == SCORE_L4;
     }
 
     public boolean isScoreCoral() {
       return this == PRE_L1
-          || this == L1
-          || this == PRE_L2_RIGHT
-          || this == SCORE_L2_RIGHT
-          || this == PRE_L3_RIGHT
-          || this == SCORE_L3_RIGHT
-          || this == PRE_L4_RIGHT
-          || this == SCORE_L4_RIGHT;
+          || this == SCORE_L1
+          || this == PRE_L2
+          || this == SCORE_L2
+          || this == PRE_L3
+          || this == SCORE_L3
+          || this == PRE_L4
+          || this == SCORE_L4;
     }
 
     public boolean isScoreCoralRight() {
-      return this == PRE_L2_RIGHT
-          || this == SCORE_L2_RIGHT
-          || this == PRE_L3_RIGHT
-          || this == SCORE_L3_RIGHT
-          || this == PRE_L4_RIGHT
-          || this == SCORE_L4_RIGHT;
+      return this == PRE_L2
+          || this == SCORE_L2
+          || this == PRE_L3
+          || this == SCORE_L3
+          || this == PRE_L4
+          || this == SCORE_L4;
     }
 
     public boolean isReadyIntakeCoral() {
@@ -204,6 +205,9 @@ public class Superstructure {
   @AutoLogOutput(key = "Superstructure/Away From Reef?")
   public Trigger awayFromReefTrigger;
 
+  private final LoggedDashboardChooser<SuperState> stateChooser =
+      new LoggedDashboardChooser<>("!! SIM ONLY !! state chooser");
+
   /** Creates a new Superstructure. */
   public Superstructure(
       ElevatorSubsystem elevator,
@@ -222,7 +226,12 @@ public class Superstructure {
     this.operator = operator;
 
     addTriggers();
-    addTransitions();
+    // addTransitions();
+
+    for (SuperState s : SuperState.values()) {
+      stateChooser.addOption(s.name(), s);
+    }
+    stateChooser.addDefaultOption("IDLE", SuperState.IDLE);
 
     stateTimer.start();
   }
@@ -268,6 +277,7 @@ public class Superstructure {
   public void periodic() {
     Logger.recordOutput("Superstructure/Superstructure State", state);
     Logger.recordOutput("Superstructure/State Timer", stateTimer.get());
+    state = stateChooser.get();
   }
 
   /**
@@ -384,10 +394,10 @@ public class Superstructure {
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L1)
             .and(preScoreReq));
 
-    bindTransition(SuperState.PRE_L1, SuperState.L1, scoreReq.and(atExtensionTrigger));
+    bindTransition(SuperState.PRE_L1, SuperState.SCORE_L1, scoreReq.and(atExtensionTrigger));
 
     bindTransition(
-        SuperState.L1,
+        SuperState.SCORE_L1,
         SuperState.IDLE,
         intakeEitherBeambreakTrigger
             .negate()
@@ -486,63 +496,60 @@ public class Superstructure {
     // ---Right L2---
     bindTransition(
         SuperState.POST_HANDOFF,
-        SuperState.PRE_L2_RIGHT,
+        SuperState.PRE_L2,
         atExtensionTrigger.and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L2));
 
     bindTransition(
         SuperState.READY_CORAL_ARM,
-        SuperState.PRE_L2_RIGHT,
+        SuperState.PRE_L2,
         preScoreReq
             .and(atExtensionTrigger)
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L2));
 
-    bindTransition(
-        SuperState.PRE_L2_RIGHT, SuperState.SCORE_L2_RIGHT, scoreReq.and(atExtensionTrigger));
+    bindTransition(SuperState.PRE_L2, SuperState.SCORE_L2, scoreReq.and(atExtensionTrigger));
 
     bindTransition(
-        SuperState.SCORE_L2_RIGHT,
+        SuperState.SCORE_L2,
         SuperState.IDLE,
         armHasGamePieceTrigger.negate().debounce(0.1).and(awayFromReefTrigger.debounce(0.15)));
 
     // ---Right L3---
     bindTransition(
         SuperState.POST_HANDOFF,
-        SuperState.PRE_L3_RIGHT,
+        SuperState.PRE_L3,
         atExtensionTrigger.and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L3));
 
     bindTransition(
         SuperState.READY_CORAL_ARM,
-        SuperState.PRE_L3_RIGHT,
+        SuperState.PRE_L3,
         preScoreReq
             .and(atExtensionTrigger)
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L3));
 
-    bindTransition(
-        SuperState.PRE_L3_RIGHT, SuperState.SCORE_L3_RIGHT, scoreReq.and(atExtensionTrigger));
+    bindTransition(SuperState.PRE_L3, SuperState.SCORE_L3, scoreReq.and(atExtensionTrigger));
 
     bindTransition(
-        SuperState.SCORE_L3_RIGHT,
+        SuperState.SCORE_L3,
         SuperState.IDLE,
         armHasGamePieceTrigger.negate().debounce(0.1).and(awayFromReefTrigger.debounce(0.15)));
 
     // ---Right L4---
     bindTransition(
         SuperState.POST_HANDOFF,
-        SuperState.PRE_L4_RIGHT,
+        SuperState.PRE_L4,
         atExtensionTrigger.and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L4));
 
     bindTransition(
         SuperState.READY_CORAL_ARM,
-        SuperState.PRE_L4_RIGHT,
+        SuperState.PRE_L4,
         preScoreReq
             .and(atExtensionTrigger)
             .and(() -> Robot.getCoralScoreTarget() == CoralScoreTarget.L4));
 
-    bindTransition(
-        SuperState.PRE_L4_RIGHT, SuperState.SCORE_L4_RIGHT, scoreReq.and(atExtensionTrigger));
+    bindTransition(SuperState.PRE_L4, SuperState.SCORE_L4, scoreReq.and(atExtensionTrigger));
 
     bindTransition(
-        SuperState.SCORE_L4_RIGHT,
+        SuperState.SCORE_L4,
         SuperState.IDLE,
         armHasGamePieceTrigger.negate().debounce(0.1).and(awayFromReefTrigger.debounce(0.15)));
 
