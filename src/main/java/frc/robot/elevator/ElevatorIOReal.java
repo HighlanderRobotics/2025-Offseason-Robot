@@ -16,7 +16,7 @@ import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
 
 public class ElevatorIOReal implements ElevatorIO {
-  private TalonFX leader = new TalonFX(10, "*");
+  protected TalonFX leader = new TalonFX(10, "*");
   private TalonFX follower = new TalonFX(11, "*");
 
   // Conversion from angle to distance happens in sensor to mechanism ratio
@@ -37,6 +37,9 @@ public class ElevatorIOReal implements ElevatorIO {
   private VoltageOut voltageOut = new VoltageOut(0.0).withEnableFOC(true);
   private DynamicMotionMagicVoltage motionMagicVoltage;
   private TorqueCurrentFOC torqueCurrent = new TorqueCurrentFOC(0.0);
+
+  // this is only for sim
+  protected double positionSetpoint = 0.0;
 
   public ElevatorIOReal() {
     TalonFXConfiguration config = new TalonFXConfiguration();
@@ -141,6 +144,7 @@ public class ElevatorIOReal implements ElevatorIO {
 
   @Override
   public void setPositionSetpoint(double positionMeters, double acceleration) {
+    positionSetpoint = positionMeters;
     leader.setControl(
         motionMagicVoltage.withPosition(positionMeters).withAcceleration(acceleration));
   }

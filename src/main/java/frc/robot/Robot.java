@@ -50,8 +50,8 @@ import frc.robot.arm.ArmSubsystem;
 import frc.robot.cancoder.CANcoderIOReal;
 import frc.robot.canrange.CANrangeIOReal;
 import frc.robot.climber.ClimberSubsystem;
+import frc.robot.elevator.ElevatorIOCTRESim;
 import frc.robot.elevator.ElevatorIOReal;
-import frc.robot.elevator.ElevatorIOSim;
 import frc.robot.elevator.ElevatorSubsystem;
 import frc.robot.intake.IntakeSubsystem;
 import frc.robot.led.LEDIOReal;
@@ -161,7 +161,7 @@ public class Robot extends LoggedRobot {
   // Instantiate subsystems
   private final ElevatorSubsystem elevator =
       new ElevatorSubsystem(
-          ROBOT_TYPE != RobotType.SIM ? new ElevatorIOReal() : new ElevatorIOSim());
+          ROBOT_TYPE != RobotType.SIM ? new ElevatorIOReal() : new ElevatorIOCTRESim());
 
   TalonFXConfiguration armRollerConfig =
       createRollerConfig(InvertedValue.Clockwise_Positive, 20.0, 6.62, 0.48, 0.25, 0.0);
@@ -576,6 +576,8 @@ public class Robot extends LoggedRobot {
         "ninety intake",
         intake.ninety().alongWith(Commands.print("dashboard ninety intake")).ignoringDisable(true));
     SmartDashboard.putData("Add autos", Commands.runOnce(this::addAutos).ignoringDisable(true));
+
+    SmartDashboard.putData("test elevator", elevator.setExtensionMeters(() -> 1));
 
     manualArmRezeroAlert =
         new Alert(
