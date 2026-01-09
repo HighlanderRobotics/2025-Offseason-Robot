@@ -237,7 +237,7 @@ public class Robot extends LoggedRobot {
               ? new RollerIOReal(13, intakeRollerConfig)
               : new RollerIOSim(
                   IntakeSubsystem.jKgMetersSquared,
-                  IntakeSubsystem.PIVOT_RATIO,
+                  2.5,
                   new SimpleMotorFeedforward(IntakeSubsystem.KS, IntakeSubsystem.KV),
                   new ProfiledPIDController(
                       IntakeSubsystem.KP,
