@@ -10,6 +10,7 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
@@ -93,14 +94,14 @@ public class ElevatorIOReal {
         new DynamicMotionMagicVoltage(
                 0.0,
                 config.MotionMagic.MotionMagicCruiseVelocity,
-                config.MotionMagic.MotionMagicAcceleration,
-                100.0)
+                config.MotionMagic.MotionMagicAcceleration)
+            .withJerk(100.0)
             .withEnableFOC(true);
 
     leader.getConfigurator().apply(config);
     follower.getConfigurator().apply(config);
 
-    follower.setControl(new Follower(leader.getDeviceID(), false));
+    follower.setControl(new Follower(leader.getDeviceID(), MotorAlignmentValue.Aligned));
 
     BaseStatusSignal.setUpdateFrequencyForAll(
         50.0,
