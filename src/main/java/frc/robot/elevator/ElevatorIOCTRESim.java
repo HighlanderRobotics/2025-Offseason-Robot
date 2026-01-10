@@ -11,26 +11,22 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
-import org.littletonrobotics.junction.Logger;
 
 /** Add your docs here. */
 public class ElevatorIOCTRESim extends ElevatorIOReal {
-  // no follower bc i'm lazy
-  TalonFXSimState leaderSim;
-  TalonFXSimState followerSim;
+  TalonFXSimState leaderTalonSim;
+  TalonFXSimState followerTalonSim;
 
-  private final ElevatorSim physicsSim =
+  private final ElevatorSim elevatorPhysicsSim =
       new ElevatorSim(
           //   DCMotor.getKrakenX60Foc(2),
-          //   // for 2 kraken x44s
+            // for 2 kraken x44s
           new DCMotor(
               12.0,
               4.05,
               275,
               1.4,
-              // Units.rotationsPerMinuteToRadiansPerSecond(7530.0),
-              //   7530.0 / 60.0,
-              (7530 / 60.0) * (Math.PI * 2),
+              Units.rotationsPerMinuteToRadiansPerSecond(7530.0),
               2), // not sure if this is supposed to be at
           // 12v?
           ElevatorSubsystem.GEAR_RATIO,
@@ -45,23 +41,13 @@ public class ElevatorIOCTRESim extends ElevatorIOReal {
           true,
           0.0);
 
-  //   private double volts = 0.0;
-  //   private final ProfiledPIDController pid =
-  //       new ProfiledPIDController(110.0, 0.0, 0.0, new Constraints(5.0, 10.0));
-  //   private final ElevatorFeedforward ff =
-  //       new ElevatorFeedforward(
-  //           0.24,
-  //           0.56,
-  //           (DCMotor.getKrakenX60Foc(1).KvRadPerSecPerVolt
-  //                   * (ElevatorSubsystem.SPROCKET_DIAMETER_METERS / 2))
-  //               / ElevatorSubsystem.GEAR_RATIO);
 
   public ElevatorIOCTRESim() {
     super();
-    leaderSim = leader.getSimState();
-    leaderSim.Orientation = ChassisReference.Clockwise_Positive;
-    followerSim = follower.getSimState();
-    followerSim.Orientation = ChassisReference.Clockwise_Positive;
+    leaderTalonSim = leader.getSimState();
+    leaderTalonSim.Orientation = ChassisReference.Clockwise_Positive;
+    followerTalonSim = follower.getSimState();
+    followerTalonSim.Orientation = ChassisReference.Clockwise_Positive;
   }
 
   @Override
@@ -70,43 +56,32 @@ public class ElevatorIOCTRESim extends ElevatorIOReal {
       stop();
     }
     // set the supply voltage of the motor
-    leaderSim.setSupplyVoltage(RobotController.getBatteryVoltage());
-
-    // calculate pid for the physics sim
-    // volts =
-    //     pid.calculate(physicsSim.getPositionMeters(), positionSetpoint)
-    //         + ff.calculate(pid.getSetpoint().velocity);
-    physicsSim.setInputVoltage(leaderSim.getMotorVoltage());
-    // physicsSim.setInputVoltage((-1) * leaderSim.getMotorVoltageMeasure().in(Volts));
-    physicsSim.update(0.020); // assume 20 ms loop time
-
-    Logger.recordOutput("ctre sim voltage", leaderSim.getMotorVoltage());
-    // Logger.recordOutput("wpilib sim voltage", volts);
+    leaderTalonSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+    elevatorPhysicsSim.setInputVoltage(leaderTalonSim.getMotorVoltage());
+    elevatorPhysicsSim.update(0.020); // assume 20 ms loop time
 
     // update the ctre motor sim to match the wpilib physics sim
     // note that "set" does not command the motor to do anything
     // it just updates the value the ctre sim has stored
 
-    // convert back to rotor position because it doesn't let you set linear position directly
-    leaderSim.setRawRotorPosition(
-        physicsSim.getPositionMeters()
+    // convert meters -> rotations for rotor position because it doesn't let you set linear position
+    // directly
+    leaderTalonSim.setRawRotorPosition(
+        elevatorPhysicsSim.getPositionMeters()
             / (Math.PI * ElevatorSubsystem.SPROCKET_DIAMETER_METERS)
             * ElevatorSubsystem.GEAR_RATIO);
-    leaderSim.setRotorVelocity(
-        physicsSim.getVelocityMetersPerSecond()
+    // convert meters/second -> rotations/second
+    leaderTalonSim.setRotorVelocity(
+        elevatorPhysicsSim.getVelocityMetersPerSecond()
             * (Math.PI * ElevatorSubsystem.SPROCKET_DIAMETER_METERS)
             / ElevatorSubsystem.GEAR_RATIO);
-    Logger.recordOutput("wpilib sim position", physicsSim.getPositionMeters());
 
-    followerSim.setRawRotorPosition(
-        physicsSim.getPositionMeters()
+    followerTalonSim.setRawRotorPosition(
+        elevatorPhysicsSim.getPositionMeters()
             / (Math.PI * ElevatorSubsystem.SPROCKET_DIAMETER_METERS)
             * ElevatorSubsystem.GEAR_RATIO);
-    followerSim.setRotorVelocity(
-        physicsSim.getVelocityMetersPerSecond()
-            / (Math.PI * ElevatorSubsystem.SPROCKET_DIAMETER_METERS)
-            * ElevatorSubsystem.GEAR_RATIO);
-
+    // setting the follower velocity does not seem to do anything
+    
     // updates the values in the logtable
     // it will pull those values from the motor (same as irl)
     super.updateInputs(inputs);
