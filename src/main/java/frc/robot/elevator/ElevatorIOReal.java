@@ -17,7 +17,7 @@ import edu.wpi.first.units.measure.Voltage;
 
 public class ElevatorIOReal implements ElevatorIO {
   protected TalonFX leader = new TalonFX(10, "*");
-  private TalonFX follower = new TalonFX(11, "*");
+  protected TalonFX follower = new TalonFX(11, "*");
 
   // Conversion from angle to distance happens in sensor to mechanism ratio
   private final BaseStatusSignal leaderPositionMeters = leader.getPosition();
@@ -60,7 +60,7 @@ public class ElevatorIOReal implements ElevatorIO {
     config.Slot0.kD = 0.0;
 
     config.CurrentLimits.StatorCurrentLimit = 80.0;
-    config.CurrentLimits.StatorCurrentLimitEnable = true;
+    config.CurrentLimits.StatorCurrentLimitEnable = false;
     config.CurrentLimits.SupplyCurrentLimit = 60.0;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLowerLimit = 40.0;
