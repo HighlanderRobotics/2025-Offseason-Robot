@@ -14,10 +14,29 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
+import org.littletonrobotics.junction.AutoLog;
 
-public class ElevatorIOReal implements ElevatorIO {
-  private TalonFX leader = new TalonFX(10, "*");
-  private TalonFX follower = new TalonFX(11, "*");
+public class ElevatorIOReal {
+
+  @AutoLog
+  public static class ElevatorIOInputs {
+    public double leaderPositionMeters = 0.0;
+    public double leaderVelocityMetersPerSec = 0.0;
+    public double leaderStatorCurrentAmps = 0.0;
+    public double leaderSupplyCurrentAmps = 0.0;
+    public double leaderVoltage = 0.0;
+    public double leaderTempC = 0.0;
+
+    public double followerPositionMeters = 0.0;
+    public double followerVelocityMetersPerSec = 0.0;
+    public double followerStatorCurrentAmps = 0.0;
+    public double followerSupplyCurrentAmps = 0.0;
+    public double followerVoltage = 0.0;
+    public double followerTempC = 0.0;
+  }
+
+  protected TalonFX leader = new TalonFX(10, "*");
+  protected TalonFX follower = new TalonFX(11, "*");
 
   // Conversion from angle to distance happens in sensor to mechanism ratio
   private final BaseStatusSignal leaderPositionMeters = leader.getPosition();
@@ -37,6 +56,9 @@ public class ElevatorIOReal implements ElevatorIO {
   private VoltageOut voltageOut = new VoltageOut(0.0).withEnableFOC(true);
   private DynamicMotionMagicVoltage motionMagicVoltage;
   private TorqueCurrentFOC torqueCurrent = new TorqueCurrentFOC(0.0);
+
+  // this is only for sim
+  protected double positionSetpoint = 0.0;
 
   public ElevatorIOReal() {
     TalonFXConfiguration config = new TalonFXConfiguration();
@@ -98,7 +120,6 @@ public class ElevatorIOReal implements ElevatorIO {
     follower.optimizeBusUtilization();
   }
 
-  @Override
   public void updateInputs(ElevatorIOInputs inputs) {
     BaseStatusSignal.refreshAll(
         leaderPositionMeters,
@@ -129,25 +150,26 @@ public class ElevatorIOReal implements ElevatorIO {
     inputs.followerTempC = followerTemp.getValueAsDouble();
   }
 
-  @Override
   public void setVoltage(double volts) {
     leader.setControl(voltageOut.withOutput(volts));
   }
 
-  @Override
   public void setCurrent(double amps) {
     leader.setControl(torqueCurrent.withOutput(amps));
   }
 
-  @Override
   public void setPositionSetpoint(double positionMeters, double acceleration) {
+    positionSetpoint = positionMeters;
     leader.setControl(
         motionMagicVoltage.withPosition(positionMeters).withAcceleration(acceleration));
   }
 
-  @Override
   public void resetEncoder(double position) {
     leader.setPosition(position);
     follower.setPosition(position);
+  }
+
+  public void stop() {
+    setVoltage(0.0);
   }
 }
