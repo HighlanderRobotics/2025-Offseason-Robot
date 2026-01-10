@@ -20,7 +20,7 @@ public class ElevatorIOCTRESim extends ElevatorIOReal {
   private final ElevatorSim elevatorPhysicsSim =
       new ElevatorSim(
           //   DCMotor.getKrakenX60Foc(2),
-            // for 2 kraken x44s
+          // for 2 kraken x44s
           new DCMotor(
               12.0,
               4.05,
@@ -41,7 +41,6 @@ public class ElevatorIOCTRESim extends ElevatorIOReal {
           true,
           0.0);
 
-
   public ElevatorIOCTRESim() {
     super();
     leaderTalonSim = leader.getSimState();
@@ -50,7 +49,6 @@ public class ElevatorIOCTRESim extends ElevatorIOReal {
     followerTalonSim.Orientation = ChassisReference.Clockwise_Positive;
   }
 
-  @Override
   public void updateInputs(ElevatorIOInputs inputs) {
     if (DriverStation.isDisabled()) {
       stop();
@@ -81,7 +79,7 @@ public class ElevatorIOCTRESim extends ElevatorIOReal {
             / (Math.PI * ElevatorSubsystem.SPROCKET_DIAMETER_METERS)
             * ElevatorSubsystem.GEAR_RATIO);
     // setting the follower velocity does not seem to do anything
-    
+
     // updates the values in the logtable
     // it will pull those values from the motor (same as irl)
     super.updateInputs(inputs);

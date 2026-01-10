@@ -73,7 +73,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
   }
 
-  private ElevatorIO io;
+  private ElevatorIOReal io;
   private ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
 
   private LinearFilter currentFilter = LinearFilter.movingAverage(5);
@@ -90,7 +90,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   private final SysIdRoutine voltageSysid;
   private final SysIdRoutine currentSysid;
 
-  public ElevatorSubsystem(ElevatorIO io) {
+  public ElevatorSubsystem(ElevatorIOReal io) {
     this.io = io;
     voltageSysid =
         new SysIdRoutine(
